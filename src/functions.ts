@@ -1,5 +1,5 @@
-// --------------------------------------------------------------------------
-import * as P from './effect-prelude';
+import * as P from '@konker.dev/effect-ts-prelude';
+
 import type { MorrisColor, MorrisGame, MorrisMove, MorrisPhase } from './index';
 import {
   EmptyMorris,

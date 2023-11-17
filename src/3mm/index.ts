@@ -1,27 +1,8 @@
 import type * as P from '@konker.dev/effect-ts-prelude';
 
-import type { MorrisBoard } from './index';
-import { EmptyMorris } from './index';
-
-export const MENS_MORRIS_P_3 = 9;
-export type MENS_MORRIS_P_3 = typeof MENS_MORRIS_P_3;
-export const MENS_MORRIS_D_3 = 3;
-export type MENS_MORRIS_D_3 = typeof MENS_MORRIS_D_3;
-
-export const MENS_MORRIS_P_6 = 16;
-export type MENS_MORRIS_P_6 = typeof MENS_MORRIS_P_6;
-export const MENS_MORRIS_D_6 = 5;
-export type MENS_MORRIS_D_6 = typeof MENS_MORRIS_D_6;
-
-export const MENS_MORRIS_P_9 = 24;
-export type MENS_MORRIS_P_9 = typeof MENS_MORRIS_P_9;
-export const MENS_MORRIS_D_9 = 7;
-export type MENS_MORRIS_D_9 = typeof MENS_MORRIS_D_9;
-
-export const MENS_MORRIS_P_12 = 24;
-export type MENS_MORRIS_P_12 = typeof MENS_MORRIS_P_12;
-export const MENS_MORRIS_D_12 = 7;
-export type MENS_MORRIS_D_12 = typeof MENS_MORRIS_D_12;
+import { MENS_MORRIS_D_3, MENS_MORRIS_P_3 } from '../boards';
+import type { MorrisBoard, MorrisGame, MorrisGameConfig } from '../index';
+import { EmptyMorris, MorrisColorWhite, MorrisPhaseMoving, MorrisPhasePlacing } from '../index';
 
 // --------------------------------------------------------------------------
 /*
@@ -32,7 +13,8 @@ export type MENS_MORRIS_D_12 = typeof MENS_MORRIS_D_12;
 | / | \ |
 6---7---8
 */
-export const EmptyMensMorris3Board: P.LazyArg<MorrisBoard<MENS_MORRIS_P_3, MENS_MORRIS_D_3>> = () => ({
+export type Board = MorrisBoard<MENS_MORRIS_P_3, MENS_MORRIS_D_3>;
+export const board: P.LazyArg<Board> = () => ({
   type: MENS_MORRIS_P_3,
   dimension: MENS_MORRIS_D_3,
   points: [
@@ -47,3 +29,18 @@ export const EmptyMensMorris3Board: P.LazyArg<MorrisBoard<MENS_MORRIS_P_3, MENS_
     /*8*/ { x: 2, y: 2, links: [4, 5, 7], occupant: EmptyMorris },
   ],
 });
+
+export const config: MorrisGameConfig = {
+  name: '3 Mens Morris',
+  numMorrisPerPlayer: 3,
+  phases: [MorrisPhasePlacing, MorrisPhaseMoving],
+};
+
+export type Game = MorrisGame<MENS_MORRIS_P_3, MENS_MORRIS_D_3>;
+export const game: Game = {
+  config,
+  startColor: MorrisColorWhite,
+  phaseIdx: 0,
+  board: board(),
+  moves: [],
+};

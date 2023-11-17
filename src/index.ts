@@ -1,4 +1,5 @@
-import * as P from './effect-prelude';
+import * as P from '@konker.dev/effect-ts-prelude';
+
 import type { Range1, Tuple } from './utils';
 
 /**
@@ -50,8 +51,8 @@ export type MorrisPhase =
 
 export const MorrisMoveTypePlace = 'PLACE';
 export const MorrisMoveTypeMove = 'MOVE';
-//[TODO: export const MorrisMoveTypeRemove = 'REMOVE';]
-export type MorrisMoveType = typeof MorrisMoveTypePlace | typeof MorrisMoveTypeMove;
+// export const MorrisMoveTypeRemove = 'REMOVE';
+export type MorrisMoveType = typeof MorrisMoveTypePlace | typeof MorrisMoveTypeMove; // | typeof MorrisMoveTypeRemove;
 
 export type MorrisMovePlace<C extends MorrisColor, P extends number> = {
   readonly type: typeof MorrisMoveTypePlace;
@@ -66,17 +67,19 @@ export type MorrisMoveMove<C extends MorrisColor, P extends number> = {
   readonly to: Range1<P>;
 };
 
-/*[TODO: export type MorrisMoveRemove<C extends MorrisColor, P extends number> = {
-  readonly type: typeof MorrisMoveTypeRemove;
-  readonly color: C;
-  readonly from: Range1<P>;
-};]*/
+// export type MorrisMoveRemove<C extends MorrisColor, P extends number> = {
+//   readonly type: typeof MorrisMoveTypeRemove;
+//   readonly color: C;
+//   readonly from: Range1<P>;
+// };
 
 export type MorrisMove<P extends number> =
   | MorrisMovePlace<typeof MorrisColorBlack, P>
   | MorrisMovePlace<typeof MorrisColorWhite, P>
   | MorrisMoveMove<typeof MorrisColorBlack, P>
   | MorrisMoveMove<typeof MorrisColorWhite, P>;
+// | MorrisMoveRemove<typeof MorrisColorBlack, P>
+// | MorrisMoveRemove<typeof MorrisColorWhite, P>;
 
 export type MorrisGameConfig = {
   readonly name: string;
