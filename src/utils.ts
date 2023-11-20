@@ -15,6 +15,37 @@ export type Range1<T extends number> = Range<1, Add<T, 1>>;
 // const r0: Range0<8> = 7;
 // export const r1: Range1<4> = 3;
 
+export const COORD_CHARS = [
+  'a',
+  'b',
+  'c',
+  'd',
+  'e',
+  'f',
+  'g',
+  'h',
+  'i',
+  'j',
+  'k',
+  'l',
+  'm',
+  'n',
+  'o',
+  'p',
+  'q',
+  's',
+  't',
+  'u',
+  'v',
+  'w',
+  'x',
+  'y',
+  'z',
+] as const;
+export type EnumerateCoordChars<N extends number, Acc extends Array<string> = []> = Acc['length'] extends N
+  ? Acc[number]
+  : EnumerateCoordChars<N, [...Acc, (typeof COORD_CHARS)[Acc['length']]]>;
+
 /**
  * A fixed length array of type T with length N.
  * See: https://stackoverflow.com/a/74801694/203284
@@ -22,8 +53,8 @@ export type Range1<T extends number> = Range<1, Add<T, 1>>;
 export type LengthArray<T, N extends number, R extends ReadonlyArray<T> = []> = number extends N
   ? ReadonlyArray<T>
   : R['length'] extends N
-  ? R
-  : LengthArray<T, N, [T, ...R]>;
+    ? R
+    : LengthArray<T, N, [T, ...R]>;
 
 // function toIdx<P extends number>(p: Range1<P>): Range0<Sub<P, 1>> {
 //   return (p - 1) as Range0<Sub<P, 1>>;

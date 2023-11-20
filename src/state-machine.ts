@@ -1,7 +1,7 @@
 import * as P from '@konker.dev/effect-ts-prelude';
 
 // import * as E from '@konker.dev/tiny-event-fp';
-import type { MENS_MORRIS_D_3, MENS_MORRIS_P_3 } from './boards';
+import type { MENS_MORRIS_D_3, MENS_MORRIS_N_3, MENS_MORRIS_P_3 } from './boards';
 import type { MorrisGame } from './index';
 import * as F from './lib/tiny-fsm-fp';
 
@@ -47,7 +47,7 @@ export const GameStateMap = [
   ['*', 'EV_DRAW', 'ST_DRAW'],
 ] as const;
 
-export type MG = MorrisGame<MENS_MORRIS_P_3, MENS_MORRIS_D_3>;
+export type MG = MorrisGame<MENS_MORRIS_P_3, MENS_MORRIS_D_3, MENS_MORRIS_N_3>;
 
 function blackMoveListener(type: GameState, _data?: MG) {
   return P.pipe(

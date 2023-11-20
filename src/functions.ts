@@ -1,198 +1,128 @@
-import * as P from '@konker.dev/effect-ts-prelude';
+/* eslint-disable fp/no-nil,fp/no-unused-expression */
 
-import type { MorrisColor, MorrisGame, MorrisMove, MorrisPhase } from './index';
-import {
-  EmptyMorris,
-  MorrisColorBlack,
-  MorrisColorWhite,
-  MorrisMoveTypeMove,
-  MorrisMoveTypePlace,
-  MorrisPhaseFlying,
-  MorrisPhaseLasker,
-  MorrisPhaseMoving,
-  MorrisPhasePlacing,
-} from './index';
+import type { Morris, MorrisBoard, MorrisBoardCoord, MorrisGame, MorrisMove, MorrisPoint } from './index';
+import { MorrisBlack, MorrisColor, MorrisEmpty, MorrisMoveType, MorrisWhite } from './index';
+import type { Range1, Tuple } from './utils';
 
-export function oppositeColor(color: MorrisColor): MorrisColor {
-  return color === MorrisColorBlack ? MorrisColorWhite : MorrisColorBlack;
-}
-
-export function getNumMorrisPlaced<P extends number, D extends number>(
-  game: MorrisGame<P, D>,
+// --------------------------------------------------------------------------
+export function isTurn<P extends number, D extends number, N extends number>(
+  game: MorrisGame<P, D, N>,
   color: MorrisColor
-): number {
-  return game.moves.filter((m) => m.color === color && m.type === MorrisMoveTypePlace).length;
+): boolean {
+  return color === game.startColor ? game.moves.length % 2 === 0 : game.moves.length % 2 === 1;
 }
 
-export function getNumMorrisLeft<P extends number, D extends number>(
-  game: MorrisGame<P, D>,
-  color: MorrisColor
-): number {
-  return game.config.numMorrisPerPlayer - getNumMorrisPlaced(game, color);
+export function point<P extends number, D extends number, N extends number>(
+  board: MorrisBoard<P, D, N>,
+  coord: MorrisBoardCoord<D>
+): MorrisPoint<D, N> | undefined {
+  const i = board.points.findIndex((p) => p.coord === coord);
+  return board.points[i];
 }
 
-export function getValidMoves<P extends number, D extends number>(
-  _game: MorrisGame<P, D>,
-  _color: MorrisColor
-): Array<MorrisMove<P>> {
-  // If is placing phase, and less than max morris placed, then all empty points are valid
-  // If is moving phase, then all non-empty adjacent points to each morris are valid
-  // If is flying phase, then all empty points are valid
-  //[TODO]
-  return [];
+export function isPointEmpty<P extends number, D extends number, N extends number>(
+  game: MorrisGame<P, D, N>,
+  coord: MorrisBoardCoord<D>
+): boolean {
+  return point(game.board, coord)?.occupant.color === MorrisColor.EMPTY;
 }
 
-export function hasValidMoves<P extends number, D extends number>(game: MorrisGame<P, D>, color: MorrisColor): boolean {
-  return getValidMoves(game, color).length > 0;
+export function isPointAdjacent<P extends number, D extends number, N extends number>(
+  game: MorrisGame<P, D, N>,
+  from: MorrisBoardCoord<D>,
+  to: MorrisBoardCoord<D>
+): boolean {
+  return !!point(game.board, from)?.links.some((link) => link.to === to);
 }
 
-export function isTurn<P extends number, D extends number>(game: MorrisGame<P, D>, color: MorrisColor): boolean {
-  return color === game.startColor ? game.moves.length % 2 === 1 : game.moves.length % 2 === 0;
-}
+export function moveMakesMill<P extends number, D extends number, N extends number>(
+  game: MorrisGame<P, D, N>,
+  move: MorrisMove<D>
+): boolean {
+  // Find all mill possibilities which include the move.to point
+  // Remove the move.to point from each of the mill possibilities
+  const millCandidates = game.board.mills
+    .filter((m) => m.includes(move.to))
+    .map((m) => m.filter((coord) => coord !== move.to));
 
-export function getTurnColor<P extends number, D extends number>(game: MorrisGame<P, D>): MorrisColor {
-  return isTurn(game, MorrisColorBlack) ? MorrisColorBlack : MorrisColorWhite;
-}
-
-export function hasWon<P extends number, D extends number>(game: MorrisGame<P, D>, color: MorrisColor): boolean {
-  return (
-    hasValidMoves(game, color) &&
-    getNumMorrisLeft(game, color) >= 3 &&
-    (getNumMorrisLeft(game, oppositeColor(color)) < 3 || !hasValidMoves(game, oppositeColor(color)))
+  // For each mill possibility, check if the other two points are the same color as the move
+  return millCandidates.some((candidate) =>
+    candidate.every((coord) => point(game.board, coord)?.occupant.color === move.color)
   );
 }
 
-export function isPointEmpty<P extends number, D extends number>(game: MorrisGame<P, D>, pointName: number): boolean {
-  return game.board.points[pointName - 1]?.occupant === EmptyMorris;
+// --------------------------------------------------------------------------
+export function setPointOccupant<P extends number, D extends number, N extends number>(
+  game: MorrisGame<P, D, N>,
+  coord: MorrisBoardCoord<D>,
+  morris: Morris<N>
+): MorrisGame<P, D, N> {
+  return {
+    ...game,
+    board: {
+      ...game.board,
+      points: game.board.points.map((p) => (p.coord === coord ? { ...p, occupant: morris } : p)) as Tuple<
+        MorrisPoint<D, N>,
+        P
+      >,
+    },
+  };
 }
 
-export function isPointAdjacent<P extends number, D extends number>(
-  game: MorrisGame<P, D>,
-  from: number,
-  to: number
-): boolean {
-  return !!game.board.points[from - 1]?.links.includes(to - 1);
-}
-
-export function isFlying<P extends number, D extends number>(_game: MorrisGame<P, D>, _color: MorrisColor): boolean {
-  return false; //game.config.flyingThreshold && getNumMorrisLeft(game, color) <= game.config.flyingThreshold;
-}
-
-export function isFlyingBlack<P extends number, D extends number>(_game: MorrisGame<P, D>): boolean {
-  return false; //game.config.flyingThreshold && getNumMorrisLeft(game, MorrisColorBlack) <= game.config.flyingThreshold;
-}
-
-export function isFlyingWhite<P extends number, D extends number>(_game: MorrisGame<P, D>): boolean {
-  return false; //game.config.flyingThreshold && getNumMorrisLeft(game, MorrisColorWhite) <= game.config.flyingThreshold;
-}
-
-export function getPhase<P extends number, D extends number>(game: MorrisGame<P, D>, color: MorrisColor): MorrisPhase {
-  const mainPhase = game.config.phases[game.phaseIdx] as MorrisPhase;
-  if (isFlying(game, color)) {
-    return MorrisPhaseFlying;
-  }
-  return mainPhase;
+export function setPointEmpty<P extends number, D extends number, N extends number>(
+  game: MorrisGame<P, D, N>,
+  coord: MorrisBoardCoord<D>
+): MorrisGame<P, D, N> {
+  return setPointOccupant(game, coord, MorrisEmpty);
 }
 
 // --------------------------------------------------------------------------
-export function isValidMove<P extends number, D extends number>(game: MorrisGame<P, D>, move: MorrisMove<P>): boolean {
-  // Check the move is the correct color
-  if (!isTurn(game, move.color)) {
-    return false;
-  }
+export const createMovePlace =
+  (color: MorrisColor) =>
+  <D extends number>(to: MorrisBoardCoord<D>): MorrisMove<D> => ({
+    type: MorrisMoveType.PLACE,
+    color,
+    to,
+  });
 
-  const phase = getPhase(game, move.color);
+export const createMoveMove =
+  (color: MorrisColor) =>
+  <D extends number>(from: MorrisBoardCoord<D>, to: MorrisBoardCoord<D>): MorrisMove<D> => ({
+    type: MorrisMoveType.MOVE,
+    color,
+    from,
+    to,
+  });
 
-  // Check the move is valid for the phase
-  switch (phase) {
-    case MorrisPhasePlacing:
-      // Can only place during the placing phase
-      if (move.type !== MorrisMoveTypePlace) {
-        return false;
-      }
-      // Cannot place more than the max number of morris
-      if (getNumMorrisPlaced(game, move.color) >= game.config.numMorrisPerPlayer) {
-        return false;
-      }
-      break;
-    case MorrisPhaseMoving:
-    case MorrisPhaseFlying:
-      if (move.type !== MorrisMoveTypeMove) {
-        return false;
-      }
-      break;
-    case MorrisPhaseLasker:
-      // Can move or place
-      if (move.type === MorrisMoveTypePlace) {
-        if (getNumMorrisPlaced(game, move.color) >= game.config.numMorrisPerPlayer) {
-          return false;
-        }
-      }
-      break;
-  }
+export const placeWhite = createMovePlace(MorrisColor.WHITE);
+export const placeBlack = createMovePlace(MorrisColor.BLACK);
+export const moveWhite = createMoveMove(MorrisColor.WHITE);
+export const moveBlack = createMoveMove(MorrisColor.BLACK);
 
-  // Check the move is valid for the board
-  switch (move.type) {
-    case MorrisMoveTypePlace: {
-      // A place move must be to an empty point
-      if (!isPointEmpty(game, move.to)) {
-        return false;
-      }
-      break;
-    }
-    case MorrisMoveTypeMove: {
-      switch (phase) {
-        case MorrisPhaseMoving:
-        case MorrisPhaseLasker:
-          {
-            if (!isPointAdjacent(game, move.from, move.to)) {
-              return false;
-            }
-          }
-          break;
-        case MorrisPhaseFlying: {
-          if (!isPointEmpty(game, move.to)) {
-            return false;
-          }
-        }
-      }
-      break;
-    }
-  }
-
-  return true;
-}
-// --------------------------------------------------------------------------
-export type Err = string;
-
-// eslint-disable-next-line fp/no-nil
-export function move<P extends number, D extends number>(
-  game: MorrisGame<P, D>,
-  move: MorrisMove<P>
-): P.Either.Either<Err, MorrisGame<P, D>> {
-  if (!isValidMove(game, move)) {
-    return P.Either.left('Invalid move');
-  }
-
-  switch (move.type) {
-    case MorrisMoveTypePlace:
-      {
-        const newGame = {
-          ...game,
-          phaseIdx: game.phaseIdx,
-          board: {
-            ...game.board,
-          },
-          moves: game.moves.concat(move),
+export const execMove =
+  <P extends number, D extends number, N extends number>(move: MorrisMove<D>, n: Range1<N>) =>
+  (game: MorrisGame<P, D, N>): MorrisGame<P, D, N> => {
+    switch (move.type) {
+      case MorrisMoveType.PLACE:
+        const newGame = setPointOccupant(
+          game,
+          move.to,
+          move.color === MorrisColor.WHITE ? MorrisWhite<N>(n) : MorrisBlack<N>(n)
+        );
+        return {
+          ...newGame,
+          moves: [...newGame.moves, move],
         };
-        return P.Either.right(newGame);
+      case MorrisMoveType.MOVE: {
+        const newGame = setPointOccupant(
+          setPointEmpty(game, move.from),
+          move.to,
+          point(game.board, move.from)?.occupant as Morris<N>
+        );
+        return {
+          ...newGame,
+          moves: [...newGame.moves, move],
+        };
       }
-      break;
-    case MorrisMoveTypeMove: {
-      const newGame = {
-        ...game,
-      };
-      return P.Either.right(newGame);
     }
-  }
-}
+  };

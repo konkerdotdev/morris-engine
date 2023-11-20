@@ -1,6 +1,4 @@
-import * as P from '@konker.dev/effect-ts-prelude';
-
-import type { Range1, Tuple } from './utils';
+import type { EnumerateCoordChars, Range1, Tuple } from './utils';
 
 /**
  * Morris Engine
@@ -8,82 +6,102 @@ import type { Range1, Tuple } from './utils';
  * Author: Konrad Markus <mail@konker.dev>
  */
 
-export type EmptyMorris = 'EMPTY' & P.Brand.Brand<'EmptyMorris'>;
-export const EmptyMorris: EmptyMorris = P.pipe('EMPTY', P.Brand.nominal<EmptyMorris>());
+export enum MorrisColor {
+  EMPTY = 'o',
+  BLACK = 'B',
+  WHITE = 'W',
+}
 
-export const MorrisColorBlack = 'B';
-export const MorrisColorWhite = 'W';
-export type MorrisColor = typeof MorrisColorBlack | typeof MorrisColorWhite;
-
-export type MorrisBlack = {
-  readonly color: typeof MorrisColorBlack;
-  readonly n: number;
+export type MorrisEmpty = {
+  readonly color: typeof MorrisColor.EMPTY;
 };
-export type MorrisWhite = {
-  readonly color: typeof MorrisColorWhite;
-  readonly n: number;
+export const MorrisEmpty: MorrisEmpty = { color: MorrisColor.EMPTY };
+
+export type MorrisBlack<N extends number> = {
+  readonly color: typeof MorrisColor.BLACK;
+  readonly n: Range1<N>;
+};
+export const MorrisBlack = <N extends number>(n: Range1<N>): MorrisBlack<N> => ({
+  color: MorrisColor.BLACK,
+  n,
+});
+
+export type MorrisWhite<N extends number> = {
+  readonly color: typeof MorrisColor.WHITE;
+  readonly n: Range1<N>;
+};
+export const MorrisWhite = <N extends number>(n: Range1<N>): MorrisWhite<N> => ({
+  color: MorrisColor.WHITE,
+  n,
+});
+
+export type Morris<N extends number> = MorrisEmpty | MorrisBlack<N> | MorrisWhite<N>;
+
+export type MorrisBoardCoord<D extends number> = `${EnumerateCoordChars<D>}${Range1<D>}`;
+
+export enum MorrisLinkType {
+  HORIZONTAL = 'HORIZONTAL',
+  VERTICAL = 'VERTICAL',
+  DIAGONAL_B = 'DIAGONAL_B',
+  DIAGONAL_F = 'DIAGONAL_F',
+}
+
+export type MorrisBoardLink<D extends number> = {
+  readonly to: MorrisBoardCoord<D>;
+  readonly linkType: MorrisLinkType;
 };
 
-export type Morris = MorrisBlack | MorrisWhite | EmptyMorris;
-
-export type MorrisPoint = {
-  readonly x: number;
-  readonly y: number;
-  readonly links: ReadonlyArray<number>;
-  readonly occupant: Morris;
+export type MorrisPoint<D extends number, N extends number> = {
+  readonly coord: MorrisBoardCoord<D>;
+  readonly links: ReadonlyArray<MorrisBoardLink<D>>;
+  readonly occupant: Morris<N>;
 };
 
-export type MorrisBoard<P extends number, D extends number> = {
+export type MorrisBoard<P extends number, D extends number, N extends number> = {
   readonly type: P;
   readonly dimension: D;
-  readonly points: Tuple<MorrisPoint, P>;
+  readonly points: Tuple<MorrisPoint<D, N>, P>;
+  readonly mills: ReadonlyArray<Tuple<MorrisBoardCoord<D>, 3>>;
 };
 
-export const MorrisPhasePlacing = 'PLACING';
-export const MorrisPhaseMoving = 'MOVING';
-export const MorrisPhaseFlying = 'FLYING';
-export const MorrisPhaseLasker = 'LASKER';
-export type MorrisPhase =
-  | typeof MorrisPhasePlacing
-  | typeof MorrisPhaseMoving
-  | typeof MorrisPhaseFlying
-  | typeof MorrisPhaseLasker;
+export enum MorrisPhase {
+  PLACING = 'PLACING',
+  MOVING = 'MOVING',
+  FLYING = 'FLYING',
+  LASKER = 'LASKER',
+}
 
-export const MorrisMoveTypePlace = 'PLACE';
-export const MorrisMoveTypeMove = 'MOVE';
-// export const MorrisMoveTypeRemove = 'REMOVE';
-export type MorrisMoveType = typeof MorrisMoveTypePlace | typeof MorrisMoveTypeMove; // | typeof MorrisMoveTypeRemove;
+export enum MorrisMoveType {
+  PLACE = 'PLACE',
+  MOVE = 'MOVE',
+  //  REMOVE = 'REMOVE'
+}
 
-export type MorrisMovePlace<C extends MorrisColor, P extends number> = {
-  readonly type: typeof MorrisMoveTypePlace;
-  readonly color: C;
-  readonly to: Range1<P>;
+export type MorrisMovePlace<D extends number> = {
+  readonly type: typeof MorrisMoveType.PLACE;
+  readonly color: MorrisColor;
+  readonly to: MorrisBoardCoord<D>;
 };
 
-export type MorrisMoveMove<C extends MorrisColor, P extends number> = {
-  readonly type: typeof MorrisMoveTypeMove;
-  readonly color: C;
-  readonly from: Range1<P>;
-  readonly to: Range1<P>;
+export type MorrisMoveMove<D extends number> = {
+  readonly type: typeof MorrisMoveType.MOVE;
+  readonly color: MorrisColor;
+  readonly from: MorrisBoardCoord<D>;
+  readonly to: MorrisBoardCoord<D>;
 };
 
-// export type MorrisMoveRemove<C extends MorrisColor, P extends number> = {
-//   readonly type: typeof MorrisMoveTypeRemove;
-//   readonly color: C;
+// export type MorrisMoveRemove<P extends number> = {
+//   readonly type: typeof MorrisMoveType.REMOVE;
+//   readonly color: MorrisColor;
 //   readonly from: Range1<P>;
 // };
 
-export type MorrisMove<P extends number> =
-  | MorrisMovePlace<typeof MorrisColorBlack, P>
-  | MorrisMovePlace<typeof MorrisColorWhite, P>
-  | MorrisMoveMove<typeof MorrisColorBlack, P>
-  | MorrisMoveMove<typeof MorrisColorWhite, P>;
-// | MorrisMoveRemove<typeof MorrisColorBlack, P>
-// | MorrisMoveRemove<typeof MorrisColorWhite, P>;
+export type MorrisMove<D extends number> = MorrisMovePlace<D> | MorrisMoveMove<D>;
+// | MorrisMoveRemove<D>;
 
-export type MorrisGameConfig = {
+export type MorrisGameConfig<N extends number> = {
   readonly name: string;
-  readonly numMorrisPerPlayer: number;
+  readonly numMorrisPerPlayer: N;
   readonly flyingThreshold?: number;
   readonly numMillsToWinThreshold?: number; // 1 for 3MM
   readonly phases: ReadonlyArray<MorrisPhase>; // 3MM: [PLACING, MOVING], L: [LASKER, MOVING]
@@ -94,10 +112,10 @@ export type MorrisGameState = {
   readonly currentPhase: MorrisPhase;
 };
 
-export type MorrisGame<P extends number, D extends number> = {
-  readonly config: MorrisGameConfig;
+export type MorrisGame<P extends number, D extends number, N extends number> = {
+  readonly config: MorrisGameConfig<N>;
   readonly startColor: MorrisColor;
   readonly phaseIdx: number;
-  readonly board: MorrisBoard<P, D>;
-  readonly moves: ReadonlyArray<MorrisMove<P>>;
+  readonly board: MorrisBoard<P, D, N>;
+  readonly moves: ReadonlyArray<MorrisMove<D>>;
 };
