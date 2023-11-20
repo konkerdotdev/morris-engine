@@ -1,51 +1,48 @@
 import * as P from '@konker.dev/effect-ts-prelude';
 
-export type RulesEngine<C, F> = {
+export type RuleSet<C, F> = {
   readonly facts: F;
   readonly rules: Array<Rule<C, F>>;
 };
 
+export type RuleFunc<C, F> = (context: C, facts: F) => F[keyof F];
 export type Rule<C, F> = (context: C, facts: F) => P.Effect.Effect<never, Error, F>;
 
-export const identityRule = <C, F>(_context: C, facts: F) => P.Effect.succeed(facts);
+export const createRuleSet = <C, F>(initialFacts: F): RuleSet<C, F> => ({
+  facts: initialFacts,
+  rules: [],
+});
 
-export const createRulesEngine = <C, F>(initialFacts: F): P.Effect.Effect<never, never, RulesEngine<C, F>> =>
-  P.Effect.succeed({
-    facts: initialFacts,
-    rules: [],
-  });
-
-export const setFacts = <C, F>(rulesEngine: RulesEngine<C, F>, facts: F): RulesEngine<C, F> => ({
-  ...rulesEngine,
+export const setFacts = <C, F>(ruleSet: RuleSet<C, F>, facts: F): RuleSet<C, F> => ({
+  ...ruleSet,
   facts,
 });
 
 export const setFact =
   <F>(key: keyof F, value: F[keyof F]) =>
-  (fact: F): P.Effect.Effect<never, never, F> =>
-    P.Effect.succeed({ ...fact, [key]: value });
+  (facts: F): F => ({ ...facts, [key]: value });
 
 export const addRule =
   <C, F>(rule: Rule<C, F>) =>
-  (rulesEngine: RulesEngine<C, F>): P.Effect.Effect<never, Error, RulesEngine<C, F>> =>
-    P.Effect.succeed({
-      ...rulesEngine,
-      rules: [...rulesEngine.rules, rule],
-    });
+  (ruleSet: RuleSet<C, F>): RuleSet<C, F> => ({
+    ...ruleSet,
+    rules: [...ruleSet.rules, rule],
+  });
+
+export const addRuleFunc = <C, F>(factName: keyof F, ruleFunc: RuleFunc<C, F>) => {
+  const rule = (context: C, facts: F) =>
+    P.pipe(
+      P.Effect.succeed(facts),
+      P.Effect.map(P.pipe(ruleFunc(context, facts), (value) => setFact(factName, value)))
+    );
+  return addRule(rule);
+};
 
 export const decide =
   <C, F>(context: C) =>
-  (rulesEngine: RulesEngine<C, F>) =>
+  (ruleSet: RuleSet<C, F>): P.Effect.Effect<never, Error, RuleSet<C, F>> =>
     P.pipe(
-      rulesEngine.rules,
-      P.Effect.reduce(rulesEngine.facts, (acc, val) => val(context, acc)),
-      P.Effect.map((facts: F) => setFacts(rulesEngine, facts))
-    );
-
-export const decideEffect =
-  <C, F>(context: C) =>
-  (rulesEngine: P.Effect.Effect<never, Error, RulesEngine<C, F>>) =>
-    P.pipe(
-      rulesEngine,
-      P.Effect.flatMap((rulesEngine) => P.pipe(rulesEngine, decide(context)))
+      ruleSet.rules,
+      P.Effect.reduce(ruleSet.facts, (facts, rule) => rule(context, facts)),
+      P.Effect.map((facts: F) => setFacts(ruleSet, facts))
     );

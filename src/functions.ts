@@ -15,16 +15,16 @@ export function isTurn<P extends number, D extends number, N extends number>(
 export function point<P extends number, D extends number, N extends number>(
   board: MorrisBoard<P, D, N>,
   coord: MorrisBoardCoord<D>
-): MorrisPoint<D, N> | undefined {
+): MorrisPoint<D, N> {
   const i = board.points.findIndex((p) => p.coord === coord);
-  return board.points[i];
+  return board.points[i] as MorrisPoint<D, N>;
 }
 
 export function isPointEmpty<P extends number, D extends number, N extends number>(
   game: MorrisGame<P, D, N>,
   coord: MorrisBoardCoord<D>
 ): boolean {
-  return point(game.board, coord)?.occupant.color === MorrisColor.EMPTY;
+  return point(game.board, coord).occupant.color === MorrisColor.EMPTY;
 }
 
 export function isPointAdjacent<P extends number, D extends number, N extends number>(
@@ -32,7 +32,7 @@ export function isPointAdjacent<P extends number, D extends number, N extends nu
   from: MorrisBoardCoord<D>,
   to: MorrisBoardCoord<D>
 ): boolean {
-  return !!point(game.board, from)?.links.some((link) => link.to === to);
+  return !!point(game.board, from).links.some((link) => link.to === to);
 }
 
 export function moveMakesMill<P extends number, D extends number, N extends number>(
