@@ -1,6 +1,5 @@
-// import type * as P from '@konker.dev/effect-ts-prelude';
 import { game } from './3mm';
-import type { MENS_MORRIS_D_3 } from './boards';
+import type { MENS_MORRIS_D_3, MENS_MORRIS_N_3 } from './boards';
 import * as unit from './functions';
 import type { MorrisMove } from './index';
 import { MorrisColor, MorrisMoveType } from './index';
@@ -15,11 +14,11 @@ describe('functions', () => {
     });
   });
 
-  describe('isMill', () => {
+  describe('moveMakesMill', () => {
     it('should return false', () => {
-      const move: MorrisMove<MENS_MORRIS_D_3> = {
+      const move: MorrisMove<MENS_MORRIS_D_3, MENS_MORRIS_N_3> = {
         type: MorrisMoveType.PLACE,
-        color: MorrisColor.WHITE,
+        morris: game.morrisWhite[0],
         to: 'a2',
       };
       expect(unit.moveMakesMill(game, move)).toEqual(false);

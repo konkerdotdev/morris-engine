@@ -1,3 +1,4 @@
+import * as P from '@konker.dev/effect-ts-prelude';
 import type { Add } from 'ts-toolbelt/out/Number/Add';
 // import type { Sub } from 'ts-toolbelt/out/Number/Sub';
 
@@ -74,3 +75,24 @@ export type LengthArray<T, N extends number, R extends ReadonlyArray<T> = []> = 
 export type Tuple<TItem, TLength extends number> = [TItem, ...Array<TItem>] & { length: TLength };
 export const t0: Tuple<string, 4> = ['a', 'b', 'c', 'd'];
 export const x2 = t0[2];
+
+// --------------------------------------------------------------------------
+export const someE =
+  <R, E, A>(predicateE: (a: A) => P.Effect.Effect<R, E, boolean>) =>
+  (as: ReadonlyArray<A>): P.Effect.Effect<R, E, boolean> =>
+    P.pipe(
+      as,
+      P.ReadonlyArray.map(predicateE),
+      P.Effect.all,
+      P.Effect.map((bs) => bs.some(P.identity))
+    );
+
+export const everyE =
+  <R, E, A>(predicateE: (a: A) => P.Effect.Effect<R, E, boolean>) =>
+  (as: ReadonlyArray<A>): P.Effect.Effect<R, E, boolean> =>
+    P.pipe(
+      as,
+      P.ReadonlyArray.map(predicateE),
+      P.Effect.all,
+      P.Effect.map((bs) => bs.every(P.identity))
+    );

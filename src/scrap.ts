@@ -1,4 +1,5 @@
 /* eslint-disable fp/no-nil,fp/no-unused-expression */
+/*
 import * as P from '@konker.dev/effect-ts-prelude';
 
 import { isPointAdjacent, isPointEmpty } from './functions';
@@ -192,3 +193,5 @@ export function move<P extends number, D extends number>(
     }
   }
 }
+
+ */
