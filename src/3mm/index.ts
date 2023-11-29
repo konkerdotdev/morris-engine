@@ -1,8 +1,16 @@
 import type * as P from '@konker.dev/effect-ts-prelude';
 
-import { MENS_MORRIS_D_3, MENS_MORRIS_N_3, MENS_MORRIS_P_3 } from '../boards';
+import { boardHash } from '../functions';
 import type { MorrisBoard, MorrisGame, MorrisGameConfig } from '../index';
 import { EmptyPoint, MorrisBlack, MorrisColor, MorrisLinkType, MorrisPhase, MorrisWhite } from '../index';
+
+/*
+export const MENS_MORRIS_P_3 = 9;
+export type MENS_MORRIS_P_3 = typeof MENS_MORRIS_P_3;
+export const MENS_MORRIS_D_3 = 3;
+export type MENS_MORRIS_D_3 = typeof MENS_MORRIS_D_3;
+export const MENS_MORRIS_N_3 = 3;
+export type MENS_MORRIS_N_3 = typeof MENS_MORRIS_N_3;
 
 export const PP = MENS_MORRIS_P_3;
 export type PP = MENS_MORRIS_P_3;
@@ -10,6 +18,13 @@ export const DD = MENS_MORRIS_D_3;
 export type DD = MENS_MORRIS_D_3;
 export const NN = MENS_MORRIS_N_3;
 export type NN = MENS_MORRIS_N_3;
+*/
+export const PP = 9;
+export type PP = typeof PP;
+export const DD = 3;
+export type DD = typeof DD;
+export const NN = 3;
+export type NN = typeof NN;
 
 // --------------------------------------------------------------------------
 /*
@@ -121,7 +136,7 @@ export const board: P.LazyArg<Board> = () => ({
       occupant: EmptyPoint,
     },
   ],
-  mills: [
+  millCandidates: [
     ['a1', 'b1', 'c1'],
     ['a2', 'b2', 'c2'],
     ['a3', 'b3', 'c3'],
@@ -136,6 +151,8 @@ export const board: P.LazyArg<Board> = () => ({
 export const config: MorrisGameConfig<NN> = {
   name: '3 Mens Morris',
   numMorrisPerPlayer: 3,
+  numMoveCyclesForDraw: 3,
+  numMillsToWinThreshold: 1,
   phases: [MorrisPhase.PLACING, MorrisPhase.MOVING, MorrisPhase.GAME_OVER],
 };
 
@@ -145,8 +162,10 @@ export const game: Game = {
   startColor: MorrisColor.WHITE,
   curMoveColor: MorrisColor.WHITE,
   phaseIdx: 0,
+  millCounter: 0,
   morrisWhite: [MorrisWhite(1), MorrisWhite(2), MorrisWhite(3)],
   morrisBlack: [MorrisBlack(1), MorrisBlack(2), MorrisBlack(3)],
   board: board(),
   moves: [],
+  positions: [boardHash(board())],
 };

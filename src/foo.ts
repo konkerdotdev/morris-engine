@@ -7,8 +7,9 @@ import { game } from './3mm';
 import { render } from './3mm/render';
 import { Rules3MM } from './3mm/rules';
 import * as M from './functions';
-import type { MorrisGame } from './index';
-import { RulesImpl } from './rules';
+import type { MorrisGameTick } from './index';
+import { makeMorrisGameTick } from './index';
+import { INITIAL_MORRIS_GAME_FACTS, RulesImpl } from './rules';
 
 // --------------------------------------------------------------------------
 // const prog1 = P.pipe(
@@ -58,42 +59,55 @@ import { RulesImpl } from './rules';
 // );
 
 // --------------------------------------------------------------------------
-export function disp(game: P.Effect.Effect<RulesImpl, Error, MorrisGame<PP, DD, NN>>) {
+export function dispE(gameTick: P.Effect.Effect<RulesImpl, Error, MorrisGameTick<PP, DD, NN>>) {
   return P.pipe(
-    game,
+    gameTick,
     P.Effect.matchEffect({
       onFailure: () => P.Effect.succeed(P.Console.log('Invalid move')),
-      onSuccess: () => P.pipe(game, P.flow(P.Effect.tap(render), P.Effect.flatMap(P.Console.log))),
+      onSuccess: (gameTick) => P.pipe(gameTick.game, P.flow(render, P.Console.log)),
     }),
-    P.Effect.flatMap((_) => game)
+    P.Effect.flatMap((_) => gameTick)
   );
-  // return game;
+}
+
+export function disp(gameTick: MorrisGameTick<PP, DD, NN>) {
+  return P.pipe(
+    gameTick.game,
+    render,
+    P.Effect.flatMap((s) => P.Console.log(`${s}\n${gameTick.message}`))
+  );
 }
 
 const prog3 = P.pipe(
-  P.Effect.succeed(game),
-  P.Effect.flatMap(M.tick(M.createMovePlace(game.morrisWhite[0], 'a1'))),
-  (x) => x,
-  P.Effect.tap((game) => P.pipe(render(game), (x) => x, P.Effect.tap(P.Console.log))),
-  // P.Effect.orElseSucceed((game) => game))
+  makeMorrisGameTick<PP, DD, NN>(game, INITIAL_MORRIS_GAME_FACTS),
+  P.Effect.tapDefect((e) => P.Console.log(e._tag)),
 
-  // P.Effect.tap(P.Effect.match({ onSuccess: P.pipe(render, P.Effect.flatMap(P.Console.log)) }))
-  // P.Effect.flatMap(M.tick<PP, DD, NN>(M.createMovePlace(game.morrisBlack[0], 'a3'))),
-  // disp,
-  // (x) => x,
-  P.Effect.flatMap(M.tick<PP, DD, NN>(M.createMovePlace(game.morrisWhite[1]!, 'c2'))),
-  P.Effect.tap((game) => P.pipe(render(game), (x) => x, P.Effect.tap(P.Console.log))),
-  P.Effect.tapError((e) => P.Console.log(e.message)),
-  P.Effect.tapDefect((e) => P.Console.log(e._tag))
-  // disp,
-  // P.Effect.flatMap(M.tick<PP, DD, NN>(M.createMovePlace(game.morrisWhite[1]!, 'b3'))),
-  // disp,
-  // P.Effect.flatMap(M.tick<PP, DD, NN>(M.createMovePlace(game.morrisWhite[2]!, 'b1'))),
-  // disp,
-  // P.Effect.flatMap(M.tick<PP, DD, NN>(M.createMovePlace(game.morrisBlack[2]!, 'b2'))),
-  // disp,
-  // P.Effect.flatMap(M.tick<PP, DD, NN>(M.createMoveMove('c2', 'c1'))),
-  // disp
+  P.Effect.flatMap(M.tick(M.createMovePlace(game.morrisWhite[0], 'a1'))),
+  P.Effect.tap(disp),
+
+  P.Effect.flatMap(M.tick(M.createMovePlace(game.morrisBlack[0]!, 'c2'))),
+  P.Effect.tap(disp),
+
+  P.Effect.flatMap(M.tick<PP, DD, NN>(M.createMovePlace(game.morrisWhite[1]!, 'b3'))),
+  P.Effect.tap(disp),
+
+  P.Effect.flatMap(M.tick(M.createMovePlace(game.morrisBlack[1]!, 'c3'))),
+  P.Effect.tap(disp),
+
+  P.Effect.flatMap(M.tick<PP, DD, NN>(M.createMovePlace(game.morrisWhite[2]!, 'b1'))),
+  P.Effect.tap(disp),
+
+  P.Effect.flatMap(M.tick<PP, DD, NN>(M.createMovePlace(game.morrisBlack[2]!, 'b2'))),
+  P.Effect.tap(disp),
+
+  P.Effect.flatMap(M.tick<PP, DD, NN>(M.createMoveMove('b3', 'a3'))),
+  P.Effect.tap(disp),
+
+  P.Effect.flatMap(M.tick<PP, DD, NN>(M.createMoveMove('b2', 'c1'))),
+  P.Effect.tap(disp),
+
+  P.Effect.flatMap(M.tick<PP, DD, NN>(M.createMoveMove('a1', 'b2'))),
+  P.Effect.tap(disp)
 );
 
 // --------------------------------------------------------------------------

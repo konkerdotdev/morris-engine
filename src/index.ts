@@ -1,17 +1,32 @@
 import * as P from '@konker.dev/effect-ts-prelude';
 
-import type { RulesImpl } from './rules';
+import type { MorrisGameFacts } from './rules';
 import type { EnumerateCoordChars, Range1, Tuple } from './utils';
 
 /**
  * Morris Engine
  *
  * Author: Konrad Markus <mail@konker.dev>
+ *
+ * P: ...
+ * D: ...
+ * N: number of morrae, e.g. 3mm -> 3
  */
 
-export const EmptyPointS = P.Schema.struct({ _tag: P.Schema.literal('EMPTY') }).pipe(P.Schema.brand('EmptyPoint'));
+// By inviolate definition since the Assyrians, a mill is 3 in a row.
+// Most likely if you are thinking of changing this in some way,
+// you are missing something, that's why it's named "three"
+export const THREE = 3;
+export type THREE = typeof THREE;
+
+export const EMPTY = 'o';
+export type EMPTY = typeof EMPTY;
+
+export const GAME_TICK_MESSAGE_OK = 'OK';
+
+export const EmptyPointS = P.Schema.struct({ _tag: P.Schema.literal(EMPTY) }).pipe(P.Schema.brand('EmptyPoint'));
 export type EmptyPoint = P.Schema.Schema.To<typeof EmptyPointS>;
-export const EmptyPoint = P.pipe({ _tag: 'EMPTY' }, P.Schema.decodeSync(EmptyPointS));
+export const EmptyPoint = P.pipe({ _tag: EMPTY }, P.Schema.decodeSync(EmptyPointS));
 export const isEmptyPoint = (x: unknown): x is EmptyPoint => P.pipe(x, P.Schema.is(EmptyPointS));
 
 export enum MorrisColor {
@@ -66,11 +81,13 @@ export type MorrisBoardPoint<D extends number, N extends number> = {
   readonly occupant: MorrisBoardPointOccupant<N>;
 };
 
+export type MillCandidate<D extends number> = Tuple<MorrisBoardCoord<D>, THREE>;
+
 export type MorrisBoard<P extends number, D extends number, N extends number> = {
   readonly type: P;
   readonly dimension: D;
   readonly points: Tuple<MorrisBoardPoint<D, N>, P>;
-  readonly mills: ReadonlyArray<Tuple<MorrisBoardCoord<D>, 3>>;
+  readonly millCandidates: ReadonlyArray<MillCandidate<D>>;
 };
 
 export enum MorrisPhase {
@@ -78,7 +95,7 @@ export enum MorrisPhase {
   MOVING = 'MOVING',
   FLYING = 'FLYING',
   LASKER = 'LASKER',
-  'GAME_OVER' = 'GAME_OVER',
+  GAME_OVER = 'GAME_OVER',
 }
 
 export enum MorrisMoveType {
@@ -110,6 +127,8 @@ export type MorrisMove<D extends number, N extends number> =
   | MorrisMoveMove<D>
   | MorrisMoveRemove<D, N>;
 
+export type MorrisPositiveMove<D extends number, N extends number> = MorrisMovePlace<D, N> | MorrisMoveMove<D>;
+
 // eslint-disable-next-line fp/no-nil
 export function strMorrisMove<D extends number, N extends number>(move: MorrisMove<D, N>): string {
   switch (move.type) {
@@ -127,26 +146,40 @@ export type MorrisGameConfig<N extends number> = {
   readonly numMorrisPerPlayer: N;
   readonly flyingThreshold?: number;
   readonly numMillsToWinThreshold?: number; // 1 for 3MM
+  readonly numMovesWithoutMillForDraw?: number;
+  readonly numMoveCyclesForDraw: number;
   readonly phases: ReadonlyArray<MorrisPhase>; // 3MM: [PLACING, MOVING], L: [LASKER, MOVING]
 };
 
+/* FIXME: remove?
 export type MorrisGameState = {
   readonly currentTurn: MorrisColor;
   readonly currentPhase: MorrisPhase;
 };
+*/
 
 export type MorrisGame<P extends number, D extends number, N extends number> = {
   readonly config: MorrisGameConfig<N>;
   readonly startColor: MorrisColor;
   readonly curMoveColor: MorrisColor;
   readonly phaseIdx: number;
+  readonly millCounter: number;
   readonly morrisWhite: Tuple<MorrisWhite<N>, N>;
   readonly morrisBlack: Tuple<MorrisBlack<N>, N>;
   readonly board: MorrisBoard<P, D, N>;
+  // FIXME: make stricter type?
+  readonly positions: ReadonlyArray<string>;
   readonly moves: ReadonlyArray<MorrisMove<D, N>>;
 };
 
-export type MorrisGameTick<P extends number, D extends number, N extends number> = P.Effect.Effect<RulesImpl, never>;
-// export type MorrisGameTick<P extends number, D extends number, N extends number> = {
-//   readonly tick: ()
-// };
+export type MorrisGameTick<P extends number, D extends number, N extends number> = {
+  readonly game: MorrisGame<P, D, N>;
+  readonly facts: MorrisGameFacts;
+  readonly message: string;
+};
+
+export const makeMorrisGameTick = <P extends number, D extends number, N extends number>(
+  game: MorrisGame<any, any, any>,
+  facts: MorrisGameFacts,
+  message: string = GAME_TICK_MESSAGE_OK
+): P.Effect.Effect<never, never, MorrisGameTick<P, D, N>> => P.Effect.succeed({ game, facts, message });

@@ -14,14 +14,20 @@ describe('functions', () => {
     });
   });
 
-  describe('moveMakesMill', () => {
+  describe('unsafe_moveMakesMill', () => {
     it('should return false', () => {
       const move: MorrisMove<MENS_MORRIS_D_3, MENS_MORRIS_N_3> = {
         type: MorrisMoveType.PLACE,
         morris: game.morrisWhite[0],
         to: 'a2',
       };
-      expect(unit.moveMakesMill(game, move)).toEqual(false);
+      expect(unit.unsafe_moveMakesMill(game, move)).toEqual(false);
+    });
+  });
+
+  describe('boardHash', () => {
+    it('should work as expected', () => {
+      expect(unit.boardHash(game.board)).toEqual('ooooooooo');
     });
   });
 });

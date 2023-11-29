@@ -5,6 +5,7 @@ export type MENS_MORRIS_D_3 = typeof MENS_MORRIS_D_3;
 export const MENS_MORRIS_N_3 = 3;
 export type MENS_MORRIS_N_3 = typeof MENS_MORRIS_N_3;
 
+/*
 export const MENS_MORRIS_P_6 = 16;
 export type MENS_MORRIS_P_6 = typeof MENS_MORRIS_P_6;
 export const MENS_MORRIS_D_6 = 5;
@@ -25,6 +26,7 @@ export const MENS_MORRIS_D_12 = 7;
 export type MENS_MORRIS_D_12 = typeof MENS_MORRIS_D_12;
 export const MENS_MORRIS_N_12 = 12;
 export type MENS_MORRIS_N_12 = typeof MENS_MORRIS_N_12;
+*/
 
 /*
 3 o---o---o
