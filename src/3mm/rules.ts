@@ -79,24 +79,14 @@ export const Rules3MM = <P extends number, D extends number, N extends number>()
       P.pipe(
         ruleSet,
         R.addRuleFunc(
-          'isNextTurnWhite',
-          (_c: MorrisContext<P, D, N>, f: MorrisGameFacts) => R.val(f.isTurnBlack) && !R.val(f.moveMakesMill),
-          'Next turn is White: this turn is black and no mill will be made'
-        ),
-        R.addRuleFunc(
-          'isNextTurnBlack',
-          (_c: MorrisContext<P, D, N>, f: MorrisGameFacts) => R.val(f.isTurnWhite) && !R.val(f.moveMakesMill),
-          'Next turn is Black: this turn is white and no mill will be made'
-        ),
-        R.addRuleFunc(
-          'moveIsCorrectColor',
+          'isMoveCorrectColor',
           (c: MorrisContext<P, D, N>, f: MorrisGameFacts) =>
             (R.val(f.isTurnWhite) && unsafe_moveColor(c.game, c.move) === MorrisColor.WHITE) ||
             (R.val(f.isTurnBlack) && unsafe_moveColor(c.game, c.move) === MorrisColor.BLACK),
           'The move is of the correct color'
         ),
         R.addRuleFunc(
-          'moveIsCorrectType',
+          'isMoveCorrectType',
           (c: MorrisContext<P, D, N>, f: MorrisGameFacts) =>
             (R.val(f.isRemoveMode) && c.move.type === MorrisMoveType.REMOVE) ||
             (!R.val(f.isRemoveMode) && R.val(f.isPlacingPhase) && c.move.type === MorrisMoveType.PLACE) ||
@@ -109,16 +99,16 @@ export const Rules3MM = <P extends number, D extends number, N extends number>()
         R.addRuleFunc(
           'isMovePossibleForPlace',
           (c: MorrisContext<P, D, N>, _f: MorrisGameFacts) =>
-            c.move.type === MorrisMoveType.PLACE && unsafe_isPointEmpty(c.game, c.move.to),
+            c.move.type === MorrisMoveType.PLACE && unsafe_isPointEmpty(c.game.board, c.move.to),
           'The move is a place move which is possible'
         ),
         R.addRuleFunc(
           'isMovePossibleForMove',
           (c: MorrisContext<P, D, N>, _f: MorrisGameFacts) =>
             c.move.type === MorrisMoveType.MOVE &&
-            !unsafe_isPointEmpty(c.game, c.move.from) &&
-            unsafe_isPointEmpty(c.game, c.move.to) &&
-            unsafe_isPointAdjacent(c.game, c.move.from, c.move.to),
+            !unsafe_isPointEmpty(c.game.board, c.move.from) &&
+            unsafe_isPointEmpty(c.game.board, c.move.to) &&
+            unsafe_isPointAdjacent(c.game.board, c.move.from, c.move.to),
           'The move is a move move which is possible'
         ),
         R.addRuleFunc(
@@ -130,7 +120,9 @@ export const Rules3MM = <P extends number, D extends number, N extends number>()
         R.addRuleFunc(
           'isMovePossibleForFlying',
           (c: MorrisContext<P, D, N>, f: MorrisGameFacts) =>
-            R.val(f.isFlyingPhase) && c.move.type === MorrisMoveType.MOVE && unsafe_isPointEmpty(c.game, c.move.to),
+            R.val(f.isFlyingPhase) &&
+            c.move.type === MorrisMoveType.MOVE &&
+            unsafe_isPointEmpty(c.game.board, c.move.to),
           'The move is a flying move which is possible'
         ),
         R.addRuleFunc(
@@ -145,7 +137,7 @@ export const Rules3MM = <P extends number, D extends number, N extends number>()
         R.addRuleFunc(
           'isValidMove',
           (c: MorrisContext<P, D, N>, f: MorrisGameFacts) =>
-            !c.game.gameOver && R.val(f.moveIsCorrectColor) && R.val(f.moveIsCorrectType) && R.val(f.isMovePossible),
+            !c.game.gameOver && R.val(f.isMoveCorrectColor) && R.val(f.isMoveCorrectType) && R.val(f.isMovePossible),
           'The move is valid: not game over; correct color; correct type for phase; the move is possible'
         )
       ),
@@ -153,18 +145,28 @@ export const Rules3MM = <P extends number, D extends number, N extends number>()
       P.pipe(
         ruleSet,
         R.addRuleFunc(
+          'moveMakesNextTurnWhite',
+          (_c: MorrisContext<P, D, N>, f: MorrisGameFacts) => R.val(f.isTurnBlack) && !R.val(f.moveMakesMill),
+          'Next turn is White: this turn is black and no mill will be made'
+        ),
+        R.addRuleFunc(
+          'moveMakesNextTurnBlack',
+          (_c: MorrisContext<P, D, N>, f: MorrisGameFacts) => R.val(f.isTurnWhite) && !R.val(f.moveMakesMill),
+          'Next turn is Black: this turn is white and no mill will be made'
+        ),
+        R.addRuleFunc(
           'moveMakesDrawCycleLimit',
-          (_c: MorrisContext<P, D, N>, f: MorrisGameFacts) => R.val(f.moveMakesDraw) && false,
+          (_c: MorrisContext<P, D, N>, f: MorrisGameFacts) => R.val(f.isValidMove) && false,
           'The move will result in a draw due to the move cycle limit'
         ),
         R.addRuleFunc(
           'moveMakesDrawNoValidMove',
-          (_c: MorrisContext<P, D, N>, f: MorrisGameFacts) => R.val(f.moveMakesDraw) && false,
+          (_c: MorrisContext<P, D, N>, f: MorrisGameFacts) => R.val(f.isValidMove) && false,
           'The move will result in a draw due to no valid moves for the current player'
         ),
         R.addRuleFunc(
           'moveMakesDrawNoMillsLimit',
-          (_c: MorrisContext<P, D, N>, f: MorrisGameFacts) => R.val(f.moveMakesDraw) && false,
+          (_c: MorrisContext<P, D, N>, f: MorrisGameFacts) => R.val(f.isValidMove) && false,
           'The move will result in a draw due to move with no mills limit'
         ),
         R.addRuleFunc(
@@ -177,26 +179,25 @@ export const Rules3MM = <P extends number, D extends number, N extends number>()
           'The move will result in a draw'
         ),
         R.addRuleFunc(
-          'isWinningMoveWhite',
+          'moveMakesWinWhite',
           (c: MorrisContext<P, D, N>, f: MorrisGameFacts) =>
             R.val(f.isValidMove) && R.val(f.moveMakesMill) && unsafe_moveColor(c.game, c.move) === MorrisColor.WHITE,
           'The move is a winning move for White'
         ),
         R.addRuleFunc(
-          'isWinningMoveBlack',
+          'moveMakesWinBlack',
           (c: MorrisContext<P, D, N>, f: MorrisGameFacts) =>
             R.val(f.isValidMove) && R.val(f.moveMakesMill) && unsafe_moveColor(c.game, c.move) === MorrisColor.BLACK,
           'The move is a winning move for Black'
         ),
         R.addRuleFunc(
-          'isWinningMove',
-          (_c: MorrisContext<P, D, N>, f: MorrisGameFacts) =>
-            R.val(f.isWinningMoveWhite) || R.val(f.isWinningMoveBlack),
+          'moveMakesWin',
+          (_c: MorrisContext<P, D, N>, f: MorrisGameFacts) => R.val(f.moveMakesWinWhite) || R.val(f.moveMakesWinBlack),
           'The move is a winning move: either for White or Black'
         ),
         R.addRuleFunc(
           'moveMakesGameOver',
-          (_c: MorrisContext<P, D, N>, f: MorrisGameFacts) => R.val(f.moveMakesDraw) || R.val(f.isWinningMove),
+          (_c: MorrisContext<P, D, N>, f: MorrisGameFacts) => R.val(f.moveMakesDraw) || R.val(f.moveMakesWin),
           'The move will result in game over'
         )
       )

@@ -3,6 +3,7 @@ import type * as P from '@konker.dev/effect-ts-prelude';
 import { boardHash } from '../functions';
 import type { MorrisBoard, MorrisGame, MorrisGameConfig } from '../index';
 import { EmptyPoint, MorrisBlack, MorrisColor, MorrisLinkType, MorrisPhase, MorrisWhite } from '../index';
+import { INITIAL_MORRIS_GAME_FACTS } from '../rules';
 
 /*
 export const MENS_MORRIS_P_3 = 9;
@@ -153,6 +154,8 @@ export const config: MorrisGameConfig<NN> = {
   numMorrisPerPlayer: 3,
   numMoveCyclesForDraw: 3,
   numMillsToWinThreshold: 1,
+  flyingThreshold: 3,
+  numMovesWithoutMillForDraw: 50,
   phases: [MorrisPhase.PLACING, MorrisPhase.MOVING],
 };
 
@@ -161,6 +164,7 @@ export const game: Game = {
   config,
   startColor: MorrisColor.WHITE,
   curMoveColor: MorrisColor.WHITE,
+  gameOver: false,
   phaseIdx: 0,
   lastMillCounter: 0,
   morrisWhite: [MorrisWhite(1), MorrisWhite(2), MorrisWhite(3)],
@@ -168,4 +172,5 @@ export const game: Game = {
   board: board(),
   moves: [],
   positions: [boardHash(board())],
+  facts: INITIAL_MORRIS_GAME_FACTS,
 };
