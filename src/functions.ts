@@ -207,6 +207,59 @@ export function moveMakesMill<P extends number, D extends number, N extends numb
   );
 }
 
+export function countPositionRepeats<P extends number, D extends number, N extends number>(
+  game: MorrisGame<P, D, N>,
+  position: string
+): number {
+  return game.positions.filter((p) => p === position).length;
+}
+
+export function countValidMovesForColor<P extends number, D extends number, N extends number>(
+  board: MorrisBoard<P, D, N>,
+  facts: MorrisGameFacts,
+  color: MorrisColor
+): number {
+  // In Lasker phase, the number of moves is moves + place
+  if (facts.isLaskerPhase) {
+    const emptyPoints = board.points.filter((p) => !isMorris(p.occupant));
+    const morrisPoints = board.points.filter((p) => isMorris(p.occupant) && p.occupant.color === color);
+
+    const numMoveMoves = morrisPoints.reduce(
+      (acc, p) => acc + emptyPoints.filter((ep) => unsafe_isPointAdjacent(board, p.coord, ep.coord)).length,
+      0
+    );
+
+    return numMoveMoves + emptyPoints.length;
+  }
+
+  // In placing phase, just return the number of empty points
+  if (facts.isPlacingPhase) {
+    const emptyPoints = board.points.filter((p) => !isMorris(p.occupant));
+
+    return emptyPoints.length;
+  }
+
+  // In flying phase, return the number of empty points for each morris[color]
+  if (facts.isFlyingPhase) {
+    const emptyPoints = board.points.filter((p) => !isMorris(p.occupant));
+    const morrisPoints = board.points.filter((p) => isMorris(p.occupant) && p.occupant.color === color);
+
+    return emptyPoints.length * morrisPoints.length;
+  }
+
+  // In moving phase, for each morris[color] on the board, find all adjacent empty points
+  if (facts.isMovingPhase) {
+    const emptyPoints = board.points.filter((p) => !isMorris(p.occupant));
+    const morrisPoints = board.points.filter((p) => isMorris(p.occupant) && p.occupant.color === color);
+
+    return morrisPoints.reduce(
+      (acc, p) => acc + emptyPoints.filter((ep) => unsafe_isPointAdjacent(board, p.coord, ep.coord)).length,
+      0
+    );
+  }
+  return 0;
+}
+
 // --------------------------------------------------------------------------
 export function boardHash<P extends number, D extends number, N extends number>(board: MorrisBoard<P, D, N>): string {
   return board.points.reduce((acc, val) => `${acc}${isMorris(val.occupant) ? val.occupant.color : EMPTY}`, '');
@@ -231,6 +284,23 @@ export function setPointEmpty<P extends number, D extends number, N extends numb
   return setPointOccupant(board, coord, EmptyPoint);
 }
 
+export function unsafe_boardApplyMove<P extends number, D extends number, N extends number>(
+  board: MorrisBoard<P, D, N>,
+  move: MorrisMove<D, N>
+): MorrisBoard<P, D, N> {
+  switch (move.type) {
+    case MorrisMoveType.PLACE:
+      return setPointOccupant(board, move.to, move.morris);
+
+    case MorrisMoveType.MOVE:
+      return setPointOccupant(setPointEmpty(board, move.from), move.to, unsafe_point(board, move.from).occupant);
+
+    case MorrisMoveType.REMOVE:
+      // TODO
+      return board;
+  }
+}
+
 // --------------------------------------------------------------------------
 export const createMovePlace = <D extends number, N extends number>(
   morris: Morris<N>,
@@ -249,23 +319,6 @@ export const createMoveMove = <D extends number, N extends number>(
   from,
   to,
 });
-
-export function unsafe_boardApplyMove<P extends number, D extends number, N extends number>(
-  board: MorrisBoard<P, D, N>,
-  move: MorrisMove<D, N>
-): MorrisBoard<P, D, N> {
-  switch (move.type) {
-    case MorrisMoveType.PLACE:
-      return setPointOccupant(board, move.to, move.morris);
-
-    case MorrisMoveType.MOVE:
-      return setPointOccupant(setPointEmpty(board, move.from), move.to, unsafe_point(board, move.from).occupant);
-
-    case MorrisMoveType.REMOVE:
-      // TODO
-      return board;
-  }
-}
 
 export const unsafe_execMove =
   <P extends number, D extends number, N extends number>(move: MorrisMove<D, N>, facts: MorrisGameFacts) =>

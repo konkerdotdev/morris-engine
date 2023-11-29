@@ -1,7 +1,11 @@
 import * as P from '@konker.dev/effect-ts-prelude';
 
 import {
+  boardHash,
+  countPositionRepeats,
+  countValidMovesForColor,
   numMorris,
+  unsafe_boardApplyMove,
   unsafe_isPointAdjacent,
   unsafe_isPointEmpty,
   unsafe_moveColor,
@@ -13,13 +17,13 @@ import type { MorrisContext, MorrisGameFacts } from '../rules';
 import { INITIAL_MORRIS_GAME_FACTS } from '../rules';
 
 // FIXME: pipe limit!
+// FIXME: convert to array of rules which are reduced?
 export const Rules3MM = <P extends number, D extends number, N extends number>() =>
   P.pipe(
     R.createRuleSet(INITIAL_MORRIS_GAME_FACTS),
     (ruleSet) =>
       P.pipe(
         ruleSet,
-        // Placing phase if less than 6 MorrisMoveTypePlace moves have been made
         R.addRuleFunc(
           'isFirstMove',
           (c: MorrisContext<P, D, N>, _f: MorrisGameFacts) => c.game.moves.length === 0,
@@ -36,8 +40,14 @@ export const Rules3MM = <P extends number, D extends number, N extends number>()
           'Current turn is Black'
         ),
         R.addRuleFunc(
+          'isLaskerPhase',
+          (c: MorrisContext<P, D, N>, _f: MorrisGameFacts) => c.game.config.phases[0] === MorrisPhase.LASKER,
+          'Is in Lasker phase'
+        ),
+        R.addRuleFunc(
           'isPlacingPhase',
-          (c: MorrisContext<P, D, N>, _f: MorrisGameFacts) =>
+          (c: MorrisContext<P, D, N>, f: MorrisGameFacts) =>
+            !R.val(f.isLaskerPhase) &&
             c.game.moves.filter((i) => i.type === MorrisMoveType.PLACE).length < c.game.config.numMorrisPerPlayer * 2,
           'Is in placing phase'
         ),
@@ -46,11 +56,6 @@ export const Rules3MM = <P extends number, D extends number, N extends number>()
           (c: MorrisContext<P, D, N>, _f: MorrisGameFacts) =>
             c.game.moves.filter((i) => i.type === MorrisMoveType.PLACE).length === c.game.config.numMorrisPerPlayer * 2,
           'Is in moving phase'
-        ),
-        R.addRuleFunc(
-          'isLaskerPhase',
-          (c: MorrisContext<P, D, N>, _f: MorrisGameFacts) => c.game.config.phases[0] === MorrisPhase.LASKER,
-          'Is in Lasker phase'
         ),
         R.addRuleFunc(
           'isFlyingPhase',
@@ -155,39 +160,53 @@ export const Rules3MM = <P extends number, D extends number, N extends number>()
           'Next turn is Black: this turn is white and no mill will be made'
         ),
         R.addRuleFunc(
-          'moveMakesDrawCycleLimit',
-          (_c: MorrisContext<P, D, N>, f: MorrisGameFacts) => R.val(f.isValidMove) && false,
+          'moveMakesDrawPositionRepeatLimit',
+          (c: MorrisContext<P, D, N>, f: MorrisGameFacts) =>
+            R.val(f.isValidMove) &&
+            countPositionRepeats(c.game, boardHash(unsafe_boardApplyMove(c.game.board, c.move))) >=
+              c.game.config.numPositionRepeatsForDraw,
           'The move will result in a draw due to the move cycle limit'
         ),
         R.addRuleFunc(
-          'moveMakesDrawNoValidMove',
-          (_c: MorrisContext<P, D, N>, f: MorrisGameFacts) => R.val(f.isValidMove) && false,
-          'The move will result in a draw due to no valid moves for the current player'
-        ),
-        R.addRuleFunc(
           'moveMakesDrawNoMillsLimit',
-          (_c: MorrisContext<P, D, N>, f: MorrisGameFacts) => R.val(f.isValidMove) && false,
+          (c: MorrisContext<P, D, N>, f: MorrisGameFacts) =>
+            R.val(f.isValidMove) && c.game.lastMillCounter + 1 >= c.game.config.numMovesWithoutMillForDraw,
           'The move will result in a draw due to move with no mills limit'
         ),
         R.addRuleFunc(
           'moveMakesDraw',
           (_c: MorrisContext<P, D, N>, f: MorrisGameFacts) =>
-            R.val(f.isValidMove) &&
-            (R.val(f.moveMakesDrawCycleLimit) ||
-              R.val(f.moveMakesDrawNoValidMove) ||
-              R.val(f.moveMakesDrawNoMillsLimit)),
+            R.val(f.isValidMove) && (R.val(f.moveMakesDrawPositionRepeatLimit) || R.val(f.moveMakesDrawNoMillsLimit)),
           'The move will result in a draw'
         ),
         R.addRuleFunc(
-          'moveMakesWinWhite',
+          'moveMakesNoValidMoveWhite',
           (c: MorrisContext<P, D, N>, f: MorrisGameFacts) =>
-            R.val(f.isValidMove) && R.val(f.moveMakesMill) && unsafe_moveColor(c.game, c.move) === MorrisColor.WHITE,
+            R.val(f.isValidMove) &&
+            countValidMovesForColor(unsafe_boardApplyMove(c.game.board, c.move), c.game.facts, MorrisColor.WHITE) === 0,
+          'The move will result in no valid moves for white'
+        ),
+        R.addRuleFunc(
+          'moveMakesNoValidMoveBlack',
+          (c: MorrisContext<P, D, N>, f: MorrisGameFacts) =>
+            R.val(f.isValidMove) &&
+            countValidMovesForColor(unsafe_boardApplyMove(c.game.board, c.move), c.game.facts, MorrisColor.BLACK) === 0,
+          'The move will result in no valid moves for black'
+        ),
+        R.addRuleFunc(
+          'moveMakesWinWhite',
+          (_c: MorrisContext<P, D, N>, f: MorrisGameFacts) =>
+            R.val(f.isValidMove) &&
+            ((R.val(f.moveMakesMill) && R.val(f.isTurnWhite)) ||
+              (R.val(f.moveMakesNoValidMoveBlack) && R.val(f.moveMakesNextTurnBlack))),
           'The move is a winning move for White'
         ),
         R.addRuleFunc(
           'moveMakesWinBlack',
-          (c: MorrisContext<P, D, N>, f: MorrisGameFacts) =>
-            R.val(f.isValidMove) && R.val(f.moveMakesMill) && unsafe_moveColor(c.game, c.move) === MorrisColor.BLACK,
+          (_c: MorrisContext<P, D, N>, f: MorrisGameFacts) =>
+            R.val(f.isValidMove) &&
+            ((R.val(f.moveMakesMill) && R.val(f.isTurnBlack)) ||
+              (R.val(f.moveMakesNoValidMoveWhite) && R.val(f.moveMakesNextTurnWhite))),
           'The move is a winning move for Black'
         ),
         R.addRuleFunc(

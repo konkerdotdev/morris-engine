@@ -176,7 +176,6 @@ export function move<P extends number, D extends number>(
       {
         const newGame = {
           ...game,
-          phaseIdx: game.phaseIdx,
           board: {
             ...game.board,
           },

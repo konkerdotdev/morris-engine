@@ -152,7 +152,7 @@ export const board: P.LazyArg<Board> = () => ({
 export const config: MorrisGameConfig<NN> = {
   name: '3 Mens Morris',
   numMorrisPerPlayer: 3,
-  numMoveCyclesForDraw: 3,
+  numPositionRepeatsForDraw: 3,
   numMillsToWinThreshold: 1,
   flyingThreshold: 3,
   numMovesWithoutMillForDraw: 50,
@@ -165,7 +165,6 @@ export const game: Game = {
   startColor: MorrisColor.WHITE,
   curMoveColor: MorrisColor.WHITE,
   gameOver: false,
-  phaseIdx: 0,
   lastMillCounter: 0,
   morrisWhite: [MorrisWhite(1), MorrisWhite(2), MorrisWhite(3)],
   morrisBlack: [MorrisBlack(1), MorrisBlack(2), MorrisBlack(3)],

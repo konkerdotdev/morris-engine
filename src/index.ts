@@ -146,7 +146,7 @@ export type MorrisGameConfig<N extends number> = {
   readonly flyingThreshold: number;
   readonly numMillsToWinThreshold: number; // 1 for 3MM
   readonly numMovesWithoutMillForDraw: number;
-  readonly numMoveCyclesForDraw: number;
+  readonly numPositionRepeatsForDraw: number;
   readonly phases: ReadonlyArray<MorrisPhase>; // 3MM: [PLACING, MOVING], L: [LASKER, MOVING]
 };
 
@@ -162,7 +162,6 @@ export type MorrisGame<P extends number, D extends number, N extends number> = {
   readonly startColor: MorrisColor;
   readonly curMoveColor: MorrisColor;
   readonly gameOver: boolean;
-  readonly phaseIdx: number;
   readonly lastMillCounter: number;
   readonly morrisWhite: Tuple<MorrisWhite<N>, N>;
   readonly morrisBlack: Tuple<MorrisBlack<N>, N>;
