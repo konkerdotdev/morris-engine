@@ -153,7 +153,7 @@ export const config: MorrisGameConfig<NN> = {
   numMorrisPerPlayer: 3,
   numMoveCyclesForDraw: 3,
   numMillsToWinThreshold: 1,
-  phases: [MorrisPhase.PLACING, MorrisPhase.MOVING, MorrisPhase.GAME_OVER],
+  phases: [MorrisPhase.PLACING, MorrisPhase.MOVING],
 };
 
 export type Game = MorrisGame<PP, DD, NN>;
@@ -162,7 +162,7 @@ export const game: Game = {
   startColor: MorrisColor.WHITE,
   curMoveColor: MorrisColor.WHITE,
   phaseIdx: 0,
-  millCounter: 0,
+  lastMillCounter: 0,
   morrisWhite: [MorrisWhite(1), MorrisWhite(2), MorrisWhite(3)],
   morrisBlack: [MorrisBlack(1), MorrisBlack(2), MorrisBlack(3)],
   board: board(),

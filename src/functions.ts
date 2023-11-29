@@ -39,6 +39,13 @@ export function isTurn<P extends number, D extends number, N extends number>(
   return color === game.curMoveColor;
 }
 
+export function numMorris<P extends number, D extends number, N extends number>(
+  game: MorrisGame<P, D, N>,
+  color: MorrisColor
+): number {
+  return game.board.points.filter((p) => isMorris(p.occupant) && p.occupant.color === color).length;
+}
+
 export function unsafe_point<P extends number, D extends number, N extends number>(
   game: MorrisGame<P, D, N>,
   coord: MorrisBoardCoord<D>
@@ -78,15 +85,17 @@ export function pointMorris<P extends number, D extends number, N extends number
 export function unsafe_moveColor<P extends number, D extends number, N extends number>(
   game: MorrisGame<P, D, N>,
   move: MorrisMove<D, N>
-): MorrisColor {
+): MorrisColor | EMPTY {
   switch (move.type) {
     case MorrisMoveType.PLACE:
       return move.morris.color;
     case MorrisMoveType.MOVE:
-      return unsafe_pointMorris(game, move.from).color;
     case MorrisMoveType.REMOVE:
-      return unsafe_pointMorris(game, move.from).color;
+      if (isMorris(unsafe_pointMorris(game, move.from))) {
+        return unsafe_pointMorris(game, move.from).color;
+      }
   }
+  return EMPTY;
 }
 
 export function moveColor<P extends number, D extends number, N extends number>(
@@ -246,16 +255,21 @@ export const createMoveMove = <D extends number, N extends number>(
 });
 
 export const unsafe_execMove =
-  <P extends number, D extends number, N extends number>(move: MorrisMove<D, N>, curMoveColor: MorrisColor) =>
+  <P extends number, D extends number, N extends number>(move: MorrisMove<D, N>, facts: MorrisGameFacts) =>
   (game: MorrisGame<P, D, N>): MorrisGame<P, D, N> => {
+    const nextMoveColor = R.val(facts.isNextTurnWhite) ? MorrisColor.WHITE : MorrisColor.BLACK;
+
     switch (move.type) {
       case MorrisMoveType.PLACE: {
         const newGame = setPointOccupant(game, move.to, move.morris);
         return {
           ...newGame,
-          curMoveColor,
+          curMoveColor: nextMoveColor,
+          gameOver: R.val(facts.moveMakesGameOver),
+          lastMillCounter: R.val(facts.moveMakesMill) ? 0 : newGame.lastMillCounter + 1,
           moves: [...newGame.moves, move],
           positions: [...newGame.positions, boardHash(newGame.board)],
+          facts,
         };
       }
       case MorrisMoveType.MOVE: {
@@ -266,8 +280,12 @@ export const unsafe_execMove =
         );
         return {
           ...newGame,
+          curMoveColor: nextMoveColor,
+          gameOver: R.val(facts.moveMakesGameOver),
+          lastMillCounter: R.val(facts.moveMakesMill) ? 0 : newGame.lastMillCounter + 1,
           moves: [...newGame.moves, move],
           positions: [...newGame.positions, boardHash(newGame.board)],
+          facts,
         };
       }
       case MorrisMoveType.REMOVE: {
@@ -338,16 +356,14 @@ export const tick =
       ),
       (x) => x,
       P.Effect.tap((_) => P.Console.log('\n-------\n')),
+      // P.Effect.tap((_) => P.Console.log(rulesContext.game)),
       P.Effect.tap((x) => P.Console.log(x.facts)),
       P.Effect.tap((_) => P.Console.log(strMorrisMove(move) + '\n')),
       P.Effect.flatMap((ruleSet) =>
-        ruleSet.facts.isValidMove
+        R.val(ruleSet.facts.isValidMove)
           ? // Valid move: execute the move
             makeMorrisGameTick<P, D, N>(
-              P.pipe(
-                gameTick.game,
-                unsafe_execMove(move, ruleSet.facts.isWhiteTurn ? MorrisColor.BLACK : MorrisColor.WHITE)
-              ),
+              P.pipe(gameTick.game, unsafe_execMove(move, ruleSet.facts)),
               gameTick.facts,
               GAME_TICK_MESSAGE_OK
             )

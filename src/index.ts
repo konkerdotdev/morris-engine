@@ -95,7 +95,6 @@ export enum MorrisPhase {
   MOVING = 'MOVING',
   FLYING = 'FLYING',
   LASKER = 'LASKER',
-  GAME_OVER = 'GAME_OVER',
 }
 
 export enum MorrisMoveType {
@@ -144,9 +143,9 @@ export function strMorrisMove<D extends number, N extends number>(move: MorrisMo
 export type MorrisGameConfig<N extends number> = {
   readonly name: string;
   readonly numMorrisPerPlayer: N;
-  readonly flyingThreshold?: number;
-  readonly numMillsToWinThreshold?: number; // 1 for 3MM
-  readonly numMovesWithoutMillForDraw?: number;
+  readonly flyingThreshold: number;
+  readonly numMillsToWinThreshold: number; // 1 for 3MM
+  readonly numMovesWithoutMillForDraw: number;
   readonly numMoveCyclesForDraw: number;
   readonly phases: ReadonlyArray<MorrisPhase>; // 3MM: [PLACING, MOVING], L: [LASKER, MOVING]
 };
@@ -162,14 +161,16 @@ export type MorrisGame<P extends number, D extends number, N extends number> = {
   readonly config: MorrisGameConfig<N>;
   readonly startColor: MorrisColor;
   readonly curMoveColor: MorrisColor;
+  readonly gameOver: boolean;
   readonly phaseIdx: number;
-  readonly millCounter: number;
+  readonly lastMillCounter: number;
   readonly morrisWhite: Tuple<MorrisWhite<N>, N>;
   readonly morrisBlack: Tuple<MorrisBlack<N>, N>;
   readonly board: MorrisBoard<P, D, N>;
-  // FIXME: make stricter type?
+  // FIXME: make stricter type for positions?
   readonly positions: ReadonlyArray<string>;
   readonly moves: ReadonlyArray<MorrisMove<D, N>>;
+  readonly facts: MorrisGameFacts;
 };
 
 export type MorrisGameTick<P extends number, D extends number, N extends number> = {
