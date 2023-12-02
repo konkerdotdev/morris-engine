@@ -1,7 +1,7 @@
 import * as P from '@konker.dev/effect-ts-prelude';
 
 import type { MorrisGameFacts } from './rules';
-import type { EnumerateCoordChars, Range1, Tuple } from './utils';
+import type { EnumerateCoordChars, Range1, RepeatString, Tuple } from './utils';
 
 /**
  * Morris Engine
@@ -100,6 +100,8 @@ export type MorrisBoard<P extends number, D extends number, N extends number> = 
   readonly millCandidates: ReadonlyArray<MillCandidate<D>>;
 };
 
+export type MorrisBoardPositionHash<P extends number> = RepeatString<MorrisColor | EMPTY, P>;
+
 export enum MorrisPhase {
   PLACING = 'PLACING',
   MOVING = 'MOVING',
@@ -160,24 +162,24 @@ export type MorrisGameConfig<N extends number> = {
   readonly phases: ReadonlyArray<MorrisPhase>; // 3MM: [PLACING, MOVING], L: [LASKER, MOVING]
 };
 
-/* FIXME: remove?
-export type MorrisGameState = {
-  readonly currentTurn: MorrisColor;
-  readonly currentPhase: MorrisPhase;
-};
-*/
+export enum MorrisGameResult {
+  IN_PROGRESS = 'IN_PROGRESS',
+  WIN_WHITE = 'WIN_WHITE',
+  WIN_BLACK = 'WIN_BLACK',
+  DRAW = 'DRAW',
+}
 
 export type MorrisGame<P extends number, D extends number, N extends number> = {
   readonly config: MorrisGameConfig<N>;
   readonly startColor: MorrisColor;
   readonly curMoveColor: MorrisColor;
   readonly gameOver: boolean;
+  readonly result: MorrisGameResult;
   readonly lastMillCounter: number;
   readonly morrisWhite: Tuple<MorrisWhite<N>, N>;
   readonly morrisBlack: Tuple<MorrisBlack<N>, N>;
   readonly board: MorrisBoard<P, D, N>;
-  // FIXME: make stricter type for positions?
-  readonly positions: ReadonlyArray<string>;
+  readonly positions: ReadonlyArray<MorrisBoardPositionHash<P>>;
   readonly moves: ReadonlyArray<MorrisMove<D, N>>;
   readonly facts: MorrisGameFacts;
 };

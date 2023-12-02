@@ -7,6 +7,7 @@ import type {
   MorrisBoardCoord,
   MorrisBoardPoint,
   MorrisBoardPointOccupant,
+  MorrisBoardPositionHash,
   MorrisGame,
   MorrisGameTick,
   MorrisMove,
@@ -17,11 +18,11 @@ import type {
 import {
   EMPTY,
   EmptyPoint,
-  GAME_TICK_MESSAGE_OK,
   isEmptyPoint,
   isMorris,
   makeMorrisGameTick,
   MorrisColor,
+  MorrisGameResult,
   MorrisMoveType,
   strMorrisMove,
 } from './index';
@@ -170,7 +171,7 @@ export function moveMakesMill<P extends number, D extends number, N extends numb
 
 export function countPositionRepeats<P extends number, D extends number, N extends number>(
   game: MorrisGame<P, D, N>,
-  position: string
+  position: MorrisBoardPositionHash<P>
 ): number {
   return game.positions.filter((p) => p === position).length;
 }
@@ -221,8 +222,13 @@ export function countValidMovesForColor<P extends number, D extends number, N ex
 }
 
 // --------------------------------------------------------------------------
-export function boardHash<P extends number, D extends number, N extends number>(board: MorrisBoard<P, D, N>): string {
-  return board.points.reduce((acc, val) => `${acc}${isMorris(val.occupant) ? val.occupant.color : EMPTY}`, '');
+export function boardHash<P extends number, D extends number, N extends number>(
+  board: MorrisBoard<P, D, N>
+): MorrisBoardPositionHash<P> {
+  return board.points.reduce(
+    (acc, val) => `${acc}${isMorris(val.occupant) ? val.occupant.color : EMPTY}`,
+    ''
+  ) as MorrisBoardPositionHash<P>;
 }
 
 // --------------------------------------------------------------------------
@@ -305,6 +311,10 @@ export const createMoveRemove = <D extends number, N extends number>(
 export const execMove =
   <P extends number, D extends number, N extends number>(move: MorrisMove<D, N>, facts: MorrisGameFacts) =>
   (game: MorrisGame<P, D, N>): P.Effect.Effect<never, Error, MorrisGame<P, D, N>> => {
+    if (!R.val(facts.isValidMove)) {
+      return P.Effect.succeed(game);
+    }
+
     const nextMoveColor = R.val(facts.moveMakesNextTurnWhite) ? MorrisColor.WHITE : MorrisColor.BLACK;
 
     return P.pipe(
@@ -315,6 +325,13 @@ export const execMove =
         board: newBoard,
         curMoveColor: nextMoveColor,
         gameOver: R.val(facts.moveMakesGameOver),
+        result: R.val(facts.moveMakesWinWhite)
+          ? MorrisGameResult.WIN_WHITE
+          : R.val(facts.moveMakesWinBlack)
+            ? MorrisGameResult.WIN_BLACK
+            : R.val(facts.moveMakesDraw)
+              ? MorrisGameResult.DRAW
+              : MorrisGameResult.IN_PROGRESS,
         lastMillCounter: R.val(facts.moveMakesMill) ? 0 : game.lastMillCounter + 1,
         moves: [...game.moves, move],
         positions: [...game.positions, boardHash(newBoard)],
@@ -351,10 +368,11 @@ export const tick =
       P.Effect.flatMap(({ newGame, ruleSet }) =>
         R.val(ruleSet.facts.isValidMove)
           ? // Valid move: execute the move
-            makeMorrisGameTick<P, D, N>(newGame, gameTick.facts, GAME_TICK_MESSAGE_OK)
+            // FIXME: derive message from rules
+            makeMorrisGameTick(newGame, gameTick.facts, String(newGame.result))
           : // Invalid move
             // FIXME: derive message from rules
-            makeMorrisGameTick<P, D, N>(gameTick.game, gameTick.facts, 'NOPE')
+            makeMorrisGameTick(gameTick.game, gameTick.facts, 'NOPE')
       )
     );
   };

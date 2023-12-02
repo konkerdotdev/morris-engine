@@ -2,7 +2,15 @@ import type * as P from '@konker.dev/effect-ts-prelude';
 
 import { boardHash } from '../functions';
 import type { MorrisBoard, MorrisGame, MorrisGameConfig } from '../index';
-import { EmptyPoint, MorrisBlack, MorrisColor, MorrisLinkType, MorrisPhase, MorrisWhite } from '../index';
+import {
+  EmptyPoint,
+  MorrisBlack,
+  MorrisColor,
+  MorrisGameResult,
+  MorrisLinkType,
+  MorrisPhase,
+  MorrisWhite,
+} from '../index';
 import { INITIAL_MORRIS_GAME_FACTS } from '../rules';
 
 /*
@@ -159,12 +167,12 @@ export const config: MorrisGameConfig<NN> = {
   phases: [MorrisPhase.PLACING, MorrisPhase.MOVING],
 };
 
-export type Game = MorrisGame<PP, DD, NN>;
-export const game: Game = {
+export const game: MorrisGame<PP, DD, NN> = {
   config,
   startColor: MorrisColor.WHITE,
   curMoveColor: MorrisColor.WHITE,
   gameOver: false,
+  result: MorrisGameResult.IN_PROGRESS,
   lastMillCounter: 0,
   morrisWhite: [MorrisWhite(1), MorrisWhite(2), MorrisWhite(3)],
   morrisBlack: [MorrisBlack(1), MorrisBlack(2), MorrisBlack(3)],

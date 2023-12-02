@@ -1,16 +1,16 @@
 # POA
 --------------------------------------------------------------------------
 
-- ~~~Amend rules to remove `unsafe_*` function calls~~~
+- ~~Amend rules to remove `unsafe_*` function calls~~
   - ~~~Remove `unsafe_*` function if not needed~~~
-- ~~~Factor out common code in `countValidMovesForColor()`~~~
-- Sort out pipe limit for rules
-  - Convert to array and reduce?
+- ~~Factor out common code in `countValidMovesForColor()`~~
+- ~~Sort out pipe limit for rules~~
+  - ~~Convert to array and reduce?~~
 - Move rules out of 3mm
 - Derive message from rules
   - E.g. invalid move, black wins, draw
 - Add Error type and remove `new Error()`
-- Add result property to `MorrisGame`
+- ~~Add result property to `MorrisGame`~~
 - Add "imperative shell"
   - To allow for imperative cli I/O UI
 - Remove state machine [?]

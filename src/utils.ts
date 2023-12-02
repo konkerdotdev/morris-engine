@@ -55,6 +55,17 @@ export type LengthArray<T, N extends number, R extends ReadonlyArray<T> = []> = 
 
 export type Tuple<TItem, TLength extends number> = [TItem, ...Array<TItem>] & { length: TLength };
 
+/**
+ * A string T repeated C times.
+ * See:https://medium.com/@anchen.li/fundamentals-of-advanced-typescript-types-part-8-39ee4177da3
+ */
+export type RepeatString<
+  T extends string,
+  C extends number,
+  Result extends string = '',
+  Counter extends Array<any> = [],
+> = Counter['length'] extends C ? Result : RepeatString<T, C, `${Result}${T}`, [...Counter, unknown]>;
+
 // --------------------------------------------------------------------------
 export const someE =
   <R, E, A>(predicateE: (a: A) => P.Effect.Effect<R, E, boolean>) =>

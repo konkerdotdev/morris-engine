@@ -37,6 +37,12 @@ export const setFacts = <C, F extends Facts>(ruleSet: RuleSet<C, F>, facts: F): 
   facts,
 });
 
+export const sequence =
+  <C, F extends Facts>(rulesList: ReadonlyArray<RuleSetTransform<C, F>>) =>
+  (ruleSet: RuleSet<C, F>): RuleSet<C, F> => {
+    return rulesList.reduce((acc, ruleTransform) => ruleTransform(acc), ruleSet);
+  };
+
 //---------------------------------------------------------------------------
 export const setFactsE = <C, F extends Facts>(
   ruleSet: RuleSet<C, F>,
