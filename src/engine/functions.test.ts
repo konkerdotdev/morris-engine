@@ -1,4 +1,4 @@
-import { game } from './3mm';
+import { game } from '../3mm';
 import * as unit from './functions';
 import { MorrisColor } from './index';
 

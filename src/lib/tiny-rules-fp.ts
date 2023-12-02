@@ -7,89 +7,89 @@ export const val = (fact: Fact): boolean => fact[0];
 export const note = (fact: Fact): string => fact[1];
 
 //---------------------------------------------------------------------------
-export type Rule<C, F extends Facts> = {
-  readonly rule: (context: C, facts: F) => P.Effect.Effect<never, Error, F>;
+export type Rule<C, F extends Facts, E> = {
+  readonly rule: (context: C, facts: F) => P.Effect.Effect<never, E, F>;
   readonly note: string;
 };
 
-export type RuleSet<C, F extends Facts> = {
+export type RuleSet<C, F extends Facts, E> = {
   readonly facts: F;
-  readonly rules: Array<Rule<C, F>>;
+  readonly rules: Array<Rule<C, F, E>>;
 };
 
-export type RuleSetTransform<C, F extends Facts> = (ruleSet: RuleSet<C, F>) => RuleSet<C, F>;
+export type RuleSetTransform<C, F extends Facts, E> = (ruleSet: RuleSet<C, F, E>) => RuleSet<C, F, E>;
 
 export type RuleFunc<C, F extends Facts> = (context: C, facts: F) => boolean;
 
-export type RuleFuncE<C, F extends Facts> = (context: C, facts: F) => P.Effect.Effect<never, Error, boolean>;
+export type RuleFuncE<C, F extends Facts, E> = (context: C, facts: F) => P.Effect.Effect<never, E, boolean>;
 
 //---------------------------------------------------------------------------
-export const createRuleSet = <C, F extends Facts>(initialFacts: F): RuleSet<C, F> => ({
+export const createRuleSet = <C, F extends Facts, E>(initialFacts: F): RuleSet<C, F, E> => ({
   facts: initialFacts,
   rules: [],
 });
 
-export const createRuleSetE = <C, F extends Facts>(initialFacts: F): P.Effect.Effect<never, Error, RuleSet<C, F>> =>
+export const createRuleSetE = <C, F extends Facts, E>(initialFacts: F): P.Effect.Effect<never, E, RuleSet<C, F, E>> =>
   P.Effect.succeed(createRuleSet(initialFacts));
 
-export const setFacts = <C, F extends Facts>(ruleSet: RuleSet<C, F>, facts: F): RuleSet<C, F> => ({
+export const setFacts = <C, F extends Facts, E>(ruleSet: RuleSet<C, F, E>, facts: F): RuleSet<C, F, E> => ({
   ...ruleSet,
   facts,
 });
 
 export const sequence =
-  <C, F extends Facts>(rulesList: ReadonlyArray<RuleSetTransform<C, F>>) =>
-  (ruleSet: RuleSet<C, F>): RuleSet<C, F> => {
+  <C, F extends Facts, E>(rulesList: ReadonlyArray<RuleSetTransform<C, F, E>>) =>
+  (ruleSet: RuleSet<C, F, E>): RuleSet<C, F, E> => {
     return rulesList.reduce((acc, ruleTransform) => ruleTransform(acc), ruleSet);
   };
 
 //---------------------------------------------------------------------------
-export const setFactsE = <C, F extends Facts>(
-  ruleSet: RuleSet<C, F>,
+export const setFactsE = <C, F extends Facts, E>(
+  ruleSet: RuleSet<C, F, E>,
   facts: F
-): P.Effect.Effect<never, Error, RuleSet<C, F>> => P.Effect.succeed(setFacts(ruleSet, facts));
+): P.Effect.Effect<never, E, RuleSet<C, F, E>> => P.Effect.succeed(setFacts(ruleSet, facts));
 
 export const setFact =
   <F extends Facts>(key: keyof F, value: [boolean, string]) =>
   (facts: F): F => ({ ...facts, [key]: value });
 
 export const setFactE =
-  <F extends Facts>(key: keyof F, value: [boolean, string]) =>
-  (facts: F): P.Effect.Effect<never, Error, F> =>
+  <F extends Facts, E>(key: keyof F, value: [boolean, string]) =>
+  (facts: F): P.Effect.Effect<never, E, F> =>
     P.pipe(facts, setFact(key, value), P.Effect.succeed);
 
 //---------------------------------------------------------------------------
 export const addRule =
-  <C, F extends Facts>(rule: Rule<C, F>) =>
-  (ruleSet: RuleSet<C, F>): RuleSet<C, F> => ({
+  <C, F extends Facts, E>(rule: Rule<C, F, E>) =>
+  (ruleSet: RuleSet<C, F, E>): RuleSet<C, F, E> => ({
     ...ruleSet,
     rules: [...ruleSet.rules, rule],
   });
 
 export const addRuleE =
-  <C, F extends Facts>(rule: Rule<C, F>) =>
-  (ruleSet: RuleSet<C, F>): P.Effect.Effect<never, Error, RuleSet<C, F>> =>
+  <C, F extends Facts, E>(rule: Rule<C, F, E>) =>
+  (ruleSet: RuleSet<C, F, E>): P.Effect.Effect<never, E, RuleSet<C, F, E>> =>
     P.pipe(ruleSet, addRule(rule), P.Effect.succeed);
 
 //---------------------------------------------------------------------------
-export const addRuleFunc = <C, F extends Facts>(
+export const addRuleFunc = <C, F extends Facts, E>(
   factName: keyof F,
   ruleFunc: RuleFunc<C, F>,
   note: string
-): RuleSetTransform<C, F> => {
+): RuleSetTransform<C, F, E> => {
   const rule = (context: C, facts: F) =>
     P.pipe(
       P.Effect.succeed(facts),
       P.Effect.map(P.pipe(ruleFunc(context, facts), (value) => setFact(factName, [value, note])))
     );
-  return addRule({ rule, note });
+  return addRule<C, F, E>({ rule, note });
 };
 
-export const addRuleFuncE = <C, F extends Facts>(
+export const addRuleFuncE = <C, F extends Facts, E>(
   factName: keyof F,
-  ruleFuncE: RuleFuncE<C, F>,
+  ruleFuncE: RuleFuncE<C, F, E>,
   note: string
-): RuleSetTransform<C, F> => {
+): RuleSetTransform<C, F, E> => {
   const rule = (context: C, facts: F) =>
     P.pipe(
       ruleFuncE(context, facts),
@@ -101,8 +101,8 @@ export const addRuleFuncE = <C, F extends Facts>(
 
 //---------------------------------------------------------------------------
 export const decide =
-  <C, F extends Facts>(context: C) =>
-  (ruleSet: RuleSet<C, F>): P.Effect.Effect<never, Error, RuleSet<C, F>> =>
+  <C, F extends Facts, E>(context: C) =>
+  (ruleSet: RuleSet<C, F, E>): P.Effect.Effect<never, E, RuleSet<C, F, E>> =>
     P.pipe(
       ruleSet.rules,
       P.Effect.reduce(ruleSet.facts, (facts, rule) => rule.rule(context, facts)),

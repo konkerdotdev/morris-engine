@@ -1,16 +1,18 @@
 import * as P from '@konker.dev/effect-ts-prelude';
 
-import type { MorrisGameFacts } from './rules';
-import type { EnumerateCoordChars, Range1, RepeatString, Tuple } from './utils';
+import type { MorrisEngineError } from '../lib/error';
+import type { EnumerateCoordChars, Range1, RepeatString, Tuple } from '../lib/type-utils';
+import type { MorrisGameFacts } from './rules/facts';
+import { INITIAL_MORRIS_GAME_FACTS } from './rules/facts';
 
 /**
  * Morris Engine
  *
  * Author: Konrad Markus <mail@konker.dev>
  *
- * P: ...
- * D: ...
- * N: number of morrae, e.g. 3mm -> 3
+ * P: points: number of points on the board in total
+ * D: dimensions: board is arranged as DxD
+ * N: number: number of morrae per player, e.g. 3mm -> 3, 9mm -> 9
  */
 
 // By inviolate definition since the Assyrians, a mill is 3 in a row.
@@ -22,46 +24,10 @@ export type THREE = typeof THREE;
 export const EMPTY = 'o';
 export type EMPTY = typeof EMPTY;
 
-export const GAME_TICK_MESSAGE_OK = 'OK';
-
-export const EmptyPointS = P.Schema.struct({ _tag: P.Schema.literal(EMPTY) }).pipe(P.Schema.brand('EmptyPoint'));
-export type EmptyPoint = P.Schema.Schema.To<typeof EmptyPointS>;
-export const EmptyPoint = P.pipe({ _tag: EMPTY }, P.Schema.decodeSync(EmptyPointS));
-export const isEmptyPoint = (x: unknown): x is EmptyPoint => P.pipe(x, P.Schema.is(EmptyPointS));
-
 export enum MorrisColor {
   BLACK = 'B',
   WHITE = 'W',
 }
-
-export function flipColor(color: MorrisColor): MorrisColor {
-  return color === MorrisColor.WHITE ? MorrisColor.BLACK : MorrisColor.WHITE;
-}
-
-export type MorrisBlack<N extends number> = {
-  readonly color: typeof MorrisColor.BLACK;
-  readonly n: Range1<N>;
-};
-export const MorrisBlack = <N extends number>(n: Range1<N>): MorrisBlack<N> => ({
-  color: MorrisColor.BLACK,
-  n,
-});
-
-export type MorrisWhite<N extends number> = {
-  readonly color: typeof MorrisColor.WHITE;
-  readonly n: Range1<N>;
-};
-export const MorrisWhite = <N extends number>(n: Range1<N>): MorrisWhite<N> => ({
-  color: MorrisColor.WHITE,
-  n,
-});
-
-export type Morris<N extends number> = MorrisBlack<N> | MorrisWhite<N>;
-export type MorrisBoardPointOccupant<N extends number> = EmptyPoint | Morris<N>;
-
-export const isMorris = <N extends number>(x: MorrisBoardPointOccupant<N>): x is Morris<N> => !isEmptyPoint(x);
-
-export type MorrisBoardCoord<D extends number> = `${EnumerateCoordChars<D>}${Range1<D>}`;
 
 export enum MorrisLinkType {
   HORIZONTAL = 'HORIZONTAL',
@@ -69,6 +35,48 @@ export enum MorrisLinkType {
   DIAGONAL_B = 'DIAGONAL_B',
   DIAGONAL_F = 'DIAGONAL_F',
 }
+
+export enum MorrisPhase {
+  PLACING = 'PLACING',
+  MOVING = 'MOVING',
+  FLYING = 'FLYING',
+  LASKER = 'LASKER',
+}
+
+export enum MorrisMoveType {
+  PLACE = 'PLACE',
+  MOVE = 'MOVE',
+  REMOVE = 'REMOVE',
+}
+
+export enum MorrisGameResult {
+  IN_PROGRESS = 'IN_PROGRESS',
+  WIN_WHITE = 'WIN_WHITE',
+  WIN_BLACK = 'WIN_BLACK',
+  DRAW = 'DRAW',
+}
+
+// --------------------------------------------------------------------------
+export type MorrisBlack<N extends number> = {
+  readonly color: typeof MorrisColor.BLACK;
+  readonly n: Range1<N>;
+};
+
+export type MorrisWhite<N extends number> = {
+  readonly color: typeof MorrisColor.WHITE;
+  readonly n: Range1<N>;
+};
+
+export type Morris<N extends number> = MorrisBlack<N> | MorrisWhite<N>;
+
+export const EmptyOccupantS = P.Schema.struct({ _tag: P.Schema.literal(EMPTY) }).pipe(P.Schema.brand('EmptyPoint'));
+export type EmptyOccupant = P.Schema.Schema.To<typeof EmptyOccupantS>;
+export const EmptyOccupant = P.pipe({ _tag: EMPTY }, P.Schema.decodeSync(EmptyOccupantS));
+
+export type MorrisBoardPointOccupant<N extends number> = EmptyOccupant | Morris<N>;
+
+// --------------------------------------------------------------------------
+export type MorrisBoardCoord<D extends number> = `${EnumerateCoordChars<D>}${Range1<D>}`;
 
 export type MorrisBoardLink<D extends number> = {
   readonly to: MorrisBoardCoord<D>;
@@ -85,12 +93,6 @@ export type OccupiedBoardPoint<D extends number, N extends number> = Omit<Morris
   readonly occupant: Morris<N>;
 };
 
-export function isOccupied<D extends number, N extends number>(
-  p: MorrisBoardPoint<D, N>
-): p is OccupiedBoardPoint<D, N> {
-  return isMorris(p.occupant);
-}
-
 export type MillCandidate<D extends number> = Tuple<MorrisBoardCoord<D>, THREE>;
 
 export type MorrisBoard<P extends number, D extends number, N extends number> = {
@@ -102,19 +104,7 @@ export type MorrisBoard<P extends number, D extends number, N extends number> = 
 
 export type MorrisBoardPositionHash<P extends number> = RepeatString<MorrisColor | EMPTY, P>;
 
-export enum MorrisPhase {
-  PLACING = 'PLACING',
-  MOVING = 'MOVING',
-  FLYING = 'FLYING',
-  LASKER = 'LASKER',
-}
-
-export enum MorrisMoveType {
-  PLACE = 'PLACE',
-  MOVE = 'MOVE',
-  REMOVE = 'REMOVE',
-}
-
+// --------------------------------------------------------------------------
 export type MorrisMovePlace<D extends number, N extends number> = {
   readonly type: MorrisMoveType.PLACE;
   readonly morris: Morris<N>;
@@ -138,20 +128,7 @@ export type MorrisMove<D extends number, N extends number> =
   | MorrisMoveMove<D>
   | MorrisMoveRemove<D, N>;
 
-export type MorrisPositiveMove<D extends number, N extends number> = MorrisMovePlace<D, N> | MorrisMoveMove<D>;
-
-// eslint-disable-next-line fp/no-nil
-export function strMorrisMove<D extends number, N extends number>(move: MorrisMove<D, N>): string {
-  switch (move.type) {
-    case MorrisMoveType.PLACE:
-      return `P: ${move.morris.color} ${move.to}`;
-    case MorrisMoveType.MOVE:
-      return `M: ${move.from} ${move.to}`;
-    case MorrisMoveType.REMOVE:
-      return `R: ${move.morris.color} ${move.from}`;
-  }
-}
-
+// --------------------------------------------------------------------------
 export type MorrisGameConfig<N extends number> = {
   readonly name: string;
   readonly numMorrisPerPlayer: N;
@@ -161,13 +138,6 @@ export type MorrisGameConfig<N extends number> = {
   readonly numPositionRepeatsForDraw: number;
   readonly phases: ReadonlyArray<MorrisPhase>; // 3MM: [PLACING, MOVING], L: [LASKER, MOVING]
 };
-
-export enum MorrisGameResult {
-  IN_PROGRESS = 'IN_PROGRESS',
-  WIN_WHITE = 'WIN_WHITE',
-  WIN_BLACK = 'WIN_BLACK',
-  DRAW = 'DRAW',
-}
 
 export type MorrisGame<P extends number, D extends number, N extends number> = {
   readonly config: MorrisGameConfig<N>;
@@ -184,16 +154,57 @@ export type MorrisGame<P extends number, D extends number, N extends number> = {
   readonly facts: MorrisGameFacts;
 };
 
+// --------------------------------------------------------------------------
 export type MorrisGameTick<P extends number, D extends number, N extends number> = {
   readonly game: MorrisGame<P, D, N>;
   readonly facts: MorrisGameFacts;
   readonly message: string;
 };
 
-export const makeMorrisGameTick = <P extends number, D extends number, N extends number>(
+// --------------------------------------------------------------------------
+export const MorrisBlack = <N extends number>(n: Range1<N>): MorrisBlack<N> =>
+  ({
+    color: MorrisColor.BLACK,
+    n,
+  }) as const;
+
+export const MorrisWhite = <N extends number>(n: Range1<N>): MorrisWhite<N> =>
+  ({
+    color: MorrisColor.WHITE,
+    n,
+  }) as const;
+
+export function isEmptyOccupant(x: unknown): x is EmptyOccupant {
+  return P.pipe(x, P.Schema.is(EmptyOccupantS));
+}
+
+export function isMorris<N extends number>(x: MorrisBoardPointOccupant<N>): x is Morris<N> {
+  return !isEmptyOccupant(x);
+}
+
+// FIXME: make this into proper schemas
+// eslint-disable-next-line fp/no-nil
+export function strMorrisMove<D extends number, N extends number>(move: MorrisMove<D, N>): string {
+  switch (move.type) {
+    case MorrisMoveType.PLACE:
+      return `P: ${move.morris.color} ${move.to}`;
+    case MorrisMoveType.MOVE:
+      return `M: ${move.from} ${move.to}`;
+    case MorrisMoveType.REMOVE:
+      return `R: ${move.morris.color} ${move.from}`;
+  }
+}
+
+export function makeMorrisGameTick<P extends number, D extends number, N extends number>(
   game: MorrisGame<any, any, any>,
   facts: MorrisGameFacts,
-  message: string = GAME_TICK_MESSAGE_OK
-): P.Effect.Effect<never, never, MorrisGameTick<P, D, N>> => {
+  message: string
+): P.Effect.Effect<never, MorrisEngineError, MorrisGameTick<P, D, N>> {
   return P.Effect.succeed({ game, facts, message });
-};
+}
+
+export function startMorrisGame<P extends number, D extends number, N extends number>(
+  morrisGame: MorrisGame<P, D, N>
+): P.Effect.Effect<never, MorrisEngineError, MorrisGameTick<P, D, N>> {
+  return makeMorrisGameTick(morrisGame, INITIAL_MORRIS_GAME_FACTS, 'BEGIN');
+}

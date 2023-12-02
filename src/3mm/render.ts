@@ -1,9 +1,9 @@
 import * as P from '@konker.dev/effect-ts-prelude';
 import chalk from 'chalk';
 
-import type { MENS_MORRIS_D_3, MENS_MORRIS_N_3, MENS_MORRIS_P_3 } from '../boards';
-import type { MorrisBoardPoint, MorrisGame } from '../index';
-import { EMPTY, isMorris, MorrisColor } from '../index';
+import type { MENS_MORRIS_D_3, MENS_MORRIS_N_3, MENS_MORRIS_P_3 } from '../engine/boards';
+import type { MorrisBoardPoint, MorrisGame } from '../engine';
+import { EMPTY, isMorris, MorrisColor } from '../engine';
 
 export function renderOccupant(p: MorrisBoardPoint<MENS_MORRIS_D_3, MENS_MORRIS_N_3>): string {
   return isMorris(p.occupant)

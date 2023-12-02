@@ -1,42 +1,25 @@
-import type * as P from '@konker.dev/effect-ts-prelude';
-
-import { boardHash } from '../functions';
-import type { MorrisBoard, MorrisGame, MorrisGameConfig } from '../index';
+import type { MorrisBoard, MorrisGame, MorrisGameConfig } from '../engine';
 import {
-  EmptyPoint,
+  EmptyOccupant,
   MorrisBlack,
   MorrisColor,
   MorrisGameResult,
   MorrisLinkType,
   MorrisPhase,
   MorrisWhite,
-} from '../index';
-import { INITIAL_MORRIS_GAME_FACTS } from '../rules';
+} from '../engine';
+import { boardHash } from '../engine/functions';
+import { INITIAL_MORRIS_GAME_FACTS } from '../engine/rules/facts';
+
+export const P_3 = 9;
+export type P_3 = typeof P_3;
+export const D_3 = 3;
+export type D_3 = typeof D_3;
+export const N_3 = 3;
+export type N_3 = typeof N_3;
 
 /*
-export const MENS_MORRIS_P_3 = 9;
-export type MENS_MORRIS_P_3 = typeof MENS_MORRIS_P_3;
-export const MENS_MORRIS_D_3 = 3;
-export type MENS_MORRIS_D_3 = typeof MENS_MORRIS_D_3;
-export const MENS_MORRIS_N_3 = 3;
-export type MENS_MORRIS_N_3 = typeof MENS_MORRIS_N_3;
-
-export const PP = MENS_MORRIS_P_3;
-export type PP = MENS_MORRIS_P_3;
-export const DD = MENS_MORRIS_D_3;
-export type DD = MENS_MORRIS_D_3;
-export const NN = MENS_MORRIS_N_3;
-export type NN = MENS_MORRIS_N_3;
-*/
-export const PP = 9;
-export type PP = typeof PP;
-export const DD = 3;
-export type DD = typeof DD;
-export const NN = 3;
-export type NN = typeof NN;
-
 // --------------------------------------------------------------------------
-/*
 3-Mens-Morris Board
 3 o---o---o
   | \ | / |
@@ -45,18 +28,9 @@ export type NN = typeof NN;
 1 o---o---o
   a   b   c
 */
-/*
-3-Mens-Morris Board
-6---7---8
-| \ | / |
-3---4---5
-| / | \ |
-0---1---2
-*/
-export type Board = MorrisBoard<PP, DD, NN>;
-export const board: P.LazyArg<Board> = () => ({
-  type: PP,
-  dimension: DD,
+export const board: MorrisBoard<P_3, D_3, N_3> = {
+  type: P_3,
+  dimension: D_3,
   points: [
     /*0*/ {
       coord: 'a1',
@@ -65,7 +39,7 @@ export const board: P.LazyArg<Board> = () => ({
         { to: 'a2', linkType: MorrisLinkType.VERTICAL },
         { to: 'b2', linkType: MorrisLinkType.DIAGONAL_F },
       ] as const,
-      occupant: EmptyPoint,
+      occupant: EmptyOccupant,
     },
     /*1*/ {
       coord: 'b1',
@@ -74,7 +48,7 @@ export const board: P.LazyArg<Board> = () => ({
         { to: 'c1', linkType: MorrisLinkType.HORIZONTAL },
         { to: 'b2', linkType: MorrisLinkType.VERTICAL },
       ],
-      occupant: EmptyPoint,
+      occupant: EmptyOccupant,
     },
     /*2*/ {
       coord: 'c1',
@@ -83,7 +57,7 @@ export const board: P.LazyArg<Board> = () => ({
         { to: 'b2', linkType: MorrisLinkType.DIAGONAL_B },
         { to: 'c2', linkType: MorrisLinkType.VERTICAL },
       ],
-      occupant: EmptyPoint,
+      occupant: EmptyOccupant,
     },
     /*3*/ {
       coord: 'a2',
@@ -92,7 +66,7 @@ export const board: P.LazyArg<Board> = () => ({
         { to: 'b2', linkType: MorrisLinkType.HORIZONTAL },
         { to: 'a3', linkType: MorrisLinkType.VERTICAL },
       ],
-      occupant: EmptyPoint,
+      occupant: EmptyOccupant,
     },
     /*4*/ {
       coord: 'b2',
@@ -106,7 +80,7 @@ export const board: P.LazyArg<Board> = () => ({
         { to: 'b3', linkType: MorrisLinkType.VERTICAL },
         { to: 'c3', linkType: MorrisLinkType.DIAGONAL_F },
       ],
-      occupant: EmptyPoint,
+      occupant: EmptyOccupant,
     },
     /*5*/ {
       coord: 'c2',
@@ -115,7 +89,7 @@ export const board: P.LazyArg<Board> = () => ({
         { to: 'b2', linkType: MorrisLinkType.HORIZONTAL },
         { to: 'c3', linkType: MorrisLinkType.VERTICAL },
       ],
-      occupant: EmptyPoint,
+      occupant: EmptyOccupant,
     },
     /*6*/ {
       coord: 'a3',
@@ -124,7 +98,7 @@ export const board: P.LazyArg<Board> = () => ({
         { to: 'b2', linkType: MorrisLinkType.DIAGONAL_B },
         { to: 'b3', linkType: MorrisLinkType.HORIZONTAL },
       ],
-      occupant: EmptyPoint,
+      occupant: EmptyOccupant,
     },
     /*7*/ {
       coord: 'b3',
@@ -133,7 +107,7 @@ export const board: P.LazyArg<Board> = () => ({
         { to: 'a3', linkType: MorrisLinkType.HORIZONTAL },
         { to: 'c3', linkType: MorrisLinkType.HORIZONTAL },
       ],
-      occupant: EmptyPoint,
+      occupant: EmptyOccupant,
     },
     /*8*/ {
       coord: 'c3',
@@ -142,7 +116,7 @@ export const board: P.LazyArg<Board> = () => ({
         { to: 'c2', linkType: MorrisLinkType.VERTICAL },
         { to: 'b3', linkType: MorrisLinkType.HORIZONTAL },
       ],
-      occupant: EmptyPoint,
+      occupant: EmptyOccupant,
     },
   ],
   millCandidates: [
@@ -155,10 +129,10 @@ export const board: P.LazyArg<Board> = () => ({
     ['a1', 'b2', 'c3'],
     ['c1', 'b2', 'a3'],
   ],
-});
+};
 
-export const config: MorrisGameConfig<NN> = {
-  name: '3 Mens Morris',
+export const config: MorrisGameConfig<N_3> = {
+  name: "3 Men's Morris",
   numMorrisPerPlayer: 3,
   numPositionRepeatsForDraw: 3,
   numMillsToWinThreshold: 1,
@@ -167,7 +141,7 @@ export const config: MorrisGameConfig<NN> = {
   phases: [MorrisPhase.PLACING, MorrisPhase.MOVING],
 };
 
-export const game: MorrisGame<PP, DD, NN> = {
+export const game: MorrisGame<P_3, D_3, N_3> = {
   config,
   startColor: MorrisColor.WHITE,
   curMoveColor: MorrisColor.WHITE,
@@ -176,8 +150,8 @@ export const game: MorrisGame<PP, DD, NN> = {
   lastMillCounter: 0,
   morrisWhite: [MorrisWhite(1), MorrisWhite(2), MorrisWhite(3)],
   morrisBlack: [MorrisBlack(1), MorrisBlack(2), MorrisBlack(3)],
-  board: board(),
+  board,
   moves: [],
-  positions: [boardHash(board())],
+  positions: [boardHash(board)],
   facts: INITIAL_MORRIS_GAME_FACTS,
 };
