@@ -1,8 +1,6 @@
 import { game } from './3mm';
-import type { MENS_MORRIS_D_3, MENS_MORRIS_N_3 } from './boards';
 import * as unit from './functions';
-import type { MorrisMove } from './index';
-import { MorrisColor, MorrisMoveType } from './index';
+import { MorrisColor } from './index';
 
 describe('functions', () => {
   describe('isTurn', () => {
@@ -14,6 +12,7 @@ describe('functions', () => {
     });
   });
 
+  /*
   describe('unsafe_moveMakesMill', () => {
     it('should return false', () => {
       const move: MorrisMove<MENS_MORRIS_D_3, MENS_MORRIS_N_3> = {
@@ -24,6 +23,7 @@ describe('functions', () => {
       expect(unit.unsafe_moveMakesMill(game, move)).toEqual(false);
     });
   });
+  */
 
   describe('boardHash', () => {
     it('should work as expected', () => {

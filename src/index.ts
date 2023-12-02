@@ -81,6 +81,16 @@ export type MorrisBoardPoint<D extends number, N extends number> = {
   readonly occupant: MorrisBoardPointOccupant<N>;
 };
 
+export type OccupiedBoardPoint<D extends number, N extends number> = Omit<MorrisBoardPoint<D, N>, 'occupant'> & {
+  readonly occupant: Morris<N>;
+};
+
+export function isOccupied<D extends number, N extends number>(
+  p: MorrisBoardPoint<D, N>
+): p is OccupiedBoardPoint<D, N> {
+  return isMorris(p.occupant);
+}
+
 export type MillCandidate<D extends number> = Tuple<MorrisBoardCoord<D>, THREE>;
 
 export type MorrisBoard<P extends number, D extends number, N extends number> = {
@@ -104,19 +114,19 @@ export enum MorrisMoveType {
 }
 
 export type MorrisMovePlace<D extends number, N extends number> = {
-  readonly type: typeof MorrisMoveType.PLACE;
+  readonly type: MorrisMoveType.PLACE;
   readonly morris: Morris<N>;
   readonly to: MorrisBoardCoord<D>;
 };
 
 export type MorrisMoveMove<D extends number> = {
-  readonly type: typeof MorrisMoveType.MOVE;
+  readonly type: MorrisMoveType.MOVE;
   readonly from: MorrisBoardCoord<D>;
   readonly to: MorrisBoardCoord<D>;
 };
 
 export type MorrisMoveRemove<D extends number, N extends number> = {
-  readonly type: typeof MorrisMoveType.REMOVE;
+  readonly type: MorrisMoveType.REMOVE;
   readonly morris: Morris<N>;
   readonly from: MorrisBoardCoord<D>;
 };
@@ -182,4 +192,6 @@ export const makeMorrisGameTick = <P extends number, D extends number, N extends
   game: MorrisGame<any, any, any>,
   facts: MorrisGameFacts,
   message: string = GAME_TICK_MESSAGE_OK
-): P.Effect.Effect<never, never, MorrisGameTick<P, D, N>> => P.Effect.succeed({ game, facts, message });
+): P.Effect.Effect<never, never, MorrisGameTick<P, D, N>> => {
+  return P.Effect.succeed({ game, facts, message });
+};

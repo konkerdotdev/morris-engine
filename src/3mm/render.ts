@@ -13,9 +13,10 @@ export function renderOccupant(p: MorrisBoardPoint<MENS_MORRIS_D_3, MENS_MORRIS_
     : EMPTY;
 }
 
-export function unsafe_render(game: MorrisGame<MENS_MORRIS_P_3, MENS_MORRIS_D_3, MENS_MORRIS_N_3>): string {
+export function render(game: MorrisGame<MENS_MORRIS_P_3, MENS_MORRIS_D_3, MENS_MORRIS_N_3>): string {
   return P.pipe(
-    game.board.points.map(renderOccupant),
+    game.board.points,
+    P.ReadonlyArray.map(renderOccupant),
     (os) =>
       chalk.dim('3 ') +
       os[6] +
@@ -44,8 +45,8 @@ export function unsafe_render(game: MorrisGame<MENS_MORRIS_P_3, MENS_MORRIS_D_3,
   );
 }
 
-export function render(
+export function renderE(
   game: MorrisGame<MENS_MORRIS_P_3, MENS_MORRIS_D_3, MENS_MORRIS_N_3>
 ): P.Effect.Effect<never, Error, string> {
-  return P.pipe(unsafe_render(game), P.Effect.succeed);
+  return P.pipe(render(game), P.Effect.succeed);
 }

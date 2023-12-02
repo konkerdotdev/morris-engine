@@ -1,6 +1,5 @@
 import * as P from '@konker.dev/effect-ts-prelude';
 import type { Add } from 'ts-toolbelt/out/Number/Add';
-// import type { Sub } from 'ts-toolbelt/out/Number/Sub';
 
 /**
  * An integer in the range [N, M).
@@ -12,9 +11,6 @@ export type Enumerate<N extends number, Acc extends Array<number> = []> = Acc['l
 export type Range<F extends number, T extends number> = Exclude<Enumerate<T>, Enumerate<F>>;
 export type Range0<T extends number> = Range<0, T>;
 export type Range1<T extends number> = Range<1, Add<T, 1>>;
-//
-// const r0: Range0<8> = 7;
-// export const r1: Range1<4> = 3;
 
 export const COORD_CHARS = [
   'a',
@@ -57,24 +53,7 @@ export type LengthArray<T, N extends number, R extends ReadonlyArray<T> = []> = 
     ? R
     : LengthArray<T, N, [T, ...R]>;
 
-// function toIdx<P extends number>(p: Range1<P>): Range0<Sub<P, 1>> {
-//   return (p - 1) as Range0<Sub<P, 1>>;
-// }
-// const ii = toIdx(3);
-//
-// function f(i: Range1<4>) {
-//   const la0: LengthArray<string, 4> = ['a', 'b', 'c', 'd'];
-//   const idx = toIdx(i);
-//
-//   const ret = la0[toIdx(i)];
-//   return ret;
-//   // export const i: Sub<typeof r0, 1> = r0 - 1;
-//   // export const x1 = la0[i];
-// }
-
 export type Tuple<TItem, TLength extends number> = [TItem, ...Array<TItem>] & { length: TLength };
-export const t0: Tuple<string, 4> = ['a', 'b', 'c', 'd'];
-export const x2 = t0[2];
 
 // --------------------------------------------------------------------------
 export const someE =
@@ -95,4 +74,14 @@ export const everyE =
       P.ReadonlyArray.map(predicateE),
       P.Effect.all,
       P.Effect.map((bs) => bs.every(P.identity))
+    );
+
+export const filterE =
+  <R, E, A>(predicateE: (a: A) => P.Effect.Effect<R, E, boolean>) =>
+  (as: ReadonlyArray<A>): P.Effect.Effect<R, E, ReadonlyArray<A>> =>
+    P.pipe(
+      as,
+      P.ReadonlyArray.map(predicateE),
+      P.Effect.all,
+      P.Effect.map((bs) => as.filter((_, i) => bs[i]))
     );

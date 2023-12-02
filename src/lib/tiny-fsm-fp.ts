@@ -27,7 +27,6 @@ export type TinyStateMachine<S extends string, E extends string, A> = {
 //---------------------------------------------------------------------------
 // Helper
 function fsmKey<S extends string, E extends string>(fromState: S, eventType: E): FsmKey<S, E> {
-  // console.log('KONK90', fromState, eventType);
   return [fromState, eventType].join(',') as FsmKey<S, E>;
 }
 

@@ -4,7 +4,7 @@ import * as console from 'console';
 
 import type { DD, NN, PP } from './3mm';
 import { game } from './3mm';
-import { render } from './3mm/render';
+import { renderE } from './3mm/render';
 import { Rules3MM } from './3mm/rules';
 import * as M from './functions';
 import type { MorrisGameTick } from './index';
@@ -64,7 +64,7 @@ export function dispE(gameTick: P.Effect.Effect<RulesImpl, Error, MorrisGameTick
     gameTick,
     P.Effect.matchEffect({
       onFailure: () => P.Effect.succeed(P.Console.log('Invalid move')),
-      onSuccess: (gameTick) => P.pipe(gameTick.game, P.flow(render, P.Console.log)),
+      onSuccess: (gameTick) => P.pipe(gameTick.game, P.flow(renderE, P.Console.log)),
     }),
     P.Effect.flatMap((_) => gameTick)
   );
@@ -73,7 +73,7 @@ export function dispE(gameTick: P.Effect.Effect<RulesImpl, Error, MorrisGameTick
 export function disp(gameTick: MorrisGameTick<PP, DD, NN>) {
   return P.pipe(
     gameTick.game,
-    render,
+    renderE,
     P.Effect.flatMap((s) => P.Console.log(`${s}\n${gameTick.message}`))
   );
 }
@@ -108,7 +108,7 @@ const prog3 = P.pipe(
 
   P.Effect.flatMap(M.tick<PP, DD, NN>(M.createMoveMove('b2', 'c1'))),
   P.Effect.tap(disp)
-  //
+
   // P.Effect.flatMap(M.tick<PP, DD, NN>(M.createMoveMove('a1', 'b2'))),
   // P.Effect.tap(disp)
 );

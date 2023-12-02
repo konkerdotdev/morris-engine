@@ -1,4 +1,3 @@
-/* eslint-disable fp/no-nil,fp/no-unused-expression */
 import * as P from '@konker.dev/effect-ts-prelude';
 
 import type {
@@ -12,6 +11,7 @@ import type {
   MorrisGameTick,
   MorrisMove,
   MorrisMovePlace,
+  MorrisMoveRemove,
   MorrisPositiveMove,
 } from './index';
 import {
@@ -29,7 +29,7 @@ import * as R from './lib/tiny-rules-fp';
 import type { MorrisContext, MorrisGameFacts } from './rules';
 import { RulesImpl } from './rules';
 import type { Tuple } from './utils';
-import { someE } from './utils';
+import { filterE, someE } from './utils';
 
 // --------------------------------------------------------------------------
 export function isTurn<P extends number, D extends number, N extends number>(
@@ -39,104 +39,61 @@ export function isTurn<P extends number, D extends number, N extends number>(
   return color === game.curMoveColor;
 }
 
-export function numMorris<P extends number, D extends number, N extends number>(
-  game: MorrisGame<P, D, N>,
+export function pointsMorris<P extends number, D extends number, N extends number>(
+  board: MorrisBoard<P, D, N>,
+  color: MorrisColor
+): ReadonlyArray<MorrisBoardPoint<D, N>> {
+  return board.points.filter((p) => isMorris(p.occupant) && p.occupant.color === color);
+}
+
+export function countMorris<P extends number, D extends number, N extends number>(
+  board: MorrisBoard<P, D, N>,
   color: MorrisColor
 ): number {
-  return game.board.points.filter((p) => isMorris(p.occupant) && p.occupant.color === color).length;
+  return pointsMorris(board, color).length;
 }
 
-export function unsafe_point<P extends number, D extends number, N extends number>(
-  board: MorrisBoard<P, D, N>,
-  coord: MorrisBoardCoord<D>
-): MorrisBoardPoint<D, N> {
-  const i = board.points.findIndex((p) => p.coord === coord);
-  return board.points[i] as MorrisBoardPoint<D, N>;
+export function pointsEmpty<P extends number, D extends number, N extends number>(
+  board: MorrisBoard<P, D, N>
+): ReadonlyArray<MorrisBoardPoint<D, N>> {
+  return board.points.filter((p) => !isMorris(p.occupant));
 }
 
-export function point<P extends number, D extends number, N extends number>(
+export function countEmpty<P extends number, D extends number, N extends number>(board: MorrisBoard<P, D, N>): number {
+  return pointsEmpty(board).length;
+}
+
+// --------------------------------------------------------------------------
+export function getPoint<P extends number, D extends number, N extends number>(
   board: MorrisBoard<P, D, N>,
   coord: MorrisBoardCoord<D>
 ): P.Effect.Effect<never, Error, MorrisBoardPoint<D, N>> {
-  const p = unsafe_point(board, coord);
+  const i = board.points.findIndex((p) => p.coord === coord);
+  const p = board.points[i];
   return p ? P.Effect.succeed(p) : P.Effect.fail(new Error(`Invalid point: ${coord}`));
 }
 
-export function unsafe_pointMorris<P extends number, D extends number, N extends number>(
-  board: MorrisBoard<P, D, N>,
-  coord: MorrisBoardCoord<D>
-): Morris<N> {
-  const i = board.points.findIndex((p) => p.coord === coord);
-  return board.points[i]?.occupant as Morris<N>;
-}
-
-export function pointMorris<P extends number, D extends number, N extends number>(
+export function getPointMorris<P extends number, D extends number, N extends number>(
   board: MorrisBoard<P, D, N>,
   coord: MorrisBoardCoord<D>
 ): P.Effect.Effect<never, Error, Morris<N>> {
   return P.pipe(
-    point(board, coord),
+    getPoint(board, coord),
     P.Effect.flatMap((p) =>
-      isMorris(p.occupant) ? P.Effect.succeed(p.occupant) : P.Effect.fail(new Error('Point is empty'))
+      isMorris(p.occupant) ? P.Effect.succeed(p.occupant) : P.Effect.fail(new Error(`Point is empty: ${coord}`))
     )
   );
 }
 
-export function unsafe_moveColor<P extends number, D extends number, N extends number>(
-  game: MorrisGame<P, D, N>,
-  move: MorrisMove<D, N>
-): MorrisColor | EMPTY {
-  switch (move.type) {
-    case MorrisMoveType.PLACE:
-      return move.morris.color;
-    case MorrisMoveType.MOVE:
-    case MorrisMoveType.REMOVE:
-      if (isMorris(unsafe_pointMorris(game.board, move.from))) {
-        return unsafe_pointMorris(game.board, move.from).color;
-      }
-  }
-  return EMPTY;
-}
-
-export function moveColor<P extends number, D extends number, N extends number>(
-  game: MorrisGame<P, D, N>,
-  move: MorrisMove<D, N>
-): P.Effect.Effect<never, Error, MorrisColor> {
-  switch (move.type) {
-    case MorrisMoveType.PLACE:
-      return P.Effect.succeed(move.morris.color);
-    case MorrisMoveType.REMOVE:
-    case MorrisMoveType.MOVE:
-      return P.pipe(
-        pointMorris(game.board, move.from),
-        P.Effect.map((morris) => morris.color)
-      );
-  }
-}
-
-export function unsafe_isPointEmpty<P extends number, D extends number, N extends number>(
-  board: MorrisBoard<P, D, N>,
-  coord: MorrisBoardCoord<D>
-): boolean {
-  return isEmptyPoint(unsafe_point(board, coord).occupant);
-}
-
+// --------------------------------------------------------------------------
 export function isPointEmpty<P extends number, D extends number, N extends number>(
   board: MorrisBoard<P, D, N>,
   coord: MorrisBoardCoord<D>
 ): P.Effect.Effect<never, Error, boolean> {
   return P.pipe(
-    point(board, coord),
+    getPoint(board, coord),
     P.Effect.map((p) => isEmptyPoint(p.occupant))
   );
-}
-
-export function unsafe_isPointAdjacent<P extends number, D extends number, N extends number>(
-  board: MorrisBoard<P, D, N>,
-  from: MorrisBoardCoord<D>,
-  to: MorrisBoardCoord<D>
-): boolean {
-  return unsafe_point(board, from).links.some((link) => link.to === to);
 }
 
 export function isPointAdjacent<P extends number, D extends number, N extends number>(
@@ -145,9 +102,28 @@ export function isPointAdjacent<P extends number, D extends number, N extends nu
   to: MorrisBoardCoord<D>
 ): P.Effect.Effect<never, Error, boolean> {
   return P.pipe(
-    point(board, from),
+    getPoint(board, from),
     P.Effect.map((p) => p.links.some((link) => link.to === to))
   );
+}
+
+// --------------------------------------------------------------------------
+// eslint-disable-next-line fp/no-nil
+export function moveColor<P extends number, D extends number, N extends number>(
+  game: MorrisGame<P, D, N>,
+  move: MorrisMove<D, N>
+): P.Effect.Effect<never, Error, MorrisColor> {
+  // eslint-disable-next-line fp/no-unused-expression
+  switch (move.type) {
+    case MorrisMoveType.PLACE:
+      return P.Effect.succeed(move.morris.color);
+    case MorrisMoveType.MOVE:
+    case MorrisMoveType.REMOVE:
+      return P.pipe(
+        getPointMorris(game.board, move.from),
+        P.Effect.map((morris) => morris.color)
+      );
+  }
 }
 
 export function millCandidatesForMove<P extends number, D extends number, N extends number>(
@@ -161,27 +137,11 @@ export function millCandidatesForMove<P extends number, D extends number, N exte
     .map((m) => m.filter((coord) => coord !== move.to)) as Array<MillCandidate<D>>;
 }
 
-export function unsafe_moveMakesMill<P extends number, D extends number, N extends number>(
-  game: MorrisGame<P, D, N>,
-  move: MorrisMove<D, N>
-): boolean {
-  if (move.type === MorrisMoveType.REMOVE) {
-    return false;
-  }
-
-  const candidates = millCandidatesForMove(game, move);
-  const color = unsafe_moveColor(game, move);
-
-  // For each mill possibility, check if the other two points are the same color as the move
-  return candidates.some((candidate) =>
-    candidate.every((coord) => unsafe_pointMorris(game.board, coord).color === color)
-  );
-}
-
 export function moveMakesMill<P extends number, D extends number, N extends number>(
   game: MorrisGame<P, D, N>,
   move: MorrisMove<D, N>
 ): P.Effect.Effect<never, Error, boolean> {
+  // A REMOVE move can never create a mill
   if (move.type === MorrisMoveType.REMOVE) {
     return P.Effect.succeed(false);
   }
@@ -190,16 +150,17 @@ export function moveMakesMill<P extends number, D extends number, N extends numb
 
   // For each mill possibility, check if the other two points are the same color as the move
   return P.pipe(
-    moveColor(game, move),
-    P.Effect.flatMap((color) =>
+    P.Effect.Do,
+    P.Effect.bind('moveColor', () => moveColor(game, move)),
+    P.Effect.flatMap(({ moveColor }) =>
       P.pipe(
         candidates,
         someE<never, Error, ReadonlyArray<MorrisBoardCoord<D>>>((candidate) =>
           P.pipe(
             candidate,
-            P.ReadonlyArray.map((coord) => pointMorris(game.board, coord)),
+            P.ReadonlyArray.map((coord) => getPoint(game.board, coord)),
             P.Effect.all,
-            P.Effect.map((morrisArray) => morrisArray.every((morris) => morris.color === color))
+            P.Effect.map((points) => points.every((p) => isMorris(p.occupant) && p.occupant.color === moveColor))
           )
         )
       )
@@ -218,46 +179,45 @@ export function countValidMovesForColor<P extends number, D extends number, N ex
   board: MorrisBoard<P, D, N>,
   facts: MorrisGameFacts,
   color: MorrisColor
-): number {
-  // In Lasker phase, the number of moves is moves + place
-  if (facts.isLaskerPhase) {
-    const emptyPoints = board.points.filter((p) => !isMorris(p.occupant));
-    const morrisPoints = board.points.filter((p) => isMorris(p.occupant) && p.occupant.color === color);
+): P.Effect.Effect<never, Error, number> {
+  if (facts.isMovingPhase || facts.isLaskerPhase) {
+    const emptyPoints = pointsEmpty(board);
+    const morrisPoints = pointsMorris(board, color);
 
-    const numMoveMoves = morrisPoints.reduce(
-      (acc, p) => acc + emptyPoints.filter((ep) => unsafe_isPointAdjacent(board, p.coord, ep.coord)).length,
-      0
+    // For each morris[color] on the board, find all adjacent empty points
+    const numMoveMoves = P.pipe(
+      morrisPoints,
+      P.Effect.reduce(0, (acc, p) =>
+        P.pipe(
+          emptyPoints,
+          filterE((ep) => isPointAdjacent(board, p.coord, ep.coord)),
+          P.Effect.map((filteredEmptyPoints) => acc + filteredEmptyPoints.length)
+        )
+      )
     );
 
-    return numMoveMoves + emptyPoints.length;
+    return facts.isLaskerPhase
+      ? // In Lasker phase, the number of moves is (move moves + place moves)
+        P.pipe(
+          numMoveMoves,
+          P.Effect.map((numMoveMoves) => numMoveMoves + emptyPoints.length)
+        )
+      : // In moving phase, for each morris[color] on the board, find all adjacent empty points
+        numMoveMoves;
   }
 
   // In placing phase, just return the number of empty points
   if (facts.isPlacingPhase) {
-    const emptyPoints = board.points.filter((p) => !isMorris(p.occupant));
-
-    return emptyPoints.length;
+    return P.Effect.succeed(countEmpty(board));
   }
 
   // In flying phase, return the number of empty points for each morris[color]
   if (facts.isFlyingPhase) {
-    const emptyPoints = board.points.filter((p) => !isMorris(p.occupant));
-    const morrisPoints = board.points.filter((p) => isMorris(p.occupant) && p.occupant.color === color);
-
-    return emptyPoints.length * morrisPoints.length;
+    return P.Effect.succeed(countEmpty(board) * countMorris(board, color));
   }
 
-  // In moving phase, for each morris[color] on the board, find all adjacent empty points
-  if (facts.isMovingPhase) {
-    const emptyPoints = board.points.filter((p) => !isMorris(p.occupant));
-    const morrisPoints = board.points.filter((p) => isMorris(p.occupant) && p.occupant.color === color);
-
-    return morrisPoints.reduce(
-      (acc, p) => acc + emptyPoints.filter((ep) => unsafe_isPointAdjacent(board, p.coord, ep.coord)).length,
-      0
-    );
-  }
-  return 0;
+  // Fallback default (absurd)
+  return P.Effect.succeed(0);
 }
 
 // --------------------------------------------------------------------------
@@ -270,34 +230,47 @@ export function setPointOccupant<P extends number, D extends number, N extends n
   board: MorrisBoard<P, D, N>,
   coord: MorrisBoardCoord<D>,
   occupant: MorrisBoardPointOccupant<N>
-): MorrisBoard<P, D, N> {
-  return {
-    ...board,
-    points: board.points.map((p) => (p.coord === coord ? { ...p, occupant } : p)) as Tuple<MorrisBoardPoint<D, N>, P>,
-  };
+): P.Effect.Effect<never, Error, MorrisBoard<P, D, N>> {
+  const i = board.points.findIndex((p) => p.coord === coord);
+  const p = board.points[i];
+
+  return p
+    ? P.Effect.succeed({
+        ...board,
+        points: board.points.map((p) => (p.coord === coord ? { ...p, occupant } : p)) as Tuple<
+          MorrisBoardPoint<D, N>,
+          P
+        >,
+      })
+    : P.Effect.fail(new Error(`Invalid point: ${coord}`));
 }
 
 export function setPointEmpty<P extends number, D extends number, N extends number>(
   board: MorrisBoard<P, D, N>,
   coord: MorrisBoardCoord<D>
-): MorrisBoard<P, D, N> {
+): P.Effect.Effect<never, Error, MorrisBoard<P, D, N>> {
   return setPointOccupant(board, coord, EmptyPoint);
 }
 
-export function unsafe_boardApplyMove<P extends number, D extends number, N extends number>(
+// eslint-disable-next-line fp/no-nil
+export function boardApplyMove<P extends number, D extends number, N extends number>(
   board: MorrisBoard<P, D, N>,
   move: MorrisMove<D, N>
-): MorrisBoard<P, D, N> {
+): P.Effect.Effect<never, Error, MorrisBoard<P, D, N>> {
   switch (move.type) {
     case MorrisMoveType.PLACE:
       return setPointOccupant(board, move.to, move.morris);
 
     case MorrisMoveType.MOVE:
-      return setPointOccupant(setPointEmpty(board, move.from), move.to, unsafe_point(board, move.from).occupant);
+      return P.pipe(
+        P.Effect.Do,
+        P.Effect.bind('point', () => getPoint(board, move.from)),
+        P.Effect.bind('newBoard', () => setPointEmpty(board, move.from)),
+        P.Effect.flatMap(({ newBoard, point }) => setPointOccupant(newBoard, move.to, point.occupant))
+      );
 
     case MorrisMoveType.REMOVE:
-      // TODO
-      return board;
+      return setPointEmpty(board, move.from);
   }
 }
 
@@ -320,66 +293,35 @@ export const createMoveMove = <D extends number, N extends number>(
   to,
 });
 
-export const unsafe_execMove =
+export const createMoveRemove = <D extends number, N extends number>(
+  morris: Morris<N>,
+  from: MorrisBoardCoord<D>
+): MorrisMoveRemove<D, N> => ({
+  type: MorrisMoveType.REMOVE,
+  morris,
+  from,
+});
+
+export const execMove =
   <P extends number, D extends number, N extends number>(move: MorrisMove<D, N>, facts: MorrisGameFacts) =>
-  (game: MorrisGame<P, D, N>): MorrisGame<P, D, N> => {
-    const newBoard = unsafe_boardApplyMove(game.board, move);
+  (game: MorrisGame<P, D, N>): P.Effect.Effect<never, Error, MorrisGame<P, D, N>> => {
     const nextMoveColor = R.val(facts.moveMakesNextTurnWhite) ? MorrisColor.WHITE : MorrisColor.BLACK;
 
-    return {
-      ...game,
-      board: newBoard,
-      curMoveColor: nextMoveColor,
-      gameOver: R.val(facts.moveMakesGameOver),
-      lastMillCounter: R.val(facts.moveMakesMill) ? 0 : game.lastMillCounter + 1,
-      moves: [...game.moves, move],
-      positions: [...game.positions, boardHash(newBoard)],
-      facts,
-    };
-  };
-
-/*[XXX]
-export const execMoveE =
-  <P extends number, D extends number, N extends number>(move: MorrisMove<D, N>, curMoveColor: MorrisColor) =>
-  (game: MorrisGame<P, D, N>): P.Effect.Effect<never, Error, MorrisGame<P, D, N>> => {
-    return P.pipe(P.Effect.succeed(game), P.Effect.map(execMoveP<P, D, N>(move, curMoveColor)));
-  };
-*/
-
-// --------------------------------------------------------------------------
-/* FIXME: remove
-export const tickExec =
-  <P extends number, D extends number, N extends number>(move: MorrisMove<D, N>) =>
-  (game: MorrisGame<P, D, N>): P.Effect.Effect<RulesImpl, Error, MorrisGame<P, D, N>> => {
-    const rulesContext: MorrisContext<P, D, N> = {
-      game,
-      move,
-    };
-
     return P.pipe(
-      RulesImpl,
-      P.Effect.flatMap((rulesImpl) =>
-        P.pipe(rulesImpl.ruleSet<P, D, N>(), R.decide<MorrisContext<P, D, N>, MorrisGameFacts>(rulesContext))
-      ),
-      P.Effect.tap((x) => P.Console.log(x.facts)),
-      P.Effect.tap((_) => P.Console.log(strMorrisMove(move) + '\n')),
-      P.Effect.flatMap((ruleSet) =>
-        ruleSet.facts.isValidMove ? P.Effect.succeed(ruleSet) : P.Effect.fail(new Error('Invalid move'))
-      ),
-      P.Effect.map((ruleSet) => {
-        const nextPlayer = ruleSet.facts.isWhiteTurn ? MorrisColor.BLACK : MorrisColor.WHITE;
-        return P.pipe(game, unsafe_execMove(move, nextPlayer));
-      })
+      P.Effect.Do,
+      P.Effect.bind('newBoard', () => boardApplyMove(game.board, move)),
+      P.Effect.map(({ newBoard }) => ({
+        ...game,
+        board: newBoard,
+        curMoveColor: nextMoveColor,
+        gameOver: R.val(facts.moveMakesGameOver),
+        lastMillCounter: R.val(facts.moveMakesMill) ? 0 : game.lastMillCounter + 1,
+        moves: [...game.moves, move],
+        positions: [...game.positions, boardHash(newBoard)],
+        facts,
+      }))
     );
   };
-*/
-
-// - Formulate rules context: { game, move }
-// - Exec rules with (ruleSet, context) -> newRuleSet
-// - Detect invalid move => display error and END_LOOP
-// - Detect valid move, detect next player => exec move with (game, move, nextPlayer) -> newGame
-// - Render newGame
-// - Detect game over => display winner and exit LOOP
 
 // --------------------------------------------------------------------------
 export const tick =
@@ -392,24 +334,24 @@ export const tick =
     };
 
     return P.pipe(
-      // Execute the rules
-      RulesImpl,
-      P.Effect.flatMap((rulesImpl) =>
-        P.pipe(rulesImpl.ruleSet<P, D, N>(), R.decide<MorrisContext<P, D, N>, MorrisGameFacts>(rulesContext))
+      P.Effect.Do,
+      P.Effect.bind('ruleSet', () =>
+        // Execute the rules
+        P.pipe(
+          RulesImpl,
+          P.Effect.map((rulesImpl) => rulesImpl.ruleSet<P, D, N>()),
+          P.Effect.flatMap((ruleSet) => P.pipe(ruleSet, R.decide(rulesContext)))
+        )
       ),
-      (x) => x,
+      P.Effect.bind('newGame', ({ ruleSet }) => P.pipe(gameTick.game, execMove(move, ruleSet.facts))),
       P.Effect.tap((_) => P.Console.log('\n-------\n')),
       // P.Effect.tap((_) => P.Console.log(rulesContext.game)),
-      P.Effect.tap((x) => P.Console.log(x.facts)),
+      // P.Effect.tap((x) => P.Console.log(x.ruleSet.facts)),
       P.Effect.tap((_) => P.Console.log(strMorrisMove(move) + '\n')),
-      P.Effect.flatMap((ruleSet) =>
+      P.Effect.flatMap(({ newGame, ruleSet }) =>
         R.val(ruleSet.facts.isValidMove)
           ? // Valid move: execute the move
-            makeMorrisGameTick<P, D, N>(
-              P.pipe(gameTick.game, unsafe_execMove(move, ruleSet.facts)),
-              gameTick.facts,
-              GAME_TICK_MESSAGE_OK
-            )
+            makeMorrisGameTick<P, D, N>(newGame, gameTick.facts, GAME_TICK_MESSAGE_OK)
           : // Invalid move
             // FIXME: derive message from rules
             makeMorrisGameTick<P, D, N>(gameTick.game, gameTick.facts, 'NOPE')
