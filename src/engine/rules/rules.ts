@@ -2,18 +2,11 @@ import * as P from '@konker.dev/effect-ts-prelude';
 
 import type { MorrisEngineError } from '../../lib/error';
 import * as R from '../../lib/tiny-rules-fp';
-import {
-  boardApplyMove,
-  boardHash,
-  countMorris,
-  countPositionRepeats,
-  countValidMovesForColor,
-  isPointAdjacent,
-  isPointEmpty,
-  moveColor,
-  moveMakesMill,
-} from '../functions';
+import { boardHash, countPositionRepeats } from '../board';
 import { MorrisColor, MorrisMoveType, MorrisPhase } from '../index';
+import { countValidMovesForColor, moveColor, moveMakesMill } from '../moves';
+import { countMorris, isPointAdjacent, isPointEmpty } from '../points';
+import { applyMoveToGame } from '../tick';
 import type { MorrisGameFacts } from './facts';
 import { INITIAL_MORRIS_GAME_FACTS } from './facts';
 import type { MorrisRulesContext } from './index';
@@ -21,7 +14,6 @@ import type { MorrisRulesContext } from './index';
 export const Rules = <P extends number, D extends number, N extends number>() =>
   P.pipe(
     R.createRuleSet<MorrisRulesContext<P, D, N>, MorrisGameFacts, MorrisEngineError>(INITIAL_MORRIS_GAME_FACTS),
-    (x) => x,
     R.sequence([
       R.addRuleFunc(
         'isFirstMove',
@@ -31,12 +23,12 @@ export const Rules = <P extends number, D extends number, N extends number>() =>
       R.addRuleFunc(
         'isTurnWhite',
         (c: MorrisRulesContext<P, D, N>, _f: MorrisGameFacts) => c.game.curMoveColor === MorrisColor.WHITE,
-        'Current turn is White'
+        'Is current turn White'
       ),
       R.addRuleFunc(
         'isTurnBlack',
         (_c: MorrisRulesContext<P, D, N>, f: MorrisGameFacts) => !R.val(f.isTurnWhite),
-        'Current turn is Black'
+        'Is current turn Black'
       ),
       R.addRuleFunc(
         'isLaskerPhase',
@@ -194,11 +186,11 @@ export const Rules = <P extends number, D extends number, N extends number>() =>
         (c: MorrisRulesContext<P, D, N>, f: MorrisGameFacts) =>
           P.pipe(
             P.Effect.Do,
-            P.Effect.bind('newBoard', () => boardApplyMove(c.game.board, c.move)),
+            P.Effect.bind('newGame', () => applyMoveToGame(c.game, c.move)),
             P.Effect.map(
-              ({ newBoard }) =>
+              ({ newGame }) =>
                 R.val(f.isValidMove) &&
-                countPositionRepeats(c.game, boardHash(newBoard)) >= c.game.config.numPositionRepeatsForDraw
+                countPositionRepeats(c.game, boardHash(newGame.board)) >= c.game.config.numPositionRepeatsForDraw
             )
           ),
         'The move will result in a draw due to the move cycle limit'
@@ -220,9 +212,9 @@ export const Rules = <P extends number, D extends number, N extends number>() =>
         (c: MorrisRulesContext<P, D, N>, f: MorrisGameFacts) =>
           P.pipe(
             P.Effect.Do,
-            P.Effect.bind('newBoard', () => boardApplyMove(c.game.board, c.move)),
-            P.Effect.bind('validMovesCount', ({ newBoard }) =>
-              countValidMovesForColor(newBoard, c.game.facts, MorrisColor.WHITE)
+            P.Effect.bind('newGame', () => applyMoveToGame(c.game, c.move)),
+            P.Effect.bind('validMovesCount', ({ newGame }) =>
+              countValidMovesForColor(newGame.board, f, MorrisColor.WHITE)
             ),
             P.Effect.map(({ validMovesCount }) => R.val(f.isValidMove) && validMovesCount === 0)
           ),
@@ -233,9 +225,9 @@ export const Rules = <P extends number, D extends number, N extends number>() =>
         (c: MorrisRulesContext<P, D, N>, f: MorrisGameFacts) =>
           P.pipe(
             P.Effect.Do,
-            P.Effect.bind('newBoard', () => boardApplyMove(c.game.board, c.move)),
-            P.Effect.bind('validMovesCount', ({ newBoard }) =>
-              countValidMovesForColor(newBoard, c.game.facts, MorrisColor.BLACK)
+            P.Effect.bind('newGame', () => applyMoveToGame(c.game, c.move)),
+            P.Effect.bind('validMovesCount', ({ newGame }) =>
+              countValidMovesForColor(newGame.board, f, MorrisColor.BLACK)
             ),
             P.Effect.map(({ validMovesCount }) => R.val(f.isValidMove) && validMovesCount === 0)
           ),

@@ -8,7 +8,7 @@ import {
   MorrisPhase,
   MorrisWhite,
 } from '../engine';
-import { boardHash } from '../engine/functions';
+import { boardHash } from '../engine/board';
 import { INITIAL_MORRIS_GAME_FACTS } from '../engine/rules/facts';
 
 export const P_3 = 9;
@@ -149,7 +149,9 @@ export const game: MorrisGame<P_3, D_3, N_3> = {
   result: MorrisGameResult.IN_PROGRESS,
   lastMillCounter: 0,
   morrisWhite: [MorrisWhite(1), MorrisWhite(2), MorrisWhite(3)],
+  morrisWhiteRemoved: [],
   morrisBlack: [MorrisBlack(1), MorrisBlack(2), MorrisBlack(3)],
+  morrisBlackRemoved: [],
   board,
   moves: [],
   positions: [boardHash(board)],

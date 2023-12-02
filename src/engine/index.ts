@@ -1,9 +1,8 @@
 import * as P from '@konker.dev/effect-ts-prelude';
 
-import type { MorrisEngineError } from '../lib/error';
 import type { EnumerateCoordChars, Range1, RepeatString, Tuple } from '../lib/type-utils';
+import { COORD_CHARS } from '../lib/type-utils';
 import type { MorrisGameFacts } from './rules/facts';
-import { INITIAL_MORRIS_GAME_FACTS } from './rules/facts';
 
 /**
  * Morris Engine
@@ -77,6 +76,23 @@ export type MorrisBoardPointOccupant<N extends number> = EmptyOccupant | Morris<
 
 // --------------------------------------------------------------------------
 export type MorrisBoardCoord<D extends number> = `${EnumerateCoordChars<D>}${Range1<D>}`;
+export const MorrisBoardCoordS = <D extends number>(d: D) =>
+  P.pipe(
+    P.Schema.string,
+    P.Schema.filter(
+      (s) => {
+        const parts = s.split('', 2);
+        if (parts.length !== 2) return false;
+        const y = parseInt(parts[1]!, 10);
+
+        return COORD_CHARS.slice(0, d).includes(parts[0] as any) && y > 0 && y < d;
+      },
+      {
+        title: 'MorrisBoardCoord',
+        message: () => `Invalid board coordinate for dimension ${d}`,
+      }
+    )
+  );
 
 export type MorrisBoardLink<D extends number> = {
   readonly to: MorrisBoardCoord<D>;
@@ -146,8 +162,10 @@ export type MorrisGame<P extends number, D extends number, N extends number> = {
   readonly gameOver: boolean;
   readonly result: MorrisGameResult;
   readonly lastMillCounter: number;
-  readonly morrisWhite: Tuple<MorrisWhite<N>, N>;
-  readonly morrisBlack: Tuple<MorrisBlack<N>, N>;
+  readonly morrisWhite: ReadonlyArray<MorrisWhite<N>>;
+  readonly morrisWhiteRemoved: ReadonlyArray<MorrisWhite<N>>;
+  readonly morrisBlack: ReadonlyArray<MorrisBlack<N>>;
+  readonly morrisBlackRemoved: ReadonlyArray<MorrisBlack<N>>;
   readonly board: MorrisBoard<P, D, N>;
   readonly positions: ReadonlyArray<MorrisBoardPositionHash<P>>;
   readonly moves: ReadonlyArray<MorrisMove<D, N>>;
@@ -173,38 +191,3 @@ export const MorrisWhite = <N extends number>(n: Range1<N>): MorrisWhite<N> =>
     color: MorrisColor.WHITE,
     n,
   }) as const;
-
-export function isEmptyOccupant(x: unknown): x is EmptyOccupant {
-  return P.pipe(x, P.Schema.is(EmptyOccupantS));
-}
-
-export function isMorris<N extends number>(x: MorrisBoardPointOccupant<N>): x is Morris<N> {
-  return !isEmptyOccupant(x);
-}
-
-// FIXME: make this into proper schemas
-// eslint-disable-next-line fp/no-nil
-export function strMorrisMove<D extends number, N extends number>(move: MorrisMove<D, N>): string {
-  switch (move.type) {
-    case MorrisMoveType.PLACE:
-      return `P: ${move.morris.color} ${move.to}`;
-    case MorrisMoveType.MOVE:
-      return `M: ${move.from} ${move.to}`;
-    case MorrisMoveType.REMOVE:
-      return `R: ${move.morris.color} ${move.from}`;
-  }
-}
-
-export function makeMorrisGameTick<P extends number, D extends number, N extends number>(
-  game: MorrisGame<any, any, any>,
-  facts: MorrisGameFacts,
-  message: string
-): P.Effect.Effect<never, MorrisEngineError, MorrisGameTick<P, D, N>> {
-  return P.Effect.succeed({ game, facts, message });
-}
-
-export function startMorrisGame<P extends number, D extends number, N extends number>(
-  morrisGame: MorrisGame<P, D, N>
-): P.Effect.Effect<never, MorrisEngineError, MorrisGameTick<P, D, N>> {
-  return makeMorrisGameTick(morrisGame, INITIAL_MORRIS_GAME_FACTS, 'BEGIN');
-}

@@ -6,10 +6,11 @@ import type { D_3, N_3, P_3 } from './3mm';
 import { game } from './3mm';
 import { renderE } from './3mm/render';
 import type { MorrisGameTick } from './engine';
-import { startMorrisGame } from './engine';
-import * as M from './engine/functions';
+import { startMorrisGame } from './engine/game';
+import { createMoveMove, createMovePlace } from './engine/moves';
 import { RulesImpl } from './engine/rules';
 import { Rules } from './engine/rules/rules';
+import { tick } from './engine/tick';
 
 // --------------------------------------------------------------------------
 export function disp(gameTick: MorrisGameTick<P_3, D_3, N_3>): P.Effect.Effect<never, Error, void> {
@@ -24,34 +25,46 @@ const prog1 = P.pipe(
   startMorrisGame<P_3, D_3, N_3>(game),
   P.Effect.tapDefect((e) => P.Console.log(e._tag)),
 
-  P.Effect.flatMap(M.tick<P_3, D_3, N_3>(M.createMovePlace(game.morrisWhite[0], 'a1'))),
+  P.Effect.flatMap((gameTick) =>
+    P.pipe(gameTick, tick<P_3, D_3, N_3>(createMovePlace(gameTick.game.morrisWhite[0]!, 'a1')))
+  ),
   P.Effect.tap(disp),
 
-  P.Effect.flatMap(M.tick<P_3, D_3, N_3>(M.createMovePlace(game.morrisBlack[0]!, 'c2'))),
+  P.Effect.flatMap((gameTick) =>
+    P.pipe(gameTick, tick<P_3, D_3, N_3>(createMovePlace(gameTick.game.morrisBlack[0]!, 'c2')))
+  ),
   P.Effect.tap(disp),
 
-  P.Effect.flatMap(M.tick<P_3, D_3, N_3>(M.createMovePlace(game.morrisWhite[1]!, 'b3'))),
+  P.Effect.flatMap((gameTick) =>
+    P.pipe(gameTick, tick<P_3, D_3, N_3>(createMovePlace(gameTick.game.morrisWhite[0]!, 'b3')))
+  ),
   P.Effect.tap(disp),
 
-  P.Effect.flatMap(M.tick<P_3, D_3, N_3>(M.createMovePlace(game.morrisBlack[1]!, 'c3'))),
+  P.Effect.flatMap((gameTick) =>
+    P.pipe(gameTick, tick<P_3, D_3, N_3>(createMovePlace(gameTick.game.morrisBlack[0]!, 'c3')))
+  ),
   P.Effect.tap(disp),
 
-  P.Effect.flatMap(M.tick<P_3, D_3, N_3>(M.createMoveMove('b2', 'a3'))),
+  P.Effect.flatMap(tick<P_3, D_3, N_3>(createMoveMove('b2', 'a3'))),
   P.Effect.tap(disp),
 
-  P.Effect.flatMap(M.tick<P_3, D_3, N_3>(M.createMovePlace(game.morrisWhite[2]!, 'b1'))),
+  P.Effect.flatMap((gameTick) =>
+    P.pipe(gameTick, tick<P_3, D_3, N_3>(createMovePlace(gameTick.game.morrisWhite[0]!, 'b1')))
+  ),
   P.Effect.tap(disp),
 
-  P.Effect.flatMap(M.tick<P_3, D_3, N_3>(M.createMovePlace(game.morrisBlack[2]!, 'b2'))),
+  P.Effect.flatMap((gameTick) =>
+    P.pipe(gameTick, tick<P_3, D_3, N_3>(createMovePlace(gameTick.game.morrisBlack[0]!, 'b2')))
+  ),
   P.Effect.tap(disp),
 
-  P.Effect.flatMap(M.tick<P_3, D_3, N_3>(M.createMoveMove('b3', 'a3'))),
+  P.Effect.flatMap(tick<P_3, D_3, N_3>(createMoveMove('b3', 'a3'))),
   P.Effect.tap(disp),
 
-  P.Effect.flatMap(M.tick<P_3, D_3, N_3>(M.createMoveMove('b2', 'c1'))),
+  P.Effect.flatMap(tick<P_3, D_3, N_3>(createMoveMove('b2', 'c1'))),
   P.Effect.tap(disp)
 
-  // P.Effect.flatMap(M.tick<PP, DD, NN>(M.createMoveMove('a1', 'b2'))),
+  // P.Effect.flatMap(gameTick => P.pipe(gameTick => tick<PP, DD, NN>(createMoveMove('a1', 'b2')))),
   // P.Effect.tap(disp)
 );
 

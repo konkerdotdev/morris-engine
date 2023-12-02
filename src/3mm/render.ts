@@ -1,11 +1,12 @@
 import * as P from '@konker.dev/effect-ts-prelude';
 import chalk from 'chalk';
 
-import type { MENS_MORRIS_D_3, MENS_MORRIS_N_3, MENS_MORRIS_P_3 } from '../engine/boards';
 import type { MorrisBoardPoint, MorrisGame } from '../engine';
-import { EMPTY, isMorris, MorrisColor } from '../engine';
+import { EMPTY, MorrisColor } from '../engine';
+import { isMorris } from '../engine/points';
+import type { D_3, N_3, P_3 } from './index';
 
-export function renderOccupant(p: MorrisBoardPoint<MENS_MORRIS_D_3, MENS_MORRIS_N_3>): string {
+export function renderOccupant(p: MorrisBoardPoint<D_3, N_3>): string {
   return isMorris(p.occupant)
     ? p.occupant.color === MorrisColor.WHITE
       ? chalk.yellowBright(chalk.bold(p.occupant.color))
@@ -13,7 +14,7 @@ export function renderOccupant(p: MorrisBoardPoint<MENS_MORRIS_D_3, MENS_MORRIS_
     : EMPTY;
 }
 
-export function render(game: MorrisGame<MENS_MORRIS_P_3, MENS_MORRIS_D_3, MENS_MORRIS_N_3>): string {
+export function render(game: MorrisGame<P_3, D_3, N_3>): string {
   return P.pipe(
     game.board.points,
     P.ReadonlyArray.map(renderOccupant),
@@ -45,8 +46,6 @@ export function render(game: MorrisGame<MENS_MORRIS_P_3, MENS_MORRIS_D_3, MENS_M
   );
 }
 
-export function renderE(
-  game: MorrisGame<MENS_MORRIS_P_3, MENS_MORRIS_D_3, MENS_MORRIS_N_3>
-): P.Effect.Effect<never, Error, string> {
+export function renderE(game: MorrisGame<P_3, D_3, N_3>): P.Effect.Effect<never, Error, string> {
   return P.pipe(render(game), P.Effect.succeed);
 }
