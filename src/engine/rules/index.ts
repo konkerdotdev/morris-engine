@@ -2,12 +2,13 @@ import * as P from '@konker.dev/effect-ts-prelude';
 
 import type { MorrisEngineError } from '../../lib/error';
 import type * as R from '../../lib/tiny-rules-fp';
-import type { MorrisGame, MorrisMove } from '../index';
+import type { MorrisGame } from '../index';
+import type { MorrisMoveS } from '../moves/schemas';
 import type { MorrisGameFacts } from './facts';
 
 export type MorrisRulesContext<P extends number, D extends number, N extends number> = {
   readonly game: MorrisGame<P, D, N>;
-  readonly move: MorrisMove<D>;
+  readonly move: MorrisMoveS<D>;
 };
 
 export type RulesImpl = {

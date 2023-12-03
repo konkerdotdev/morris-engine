@@ -7,11 +7,13 @@ import { boardHash } from './board';
 import { discardMorris, getNextPlaceMorris, useMorris } from './game';
 import type { MorrisGame, MorrisGameTick } from './index';
 import * as M from './index';
-import { strMorrisMove } from './moves';
+import { strMorrisMove } from './moves/helpers';
+import type { MorrisMoveS } from './moves/schemas';
 import { getPoint, getPointMorris, setPointEmpty, setPointOccupant } from './points';
 import type { MorrisRulesContext } from './rules';
 import { RulesImpl } from './rules';
 import type { MorrisGameFacts } from './rules/facts';
+import { INITIAL_MORRIS_GAME_FACTS } from './rules/facts';
 
 // --------------------------------------------------------------------------
 export function makeMorrisGameTick<P extends number, D extends number, N extends number>(
@@ -20,6 +22,12 @@ export function makeMorrisGameTick<P extends number, D extends number, N extends
   message: string
 ): P.Effect.Effect<never, MorrisEngineError, MorrisGameTick<P, D, N>> {
   return P.Effect.succeed({ game, facts, message });
+}
+
+export function startMorrisGame<P extends number, D extends number, N extends number>(
+  morrisGame: MorrisGame<P, D, N>
+): P.Effect.Effect<never, MorrisEngineError, MorrisGameTick<P, D, N>> {
+  return makeMorrisGameTick(morrisGame, INITIAL_MORRIS_GAME_FACTS, 'BEGIN');
 }
 
 export function resolveResult(facts: MorrisGameFacts): M.MorrisGameResult {
@@ -36,7 +44,7 @@ export function resolveResult(facts: MorrisGameFacts): M.MorrisGameResult {
 // eslint-disable-next-line fp/no-nil
 export function applyMoveToGame<P extends number, D extends number, N extends number>(
   game: M.MorrisGame<P, D, N>,
-  move: M.MorrisMove<D>
+  move: MorrisMoveS<D>
 ): P.Effect.Effect<never, MorrisEngineError, M.MorrisGame<P, D, N>> {
   switch (move.type) {
     case M.MorrisMoveType.PLACE:
@@ -73,7 +81,7 @@ export function applyMoveToGame<P extends number, D extends number, N extends nu
 
 // --------------------------------------------------------------------------
 export const execMove =
-  <P extends number, D extends number, N extends number>(move: M.MorrisMove<D>, facts: MorrisGameFacts) =>
+  <P extends number, D extends number, N extends number>(move: MorrisMoveS<D>, facts: MorrisGameFacts) =>
   (game: M.MorrisGame<P, D, N>): P.Effect.Effect<never, MorrisEngineError, M.MorrisGame<P, D, N>> => {
     if (!R.val(facts.isValidMove)) {
       return P.Effect.succeed(game);
@@ -99,7 +107,7 @@ export const execMove =
 
 // --------------------------------------------------------------------------
 export const tick =
-  <P extends number, D extends number, N extends number>(move: M.MorrisMove<D>) =>
+  <P extends number, D extends number, N extends number>(move: MorrisMoveS<D>) =>
   (gameTick: M.MorrisGameTick<P, D, N>): P.Effect.Effect<RulesImpl, MorrisEngineError, M.MorrisGameTick<P, D, N>> => {
     // Formulate a rules context
     const rulesContext = {

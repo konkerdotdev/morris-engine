@@ -1,10 +1,10 @@
 import * as P from '@konker.dev/effect-ts-prelude';
 
-import { MorrisColor, MorrisMoveType } from './index';
+import { MorrisColor, MorrisMoveType } from '../index';
 import type { MorrisMoveMoveS, MorrisMovePlaceS, MorrisMoveRemoveS } from './schemas';
-import * as unit from './schemas';
+import * as unit from './transforms';
 
-describe('schemas', () => {
+describe('moves/transforms', () => {
   const TEST_PLACE_S = 'P B a2';
   const TEST_PLACE_O: MorrisMovePlaceS<3> = { type: MorrisMoveType.PLACE, color: MorrisColor.BLACK, to: 'a2' };
 

@@ -1,10 +1,9 @@
-import * as P from '@konker.dev/effect-ts-prelude';
-
 import type { Range1, RepeatString, Tuple } from '../lib/type-utils';
-import type { COORD_CHARS, THREE } from './consts';
-import { EMPTY, MORRIS } from './consts';
+import type { EMPTY, THREE } from './consts';
+import { MORRIS } from './consts';
+import type { MorrisMoveS } from './moves/schemas';
 import type { MorrisGameFacts } from './rules/facts';
-import type { MorrisBoardCoordS } from './schemas';
+import type { EmptyOccupant, MorrisBoardCoordS } from './schemas';
 
 /**
  * Morris Engine
@@ -63,15 +62,9 @@ export type MorrisWhite<N extends number> = {
 
 export type Morris<N extends number> = MorrisBlack<N> | MorrisWhite<N>;
 
-export const EmptyOccupantS = P.Schema.struct({ _tag: P.Schema.literal(EMPTY) }).pipe(P.Schema.brand('EmptyPoint'));
-export type EmptyOccupant = P.Schema.Schema.To<typeof EmptyOccupantS>;
-export const EmptyOccupant = P.pipe({ _tag: EMPTY }, P.Schema.decodeSync(EmptyOccupantS));
-
 export type MorrisBoardPointOccupant<N extends number> = EmptyOccupant | Morris<N>;
 
 // --------------------------------------------------------------------------
-export type kMorrisBoardCoord<D extends number> = `${(typeof COORD_CHARS)[number]}${Range1<D>}`; //`${EnumerateCoordChars<D>}${Range1<D>}`;
-
 export type MorrisBoardLink<D extends number> = {
   readonly to: MorrisBoardCoordS<D>;
   readonly linkType: MorrisLinkType;
@@ -90,7 +83,7 @@ export type OccupiedBoardPoint<D extends number, N extends number> = Omit<Morris
 export type MillCandidate<D extends number> = Tuple<MorrisBoardCoordS<D>, THREE>;
 
 export type MorrisBoard<P extends number, D extends number, N extends number> = {
-  readonly type: P;
+  readonly numPoints: P;
   readonly dimension: D;
   readonly points: Tuple<MorrisBoardPoint<D, N>, P>;
   readonly millCandidates: ReadonlyArray<MillCandidate<D>>;
@@ -99,30 +92,7 @@ export type MorrisBoard<P extends number, D extends number, N extends number> = 
 export type MorrisBoardPositionHash<P extends number> = RepeatString<MorrisColor | EMPTY, P>;
 
 // --------------------------------------------------------------------------
-export type MorrisMovePlace<D extends number> = {
-  readonly type: MorrisMoveType.PLACE;
-  readonly color: MorrisColor;
-  readonly to: MorrisBoardCoordS<D>;
-};
-
-export type MorrisMoveMove<D extends number> = {
-  readonly type: MorrisMoveType.MOVE;
-  readonly from: MorrisBoardCoordS<D>;
-  readonly to: MorrisBoardCoordS<D>;
-};
-
-export type MorrisMoveRemove<D extends number> = {
-  readonly type: MorrisMoveType.REMOVE;
-  readonly from: MorrisBoardCoordS<D>;
-};
-
-export type MorrisMove<D extends number> = MorrisMovePlace<D> | MorrisMoveMove<D> | MorrisMoveRemove<D>;
-
-// --------------------------------------------------------------------------
-export type MorrisGameConfig<P extends number, D extends number, N extends number> = {
-  readonly P: P;
-  readonly D: D;
-  readonly N: N;
+export type MorrisGameConfig<N extends number> = {
   readonly name: string;
   readonly numMorrisPerPlayer: N;
   readonly flyingThreshold: number;
@@ -133,7 +103,7 @@ export type MorrisGameConfig<P extends number, D extends number, N extends numbe
 };
 
 export type MorrisGame<P extends number, D extends number, N extends number> = {
-  readonly config: MorrisGameConfig<P, D, N>;
+  readonly config: MorrisGameConfig<N>;
   readonly startColor: MorrisColor;
   readonly curMoveColor: MorrisColor;
   readonly gameOver: boolean;
@@ -145,7 +115,7 @@ export type MorrisGame<P extends number, D extends number, N extends number> = {
   readonly morrisBlackRemoved: ReadonlyArray<MorrisBlack<N>>;
   readonly board: MorrisBoard<P, D, N>;
   readonly positions: ReadonlyArray<MorrisBoardPositionHash<P>>;
-  readonly moves: ReadonlyArray<MorrisMove<D>>;
+  readonly moves: ReadonlyArray<MorrisMoveS<D>>;
   readonly facts: MorrisGameFacts;
 };
 

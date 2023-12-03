@@ -5,12 +5,12 @@ import { toMorrisEngineError } from '../lib/error';
 import type { Tuple } from '../lib/type-utils';
 import { filterE } from '../lib/type-utils';
 import { MORRIS } from './consts';
-import type { Morris, MorrisBoardPoint, OccupiedBoardPoint } from './index';
-import * as M from './index';
+import type * as M from './index';
 import type { MorrisBoardCoordS } from './schemas';
+import { EmptyOccupant, EmptyOccupantS } from './schemas';
 
-export function isEmptyOccupant(x: unknown): x is M.EmptyOccupant {
-  return P.pipe(x, P.Schema.is(M.EmptyOccupantS));
+export function isEmptyOccupant(x: unknown): x is EmptyOccupant {
+  return P.pipe(x, P.Schema.is(EmptyOccupantS));
 }
 
 export function isOccupied<D extends number, N extends number>(
@@ -24,7 +24,7 @@ export function getPointsOccupied<P extends number, D extends number, N extends 
   color: M.MorrisColor
 ): ReadonlyArray<M.OccupiedBoardPoint<D, N>> {
   return board.points.filter((p) => isOccupied(p) && p.occupant.color === color) as ReadonlyArray<
-    OccupiedBoardPoint<D, N>
+    M.OccupiedBoardPoint<D, N>
   >;
 }
 
@@ -59,7 +59,7 @@ export function getPoint<P extends number, D extends number, N extends number>(
 export function getPointMorris<P extends number, D extends number, N extends number>(
   board: M.MorrisBoard<P, D, N>,
   coord: MorrisBoardCoordS<D>
-): P.Effect.Effect<never, MorrisEngineError, Morris<N>> {
+): P.Effect.Effect<never, MorrisEngineError, M.Morris<N>> {
   return P.pipe(
     getPoint(board, coord),
     P.Effect.flatMap((p) =>
@@ -92,7 +92,7 @@ export function isPointAdjacent<P extends number, D extends number, N extends nu
 export function getPointsAdjacent<P extends number, D extends number, N extends number>(
   board: M.MorrisBoard<P, D, N>,
   point: M.MorrisBoardPoint<D, N>
-): P.Effect.Effect<never, MorrisEngineError, ReadonlyArray<MorrisBoardPoint<D, N>>> {
+): P.Effect.Effect<never, MorrisEngineError, ReadonlyArray<M.MorrisBoardPoint<D, N>>> {
   return P.pipe(
     board.points,
     filterE((bp) => isPointAdjacent(board, point.coord, bp.coord))
@@ -102,7 +102,7 @@ export function getPointsAdjacent<P extends number, D extends number, N extends 
 export function getPointsAdjacentEmpty<P extends number, D extends number, N extends number>(
   board: M.MorrisBoard<P, D, N>,
   point: M.MorrisBoardPoint<D, N>
-): P.Effect.Effect<never, MorrisEngineError, ReadonlyArray<MorrisBoardPoint<D, N>>> {
+): P.Effect.Effect<never, MorrisEngineError, ReadonlyArray<M.MorrisBoardPoint<D, N>>> {
   return P.pipe(
     getPointsEmpty(board),
     filterE((bp) => isPointAdjacent(board, point.coord, bp.coord))
@@ -135,5 +135,5 @@ export function setPointEmpty<P extends number, D extends number, N extends numb
   board: M.MorrisGame<P, D, N>,
   coord: MorrisBoardCoordS<D>
 ): P.Effect.Effect<never, MorrisEngineError, M.MorrisGame<P, D, N>> {
-  return setPointOccupant(board, coord, M.EmptyOccupant);
+  return setPointOccupant(board, coord, EmptyOccupant);
 }

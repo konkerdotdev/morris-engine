@@ -7,11 +7,10 @@ import { game } from './3mm';
 import { renderE } from './3mm/render';
 import type { MorrisGameTick } from './engine';
 import { MorrisColor } from './engine';
-import { startMorrisGame } from './engine/game';
 import { createMoveMove, createMovePlace } from './engine/moves';
 import { RulesImpl } from './engine/rules';
 import { Rules } from './engine/rules/rules';
-import { tick } from './engine/tick';
+import { startMorrisGame, tick } from './engine/tick';
 
 // --------------------------------------------------------------------------
 export function disp(gameTick: MorrisGameTick<P_3, D_3, N_3>): P.Effect.Effect<never, Error, void> {

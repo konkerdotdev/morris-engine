@@ -1,15 +1,8 @@
 import type { MorrisBoard, MorrisGame, MorrisGameConfig } from '../engine';
-import {
-  EmptyOccupant,
-  MorrisBlack,
-  MorrisColor,
-  MorrisGameResult,
-  MorrisLinkType,
-  MorrisPhase,
-  MorrisWhite,
-} from '../engine';
+import { MorrisBlack, MorrisColor, MorrisGameResult, MorrisLinkType, MorrisPhase, MorrisWhite } from '../engine';
 import { boardHash } from '../engine/board';
 import { INITIAL_MORRIS_GAME_FACTS } from '../engine/rules/facts';
+import { EmptyOccupant } from '../engine/schemas';
 
 export const P_3 = 9;
 export type P_3 = typeof P_3;
@@ -29,7 +22,7 @@ export type N_3 = typeof N_3;
   a   b   c
 */
 export const board: MorrisBoard<P_3, D_3, N_3> = {
-  type: P_3,
+  numPoints: P_3,
   dimension: D_3,
   points: [
     /*0*/ {
@@ -131,10 +124,7 @@ export const board: MorrisBoard<P_3, D_3, N_3> = {
   ],
 };
 
-export const config: MorrisGameConfig<P_3, D_3, N_3> = {
-  P: P_3,
-  D: D_3,
-  N: N_3,
+export const config: MorrisGameConfig<N_3> = {
   name: "3 Men's Morris",
   numMorrisPerPlayer: 3,
   numPositionRepeatsForDraw: 3,

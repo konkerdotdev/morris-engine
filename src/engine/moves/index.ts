@@ -1,12 +1,10 @@
 // --------------------------------------------------------------------------
 import * as P from '@konker.dev/effect-ts-prelude';
 
-import type { MorrisEngineError } from '../lib/error';
-import { toMorrisEngineError } from '../lib/error';
-import * as R from '../lib/tiny-rules-fp';
-import { someE } from '../lib/type-utils';
-import type { MorrisGame } from './index';
-import * as M from './index';
+import type { MorrisEngineError } from '../../lib/error';
+import * as R from '../../lib/tiny-rules-fp';
+import { someE } from '../../lib/type-utils';
+import * as M from '../index';
 import {
   countEmpty,
   countMorris,
@@ -16,16 +14,16 @@ import {
   getPointsEmpty,
   getPointsOccupied,
   isOccupied,
-} from './points';
-import type { MorrisGameFacts } from './rules/facts';
-import type { MorrisBoardCoordS } from './schemas';
-import { String_MorrisMove } from './schemas';
+} from '../points';
+import type { MorrisGameFacts } from '../rules/facts';
+import type { MorrisBoardCoordS } from '../schemas';
+import type { MorrisMoveMoveS, MorrisMovePlaceS, MorrisMoveRemoveS, MorrisMoveS } from './schemas';
 
 // --------------------------------------------------------------------------
 export const createMovePlace = <D extends number>(
   color: M.MorrisColor,
   to: MorrisBoardCoordS<D>
-): M.MorrisMovePlace<D> => ({
+): MorrisMovePlaceS<D> => ({
   type: M.MorrisMoveType.PLACE,
   color,
   to,
@@ -34,13 +32,13 @@ export const createMovePlace = <D extends number>(
 export const createMoveMove = <D extends number>(
   from: MorrisBoardCoordS<D>,
   to: MorrisBoardCoordS<D>
-): M.MorrisMoveMove<D> => ({
+): MorrisMoveMoveS<D> => ({
   type: M.MorrisMoveType.MOVE,
   from,
   to,
 });
 
-export const createMoveRemove = <D extends number>(from: MorrisBoardCoordS<D>): M.MorrisMoveRemove<D> => ({
+export const createMoveRemove = <D extends number>(from: MorrisBoardCoordS<D>): MorrisMoveRemoveS<D> => ({
   type: M.MorrisMoveType.REMOVE,
   from,
 });
@@ -60,7 +58,7 @@ export function flipColor(c: M.MorrisColor): M.MorrisColor {
 // eslint-disable-next-line fp/no-nil
 export function moveColor<P extends number, D extends number, N extends number>(
   game: M.MorrisGame<P, D, N>,
-  move: M.MorrisMove<D>
+  move: MorrisMoveS<D>
 ): P.Effect.Effect<never, MorrisEngineError, M.MorrisColor> {
   // eslint-disable-next-line fp/no-unused-expression
   switch (move.type) {
@@ -78,7 +76,7 @@ export function moveColor<P extends number, D extends number, N extends number>(
 export function getValidMovesForMorrisPlace<P extends number, D extends number, N extends number>(
   game: M.MorrisGame<P, D, N>,
   morris: M.Morris<N>
-): P.Effect.Effect<never, MorrisEngineError, ReadonlyArray<M.MorrisMove<D>>> {
+): P.Effect.Effect<never, MorrisEngineError, ReadonlyArray<MorrisMoveS<D>>> {
   const emptyPoints = getPointsEmpty(game.board);
   return P.Effect.succeed(emptyPoints.map((p) => createMovePlace<D>(morris.color, p.coord)));
 }
@@ -86,7 +84,7 @@ export function getValidMovesForMorrisPlace<P extends number, D extends number, 
 export function getValidMovesForMorrisMove<P extends number, D extends number, N extends number>(
   game: M.MorrisGame<P, D, N>,
   point: M.OccupiedBoardPoint<D, N>
-): P.Effect.Effect<never, MorrisEngineError, ReadonlyArray<M.MorrisMove<D>>> {
+): P.Effect.Effect<never, MorrisEngineError, ReadonlyArray<MorrisMoveS<D>>> {
   return P.pipe(
     getPointsAdjacentEmpty(game.board, point),
     P.Effect.map((emptyPoints) => emptyPoints.map((ep) => createMoveMove(point.coord, ep.coord)))
@@ -96,7 +94,7 @@ export function getValidMovesForMorrisMove<P extends number, D extends number, N
 export function getValidMovesForMorrisRemove<P extends number, D extends number, N extends number>(
   game: M.MorrisGame<P, D, N>,
   morris: M.Morris<N>
-): P.Effect.Effect<never, MorrisEngineError, ReadonlyArray<M.MorrisMove<D>>> {
+): P.Effect.Effect<never, MorrisEngineError, ReadonlyArray<MorrisMoveS<D>>> {
   const oppositeMorrisPoints = getPointsOccupied(game.board, flipColor(morris.color));
   return P.Effect.succeed(oppositeMorrisPoints.map((p) => createMoveRemove(p.coord)));
 }
@@ -106,7 +104,7 @@ export function getValidMovesForMorris<P extends number, D extends number, N ext
   point: M.OccupiedBoardPoint<D, N>,
   morris: M.Morris<N>,
   facts: MorrisGameFacts
-): P.Effect.Effect<never, MorrisEngineError, ReadonlyArray<M.MorrisMove<D>>> {
+): P.Effect.Effect<never, MorrisEngineError, ReadonlyArray<MorrisMoveS<D>>> {
   // if is lasker phase find all empty adjacent point to the given point + all place moves
   if (R.val(facts.isLaskerPhase)) {
     return P.pipe(
@@ -184,7 +182,7 @@ export function countValidMovesForColor<P extends number, D extends number, N ex
 // --------------------------------------------------------------------------
 export function millCandidatesForMove<P extends number, D extends number, N extends number>(
   game: M.MorrisGame<P, D, N>,
-  move: M.MorrisMove<D>
+  move: MorrisMoveS<D>
 ): ReadonlyArray<M.MillCandidate<D>> {
   // A REMOVE move can never create a mill
   if (move.type === M.MorrisMoveType.REMOVE) {
@@ -200,7 +198,7 @@ export function millCandidatesForMove<P extends number, D extends number, N exte
 
 export function moveMakesMill<P extends number, D extends number, N extends number>(
   game: M.MorrisGame<P, D, N>,
-  move: M.MorrisMove<D>
+  move: MorrisMoveS<D>
 ): P.Effect.Effect<never, MorrisEngineError, boolean> {
   // A REMOVE move can never create a mill
   if (move.type === M.MorrisMoveType.REMOVE) {
@@ -228,11 +226,3 @@ export function moveMakesMill<P extends number, D extends number, N extends numb
     )
   );
 }
-
-// --------------------------------------------------------------------------
-// FIXME: make this into proper schemas
-// eslint-disable-next-line fp/no-nil
-export const strMorrisMove =
-  <P extends number, D extends number, N extends number>(game: MorrisGame<P, D, N>) =>
-  (move: M.MorrisMove<D>): P.Effect.Effect<never, MorrisEngineError, string> =>
-    P.pipe(move, P.Schema.encode(String_MorrisMove(game.config.D)), P.Effect.mapError(toMorrisEngineError));
