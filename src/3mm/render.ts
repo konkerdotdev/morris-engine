@@ -2,12 +2,13 @@ import * as P from '@konker.dev/effect-ts-prelude';
 import chalk from 'chalk';
 
 import type { MorrisBoardPoint, MorrisGame } from '../engine';
-import { EMPTY, MorrisColor } from '../engine';
-import { isMorris } from '../engine/points';
+import { MorrisColor } from '../engine';
+import { EMPTY } from '../engine/consts';
+import { isOccupied } from '../engine/points';
 import type { D_3, N_3, P_3 } from './index';
 
 export function renderOccupant(p: MorrisBoardPoint<D_3, N_3>): string {
-  return isMorris(p.occupant)
+  return isOccupied(p)
     ? p.occupant.color === MorrisColor.WHITE
       ? chalk.yellowBright(chalk.bold(p.occupant.color))
       : chalk.magentaBright(chalk.bold(p.occupant.color))

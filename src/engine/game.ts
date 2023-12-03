@@ -1,6 +1,7 @@
 import * as P from '@konker.dev/effect-ts-prelude';
 
 import type { MorrisEngineError } from '../lib/error';
+import { toMorrisEngineError } from '../lib/error';
 import type { Morris, MorrisGame, MorrisGameTick } from './index';
 import { MorrisColor } from './index';
 import { INITIAL_MORRIS_GAME_FACTS } from './rules/facts';
@@ -10,6 +11,16 @@ export function startMorrisGame<P extends number, D extends number, N extends nu
   morrisGame: MorrisGame<P, D, N>
 ): P.Effect.Effect<never, MorrisEngineError, MorrisGameTick<P, D, N>> {
   return makeMorrisGameTick(morrisGame, INITIAL_MORRIS_GAME_FACTS, 'BEGIN');
+}
+
+export function getNextPlaceMorris<P extends number, D extends number, N extends number>(
+  game: MorrisGame<P, D, N>,
+  color: MorrisColor
+): P.Effect.Effect<never, MorrisEngineError, Morris<N>> {
+  const nextMorris = color === MorrisColor.WHITE ? game.morrisWhite[0] : game.morrisBlack[0];
+  return nextMorris
+    ? P.Effect.succeed(nextMorris)
+    : P.Effect.fail(toMorrisEngineError(`No available Morris to place for ${color}`));
 }
 
 export function useMorris<P extends number, D extends number, N extends number>(

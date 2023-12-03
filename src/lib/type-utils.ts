@@ -1,6 +1,8 @@
 import * as P from '@konker.dev/effect-ts-prelude';
 import type { Add } from 'ts-toolbelt/out/Number/Add';
 
+import type { COORD_CHARS } from '../engine/consts';
+
 /**
  * An integer in the range [N, M).
  * See: https://stackoverflow.com/a/70307091/203284
@@ -13,33 +15,6 @@ export type Range<F extends number, T extends number> = Exclude<Enumerate<T>, En
 
 export type Range1<T extends number> = Range<1, Add<T, 1>>;
 
-export const COORD_CHARS = [
-  'a',
-  'b',
-  'c',
-  'd',
-  'e',
-  'f',
-  'g',
-  'h',
-  'i',
-  'j',
-  'k',
-  'l',
-  'm',
-  'n',
-  'o',
-  'p',
-  'q',
-  's',
-  't',
-  'u',
-  'v',
-  'w',
-  'x',
-  'y',
-  'z',
-] as const;
 export type EnumerateCoordChars<N extends number, Acc extends Array<string> = []> = Acc['length'] extends N
   ? Acc[number]
   : EnumerateCoordChars<N, [...Acc, (typeof COORD_CHARS)[Acc['length']]]>;

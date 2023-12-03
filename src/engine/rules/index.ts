@@ -7,7 +7,7 @@ import type { MorrisGameFacts } from './facts';
 
 export type MorrisRulesContext<P extends number, D extends number, N extends number> = {
   readonly game: MorrisGame<P, D, N>;
-  readonly move: MorrisMove<D, N>;
+  readonly move: MorrisMove<D>;
 };
 
 export type RulesImpl = {

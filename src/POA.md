@@ -8,14 +8,14 @@
 - ~~Sort out pipe limit for rules~~
   - ~~Convert to array and reduce?~~
 - ~~Move rules out of 3mm~~
-- Move morris from game to board on PLACE move
-- Move morris from board to game discard list on REMOVE move
+- ~~Move morris from game to board on PLACE move~~
+- ~~Move morris from board to game discard list on REMOVE move~~
 - Derive message from rules
   - E.g. invalid move, black wins, draw
 - Add schemas for moves
 - Add schemas for coords
-- Add function to get possible valid moves for piece
-  - Refactor `countValidMovesForColor` to use this
+- ~~Add function to get possible valid moves for piece~~
+  ~~- Refactor `countValidMovesForColor` to use this~~
 - ~~Add Error type and remove `new Error()`~~
 - ~~Add result property to `MorrisGame`~~
 - Unit tests!!

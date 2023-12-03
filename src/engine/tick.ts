@@ -4,11 +4,11 @@ import * as P from '@konker.dev/effect-ts-prelude';
 import type { MorrisEngineError } from '../lib/error';
 import * as R from '../lib/tiny-rules-fp';
 import { boardHash } from './board';
-import { discardMorris, useMorris } from './game';
+import { discardMorris, getNextPlaceMorris, useMorris } from './game';
 import type { MorrisGame, MorrisGameTick } from './index';
 import * as M from './index';
 import { strMorrisMove } from './moves';
-import { getPoint, setPointEmpty, setPointOccupant } from './points';
+import { getPoint, getPointMorris, setPointEmpty, setPointOccupant } from './points';
 import type { MorrisRulesContext } from './rules';
 import { RulesImpl } from './rules';
 import type { MorrisGameFacts } from './rules/facts';
@@ -36,13 +36,18 @@ export function resolveResult(facts: MorrisGameFacts): M.MorrisGameResult {
 // eslint-disable-next-line fp/no-nil
 export function applyMoveToGame<P extends number, D extends number, N extends number>(
   game: M.MorrisGame<P, D, N>,
-  move: M.MorrisMove<D, N>
+  move: M.MorrisMove<D>
 ): P.Effect.Effect<never, MorrisEngineError, M.MorrisGame<P, D, N>> {
   switch (move.type) {
     case M.MorrisMoveType.PLACE:
       return P.pipe(
-        useMorris(game, move.morris),
-        P.Effect.flatMap((game) => setPointOccupant(game, move.to, move.morris))
+        getNextPlaceMorris(game, move.color),
+        P.Effect.flatMap((morris) =>
+          P.pipe(
+            useMorris(game, morris),
+            P.Effect.flatMap((game) => setPointOccupant(game, move.to, morris))
+          )
+        )
       );
 
     case M.MorrisMoveType.MOVE:
@@ -55,15 +60,20 @@ export function applyMoveToGame<P extends number, D extends number, N extends nu
 
     case M.MorrisMoveType.REMOVE:
       return P.pipe(
-        setPointEmpty(game, move.from),
-        P.Effect.flatMap((game) => discardMorris(game, move.morris))
+        getPointMorris(game.board, move.from),
+        P.Effect.flatMap((morris) =>
+          P.pipe(
+            setPointEmpty(game, move.from),
+            P.Effect.flatMap((game) => discardMorris(game, morris))
+          )
+        )
       );
   }
 }
 
 // --------------------------------------------------------------------------
 export const execMove =
-  <P extends number, D extends number, N extends number>(move: M.MorrisMove<D, N>, facts: MorrisGameFacts) =>
+  <P extends number, D extends number, N extends number>(move: M.MorrisMove<D>, facts: MorrisGameFacts) =>
   (game: M.MorrisGame<P, D, N>): P.Effect.Effect<never, MorrisEngineError, M.MorrisGame<P, D, N>> => {
     if (!R.val(facts.isValidMove)) {
       return P.Effect.succeed(game);
@@ -89,7 +99,7 @@ export const execMove =
 
 // --------------------------------------------------------------------------
 export const tick =
-  <P extends number, D extends number, N extends number>(move: M.MorrisMove<D, N>) =>
+  <P extends number, D extends number, N extends number>(move: M.MorrisMove<D>) =>
   (gameTick: M.MorrisGameTick<P, D, N>): P.Effect.Effect<RulesImpl, MorrisEngineError, M.MorrisGameTick<P, D, N>> => {
     // Formulate a rules context
     const rulesContext = {
@@ -116,7 +126,7 @@ export const tick =
       P.Effect.tap((_) => P.Console.log('\n-------\n')),
       // P.Effect.tap((_) => P.Console.log(rulesContext.game)),
       // P.Effect.tap((x) => P.Console.log(x.newFacts)),
-      P.Effect.tap((_) => P.Console.log(strMorrisMove(move) + '\n')),
+      P.Effect.tap((x) => P.pipe(move, strMorrisMove(x.newGame), P.Effect.flatMap(P.Console.log))),
       P.Effect.flatMap(({ newFacts, newGame }) =>
         R.val(newFacts.isValidMove)
           ? // Valid move: execute the move

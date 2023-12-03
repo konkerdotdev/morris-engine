@@ -1,8 +1,10 @@
 import * as P from '@konker.dev/effect-ts-prelude';
 
-import type { EnumerateCoordChars, Range1, RepeatString, Tuple } from '../lib/type-utils';
-import { COORD_CHARS } from '../lib/type-utils';
+import type { Range1, RepeatString, Tuple } from '../lib/type-utils';
+import type { COORD_CHARS, THREE } from './consts';
+import { EMPTY, MORRIS } from './consts';
 import type { MorrisGameFacts } from './rules/facts';
+import type { MorrisBoardCoordS } from './schemas';
 
 /**
  * Morris Engine
@@ -13,15 +15,6 @@ import type { MorrisGameFacts } from './rules/facts';
  * D: dimensions: board is arranged as DxD
  * N: number: number of morrae per player, e.g. 3mm -> 3, 9mm -> 9
  */
-
-// By inviolate definition since the Assyrians, a mill is 3 in a row.
-// Most likely if you are thinking of changing this in some way,
-// you are missing something, that's why it's named "three"
-export const THREE = 3;
-export type THREE = typeof THREE;
-
-export const EMPTY = 'o';
-export type EMPTY = typeof EMPTY;
 
 export enum MorrisColor {
   BLACK = 'B',
@@ -57,11 +50,13 @@ export enum MorrisGameResult {
 
 // --------------------------------------------------------------------------
 export type MorrisBlack<N extends number> = {
+  readonly _tag: MORRIS;
   readonly color: typeof MorrisColor.BLACK;
   readonly n: Range1<N>;
 };
 
 export type MorrisWhite<N extends number> = {
+  readonly _tag: MORRIS;
   readonly color: typeof MorrisColor.WHITE;
   readonly n: Range1<N>;
 };
@@ -75,32 +70,15 @@ export const EmptyOccupant = P.pipe({ _tag: EMPTY }, P.Schema.decodeSync(EmptyOc
 export type MorrisBoardPointOccupant<N extends number> = EmptyOccupant | Morris<N>;
 
 // --------------------------------------------------------------------------
-export type MorrisBoardCoord<D extends number> = `${EnumerateCoordChars<D>}${Range1<D>}`;
-export const MorrisBoardCoordS = <D extends number>(d: D) =>
-  P.pipe(
-    P.Schema.string,
-    P.Schema.filter(
-      (s) => {
-        const parts = s.split('', 2);
-        if (parts.length !== 2) return false;
-        const y = parseInt(parts[1]!, 10);
-
-        return COORD_CHARS.slice(0, d).includes(parts[0] as any) && y > 0 && y < d;
-      },
-      {
-        title: 'MorrisBoardCoord',
-        message: () => `Invalid board coordinate for dimension ${d}`,
-      }
-    )
-  );
+export type kMorrisBoardCoord<D extends number> = `${(typeof COORD_CHARS)[number]}${Range1<D>}`; //`${EnumerateCoordChars<D>}${Range1<D>}`;
 
 export type MorrisBoardLink<D extends number> = {
-  readonly to: MorrisBoardCoord<D>;
+  readonly to: MorrisBoardCoordS<D>;
   readonly linkType: MorrisLinkType;
 };
 
 export type MorrisBoardPoint<D extends number, N extends number> = {
-  readonly coord: MorrisBoardCoord<D>;
+  readonly coord: MorrisBoardCoordS<D>;
   readonly links: ReadonlyArray<MorrisBoardLink<D>>;
   readonly occupant: MorrisBoardPointOccupant<N>;
 };
@@ -109,7 +87,7 @@ export type OccupiedBoardPoint<D extends number, N extends number> = Omit<Morris
   readonly occupant: Morris<N>;
 };
 
-export type MillCandidate<D extends number> = Tuple<MorrisBoardCoord<D>, THREE>;
+export type MillCandidate<D extends number> = Tuple<MorrisBoardCoordS<D>, THREE>;
 
 export type MorrisBoard<P extends number, D extends number, N extends number> = {
   readonly type: P;
@@ -121,31 +99,30 @@ export type MorrisBoard<P extends number, D extends number, N extends number> = 
 export type MorrisBoardPositionHash<P extends number> = RepeatString<MorrisColor | EMPTY, P>;
 
 // --------------------------------------------------------------------------
-export type MorrisMovePlace<D extends number, N extends number> = {
+export type MorrisMovePlace<D extends number> = {
   readonly type: MorrisMoveType.PLACE;
-  readonly morris: Morris<N>;
-  readonly to: MorrisBoardCoord<D>;
+  readonly color: MorrisColor;
+  readonly to: MorrisBoardCoordS<D>;
 };
 
 export type MorrisMoveMove<D extends number> = {
   readonly type: MorrisMoveType.MOVE;
-  readonly from: MorrisBoardCoord<D>;
-  readonly to: MorrisBoardCoord<D>;
+  readonly from: MorrisBoardCoordS<D>;
+  readonly to: MorrisBoardCoordS<D>;
 };
 
-export type MorrisMoveRemove<D extends number, N extends number> = {
+export type MorrisMoveRemove<D extends number> = {
   readonly type: MorrisMoveType.REMOVE;
-  readonly morris: Morris<N>;
-  readonly from: MorrisBoardCoord<D>;
+  readonly from: MorrisBoardCoordS<D>;
 };
 
-export type MorrisMove<D extends number, N extends number> =
-  | MorrisMovePlace<D, N>
-  | MorrisMoveMove<D>
-  | MorrisMoveRemove<D, N>;
+export type MorrisMove<D extends number> = MorrisMovePlace<D> | MorrisMoveMove<D> | MorrisMoveRemove<D>;
 
 // --------------------------------------------------------------------------
-export type MorrisGameConfig<N extends number> = {
+export type MorrisGameConfig<P extends number, D extends number, N extends number> = {
+  readonly P: P;
+  readonly D: D;
+  readonly N: N;
   readonly name: string;
   readonly numMorrisPerPlayer: N;
   readonly flyingThreshold: number;
@@ -156,7 +133,7 @@ export type MorrisGameConfig<N extends number> = {
 };
 
 export type MorrisGame<P extends number, D extends number, N extends number> = {
-  readonly config: MorrisGameConfig<N>;
+  readonly config: MorrisGameConfig<P, D, N>;
   readonly startColor: MorrisColor;
   readonly curMoveColor: MorrisColor;
   readonly gameOver: boolean;
@@ -168,7 +145,7 @@ export type MorrisGame<P extends number, D extends number, N extends number> = {
   readonly morrisBlackRemoved: ReadonlyArray<MorrisBlack<N>>;
   readonly board: MorrisBoard<P, D, N>;
   readonly positions: ReadonlyArray<MorrisBoardPositionHash<P>>;
-  readonly moves: ReadonlyArray<MorrisMove<D, N>>;
+  readonly moves: ReadonlyArray<MorrisMove<D>>;
   readonly facts: MorrisGameFacts;
 };
 
@@ -182,12 +159,14 @@ export type MorrisGameTick<P extends number, D extends number, N extends number>
 // --------------------------------------------------------------------------
 export const MorrisBlack = <N extends number>(n: Range1<N>): MorrisBlack<N> =>
   ({
+    _tag: MORRIS,
     color: MorrisColor.BLACK,
     n,
-  }) as const;
+  }) as MorrisBlack<N>;
 
 export const MorrisWhite = <N extends number>(n: Range1<N>): MorrisWhite<N> =>
   ({
+    _tag: MORRIS,
     color: MorrisColor.WHITE,
     n,
-  }) as const;
+  }) as MorrisWhite<N>;

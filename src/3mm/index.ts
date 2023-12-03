@@ -131,7 +131,10 @@ export const board: MorrisBoard<P_3, D_3, N_3> = {
   ],
 };
 
-export const config: MorrisGameConfig<N_3> = {
+export const config: MorrisGameConfig<P_3, D_3, N_3> = {
+  P: P_3,
+  D: D_3,
+  N: N_3,
   name: "3 Men's Morris",
   numMorrisPerPlayer: 3,
   numPositionRepeatsForDraw: 3,
