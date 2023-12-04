@@ -1,6 +1,6 @@
 import * as P from '@konker.dev/effect-ts-prelude';
 
-import { MorrisColor, MorrisMoveType } from '../index';
+import { MorrisColor, MorrisMoveType } from '../consts';
 import type { MorrisMoveMoveS, MorrisMovePlaceS, MorrisMoveRemoveS } from './schemas';
 import * as unit from './transforms';
 

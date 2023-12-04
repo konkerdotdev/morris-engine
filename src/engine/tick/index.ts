@@ -1,19 +1,25 @@
 // --------------------------------------------------------------------------
 import * as P from '@konker.dev/effect-ts-prelude';
 
-import type { MorrisEngineError } from '../lib/error';
-import * as R from '../lib/tiny-rules-fp';
-import { boardHash } from './board';
-import { discardMorris, getNextPlaceMorris, useMorris } from './game';
-import type { MorrisGame, MorrisGameTick } from './index';
-import * as M from './index';
-import { strMorrisMove } from './moves/helpers';
-import type { MorrisMoveS } from './moves/schemas';
-import { getPoint, getPointMorris, setPointEmpty, setPointOccupant } from './points';
-import type { MorrisRulesContext } from './rules';
-import { RulesImpl } from './rules';
-import type { MorrisGameFacts } from './rules/facts';
-import { INITIAL_MORRIS_GAME_FACTS } from './rules/facts';
+import type { MorrisEngineError } from '../../lib/error';
+import * as R from '../../lib/tiny-rules-fp';
+import { boardHash } from '../board/query';
+import { MorrisColor, MorrisGameResult } from '../consts';
+import type { MorrisGame } from '../game';
+import { applyMoveToGame } from '../game';
+import { strMorrisMove } from '../moves/helpers';
+import type { MorrisMoveS } from '../moves/schemas';
+import type { MorrisRulesContext } from '../rules';
+import { RulesImpl } from '../rules';
+import type { MorrisGameFacts } from '../rules/facts';
+import { INITIAL_MORRIS_GAME_FACTS } from '../rules/facts';
+
+// --------------------------------------------------------------------------
+export type MorrisGameTick<P extends number, D extends number, N extends number> = {
+  readonly game: MorrisGame<P, D, N>;
+  readonly facts: MorrisGameFacts;
+  readonly message: string;
+};
 
 // --------------------------------------------------------------------------
 export function makeMorrisGameTick<P extends number, D extends number, N extends number>(
@@ -30,64 +36,25 @@ export function startMorrisGame<P extends number, D extends number, N extends nu
   return makeMorrisGameTick(morrisGame, INITIAL_MORRIS_GAME_FACTS, 'BEGIN');
 }
 
-export function resolveResult(facts: MorrisGameFacts): M.MorrisGameResult {
+export function resolveResult(facts: MorrisGameFacts): MorrisGameResult {
   return R.val(facts.moveMakesWinWhite)
-    ? M.MorrisGameResult.WIN_WHITE
+    ? MorrisGameResult.WIN_WHITE
     : R.val(facts.moveMakesWinBlack)
-      ? M.MorrisGameResult.WIN_BLACK
+      ? MorrisGameResult.WIN_BLACK
       : R.val(facts.moveMakesDraw)
-        ? M.MorrisGameResult.DRAW
-        : M.MorrisGameResult.IN_PROGRESS;
-}
-
-// --------------------------------------------------------------------------
-// eslint-disable-next-line fp/no-nil
-export function applyMoveToGame<P extends number, D extends number, N extends number>(
-  game: M.MorrisGame<P, D, N>,
-  move: MorrisMoveS<D>
-): P.Effect.Effect<never, MorrisEngineError, M.MorrisGame<P, D, N>> {
-  switch (move.type) {
-    case M.MorrisMoveType.PLACE:
-      return P.pipe(
-        getNextPlaceMorris(game, move.color),
-        P.Effect.flatMap((morris) =>
-          P.pipe(
-            useMorris(game, morris),
-            P.Effect.flatMap((game) => setPointOccupant(game, move.to, morris))
-          )
-        )
-      );
-
-    case M.MorrisMoveType.MOVE:
-      return P.pipe(
-        P.Effect.Do,
-        P.Effect.bind('point', () => getPoint(game.board, move.from)),
-        P.Effect.bind('newGame', () => setPointEmpty(game, move.from)),
-        P.Effect.flatMap(({ newGame, point }) => setPointOccupant(newGame, move.to, point.occupant))
-      );
-
-    case M.MorrisMoveType.REMOVE:
-      return P.pipe(
-        getPointMorris(game.board, move.from),
-        P.Effect.flatMap((morris) =>
-          P.pipe(
-            setPointEmpty(game, move.from),
-            P.Effect.flatMap((game) => discardMorris(game, morris))
-          )
-        )
-      );
-  }
+        ? MorrisGameResult.DRAW
+        : MorrisGameResult.IN_PROGRESS;
 }
 
 // --------------------------------------------------------------------------
 export const execMove =
   <P extends number, D extends number, N extends number>(move: MorrisMoveS<D>, facts: MorrisGameFacts) =>
-  (game: M.MorrisGame<P, D, N>): P.Effect.Effect<never, MorrisEngineError, M.MorrisGame<P, D, N>> => {
+  (game: MorrisGame<P, D, N>): P.Effect.Effect<never, MorrisEngineError, MorrisGame<P, D, N>> => {
     if (!R.val(facts.isValidMove)) {
       return P.Effect.succeed(game);
     }
 
-    const nextMoveColor = R.val(facts.moveMakesNextTurnWhite) ? M.MorrisColor.WHITE : M.MorrisColor.BLACK;
+    const nextMoveColor = R.val(facts.moveMakesNextTurnWhite) ? MorrisColor.WHITE : MorrisColor.BLACK;
 
     return P.pipe(
       P.Effect.Do,
@@ -108,7 +75,7 @@ export const execMove =
 // --------------------------------------------------------------------------
 export const tick =
   <P extends number, D extends number, N extends number>(move: MorrisMoveS<D>) =>
-  (gameTick: M.MorrisGameTick<P, D, N>): P.Effect.Effect<RulesImpl, MorrisEngineError, M.MorrisGameTick<P, D, N>> => {
+  (gameTick: MorrisGameTick<P, D, N>): P.Effect.Effect<RulesImpl, MorrisEngineError, MorrisGameTick<P, D, N>> => {
     // Formulate a rules context
     const rulesContext = {
       game: gameTick.game,

@@ -2,7 +2,7 @@ import * as P from '@konker.dev/effect-ts-prelude';
 
 import type { MorrisEngineError } from '../../lib/error';
 import { toMorrisEngineError } from '../../lib/error';
-import type { MorrisGame } from '../index';
+import type { MorrisGame } from '../game';
 import type { MorrisMoveS } from './schemas';
 import { String_MorrisMove } from './transforms';
 

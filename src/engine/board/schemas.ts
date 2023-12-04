@@ -1,10 +1,27 @@
 import * as P from '@konker.dev/effect-ts-prelude';
 
-import { COORD_CHARS, EMPTY } from './consts';
-import { MorrisColor } from './index';
+import { COORD_CHARS, EMPTY, MorrisColor } from '../consts';
 
 // --------------------------------------------------------------------------
+export const MorrisColorS = P.Schema.transformOrFail(
+  P.Schema.string,
+  P.Schema.union(P.Schema.literal(MorrisColor.WHITE), P.Schema.literal(MorrisColor.BLACK)),
+  (s: string) => {
+    switch (s.toUpperCase()) {
+      case MorrisColor.WHITE:
+        return P.ParseResult.success(MorrisColor.WHITE);
+      case MorrisColor.BLACK:
+        return P.ParseResult.success(MorrisColor.BLACK);
+    }
+    return P.ParseResult.fail(
+      P.ParseResult.parseError([P.ParseResult.type(P.Schema.string.ast, `Invalid color: ${s}`)])
+    );
+  },
+  (c: MorrisColor) => P.ParseResult.success(c)
+);
+export type MorrisColorS = P.Schema.Schema.To<typeof MorrisColorS>;
 
+// --------------------------------------------------------------------------
 export const isBoardCoord =
   <D extends number>(d: D) =>
   (s: string): boolean => {
@@ -25,25 +42,6 @@ export function MorrisBoardCoordS<D extends number>(d: D) {
   );
 }
 export type MorrisBoardCoordS<D extends number> = P.Schema.Schema.To<ReturnType<typeof MorrisBoardCoordS<D>>>;
-
-// --------------------------------------------------------------------------
-export const MorrisColorS = P.Schema.transformOrFail(
-  P.Schema.string,
-  P.Schema.union(P.Schema.literal(MorrisColor.WHITE), P.Schema.literal(MorrisColor.BLACK)),
-  (s: string) => {
-    switch (s.toUpperCase()) {
-      case MorrisColor.WHITE:
-        return P.ParseResult.success(MorrisColor.WHITE);
-      case MorrisColor.BLACK:
-        return P.ParseResult.success(MorrisColor.BLACK);
-    }
-    return P.ParseResult.fail(
-      P.ParseResult.parseError([P.ParseResult.type(P.Schema.string.ast, `Invalid color: ${s}`)])
-    );
-  },
-  (c: MorrisColor) => P.ParseResult.success(c)
-);
-export type MorrisColorS = P.Schema.Schema.To<typeof MorrisColorS>;
 
 // --------------------------------------------------------------------------
 export const EmptyOccupantS = P.Schema.struct({ _tag: P.Schema.literal(EMPTY) }).pipe(P.Schema.brand('EmptyPoint'));

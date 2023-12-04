@@ -1,10 +1,9 @@
-// --------------------------------------------------------------------------
 import * as P from '@konker.dev/effect-ts-prelude';
 
 import type { MorrisEngineError } from '../../lib/error';
 import * as R from '../../lib/tiny-rules-fp';
-import { someE } from '../../lib/type-utils';
-import * as M from '../index';
+import { someE } from '../../lib/utils';
+import type { MillCandidate, MorrisBoard, OccupiedBoardPoint } from '../board';
 import {
   countEmpty,
   countMorris,
@@ -14,17 +13,20 @@ import {
   getPointsEmpty,
   getPointsOccupied,
   isOccupied,
-} from '../points';
+} from '../board/points';
+import type { MorrisBoardCoordS } from '../board/schemas';
+import { MorrisColor, MorrisMoveType } from '../consts';
+import type { MorrisGame } from '../game';
+import type { Morris } from '../morris';
 import type { MorrisGameFacts } from '../rules/facts';
-import type { MorrisBoardCoordS } from '../schemas';
 import type { MorrisMoveMoveS, MorrisMovePlaceS, MorrisMoveRemoveS, MorrisMoveS } from './schemas';
 
 // --------------------------------------------------------------------------
 export const createMovePlace = <D extends number>(
-  color: M.MorrisColor,
+  color: MorrisColor,
   to: MorrisBoardCoordS<D>
 ): MorrisMovePlaceS<D> => ({
-  type: M.MorrisMoveType.PLACE,
+  type: MorrisMoveType.PLACE,
   color,
   to,
 });
@@ -33,39 +35,39 @@ export const createMoveMove = <D extends number>(
   from: MorrisBoardCoordS<D>,
   to: MorrisBoardCoordS<D>
 ): MorrisMoveMoveS<D> => ({
-  type: M.MorrisMoveType.MOVE,
+  type: MorrisMoveType.MOVE,
   from,
   to,
 });
 
 export const createMoveRemove = <D extends number>(from: MorrisBoardCoordS<D>): MorrisMoveRemoveS<D> => ({
-  type: M.MorrisMoveType.REMOVE,
+  type: MorrisMoveType.REMOVE,
   from,
 });
 
 // --------------------------------------------------------------------------
 export function isTurn<P extends number, D extends number, N extends number>(
-  game: M.MorrisGame<P, D, N>,
-  color: M.MorrisColor
+  game: MorrisGame<P, D, N>,
+  color: MorrisColor
 ): boolean {
   return color === game.curMoveColor;
 }
 
-export function flipColor(c: M.MorrisColor): M.MorrisColor {
-  return c === M.MorrisColor.WHITE ? M.MorrisColor.BLACK : M.MorrisColor.WHITE;
+export function flipColor(c: MorrisColor): MorrisColor {
+  return c === MorrisColor.WHITE ? MorrisColor.BLACK : MorrisColor.WHITE;
 }
 
 // eslint-disable-next-line fp/no-nil
 export function moveColor<P extends number, D extends number, N extends number>(
-  game: M.MorrisGame<P, D, N>,
+  game: MorrisGame<P, D, N>,
   move: MorrisMoveS<D>
-): P.Effect.Effect<never, MorrisEngineError, M.MorrisColor> {
+): P.Effect.Effect<never, MorrisEngineError, MorrisColor> {
   // eslint-disable-next-line fp/no-unused-expression
   switch (move.type) {
-    case M.MorrisMoveType.PLACE:
+    case MorrisMoveType.PLACE:
       return P.Effect.succeed(move.color);
-    case M.MorrisMoveType.MOVE:
-    case M.MorrisMoveType.REMOVE:
+    case MorrisMoveType.MOVE:
+    case MorrisMoveType.REMOVE:
       return P.pipe(
         getPointMorris(game.board, move.from),
         P.Effect.map((morris) => morris.color)
@@ -74,16 +76,16 @@ export function moveColor<P extends number, D extends number, N extends number>(
 }
 
 export function getValidMovesForMorrisPlace<P extends number, D extends number, N extends number>(
-  game: M.MorrisGame<P, D, N>,
-  morris: M.Morris<N>
+  game: MorrisGame<P, D, N>,
+  morris: Morris<N>
 ): P.Effect.Effect<never, MorrisEngineError, ReadonlyArray<MorrisMoveS<D>>> {
   const emptyPoints = getPointsEmpty(game.board);
   return P.Effect.succeed(emptyPoints.map((p) => createMovePlace<D>(morris.color, p.coord)));
 }
 
 export function getValidMovesForMorrisMove<P extends number, D extends number, N extends number>(
-  game: M.MorrisGame<P, D, N>,
-  point: M.OccupiedBoardPoint<D, N>
+  game: MorrisGame<P, D, N>,
+  point: OccupiedBoardPoint<D, N>
 ): P.Effect.Effect<never, MorrisEngineError, ReadonlyArray<MorrisMoveS<D>>> {
   return P.pipe(
     getPointsAdjacentEmpty(game.board, point),
@@ -92,17 +94,17 @@ export function getValidMovesForMorrisMove<P extends number, D extends number, N
 }
 
 export function getValidMovesForMorrisRemove<P extends number, D extends number, N extends number>(
-  game: M.MorrisGame<P, D, N>,
-  morris: M.Morris<N>
+  game: MorrisGame<P, D, N>,
+  morris: Morris<N>
 ): P.Effect.Effect<never, MorrisEngineError, ReadonlyArray<MorrisMoveS<D>>> {
   const oppositeMorrisPoints = getPointsOccupied(game.board, flipColor(morris.color));
   return P.Effect.succeed(oppositeMorrisPoints.map((p) => createMoveRemove(p.coord)));
 }
 
 export function getValidMovesForMorris<P extends number, D extends number, N extends number>(
-  game: M.MorrisGame<P, D, N>,
-  point: M.OccupiedBoardPoint<D, N>,
-  morris: M.Morris<N>,
+  game: MorrisGame<P, D, N>,
+  point: OccupiedBoardPoint<D, N>,
+  morris: Morris<N>,
   facts: MorrisGameFacts
 ): P.Effect.Effect<never, MorrisEngineError, ReadonlyArray<MorrisMoveS<D>>> {
   // if is lasker phase find all empty adjacent point to the given point + all place moves
@@ -136,9 +138,9 @@ export function getValidMovesForMorris<P extends number, D extends number, N ext
 }
 
 export function countValidMovesForColor<P extends number, D extends number, N extends number>(
-  board: M.MorrisBoard<P, D, N>,
+  board: MorrisBoard<P, D, N>,
   facts: MorrisGameFacts,
-  color: M.MorrisColor
+  color: MorrisColor
 ): P.Effect.Effect<never, MorrisEngineError, number> {
   if (R.val(facts.isMovingPhase) || R.val(facts.isLaskerPhase)) {
     const emptyPoints = getPointsEmpty(board);
@@ -181,11 +183,11 @@ export function countValidMovesForColor<P extends number, D extends number, N ex
 
 // --------------------------------------------------------------------------
 export function millCandidatesForMove<P extends number, D extends number, N extends number>(
-  game: M.MorrisGame<P, D, N>,
+  game: MorrisGame<P, D, N>,
   move: MorrisMoveS<D>
-): ReadonlyArray<M.MillCandidate<D>> {
+): ReadonlyArray<MillCandidate<D>> {
   // A REMOVE move can never create a mill
-  if (move.type === M.MorrisMoveType.REMOVE) {
+  if (move.type === MorrisMoveType.REMOVE) {
     return [];
   }
 
@@ -193,15 +195,15 @@ export function millCandidatesForMove<P extends number, D extends number, N exte
   // Remove the move.to point from each of the mill possibilities
   return game.board.millCandidates
     .filter((m) => m.includes(move.to))
-    .map((m) => m.filter((coord) => coord !== move.to)) as Array<M.MillCandidate<D>>;
+    .map((m) => m.filter((coord) => coord !== move.to)) as Array<MillCandidate<D>>;
 }
 
 export function moveMakesMill<P extends number, D extends number, N extends number>(
-  game: M.MorrisGame<P, D, N>,
+  game: MorrisGame<P, D, N>,
   move: MorrisMoveS<D>
 ): P.Effect.Effect<never, MorrisEngineError, boolean> {
   // A REMOVE move can never create a mill
-  if (move.type === M.MorrisMoveType.REMOVE) {
+  if (move.type === MorrisMoveType.REMOVE) {
     return P.Effect.succeed(false);
   }
 

@@ -1,15 +1,15 @@
 /* eslint-disable @typescript-eslint/naming-convention */
+import * as P from '@konker.dev/effect-ts-prelude';
+
+import { MorrisBoardCoordS, MorrisColorS } from '../board/schemas';
+import { createMoveMove, createMovePlace, createMoveRemove } from './index';
+import { MorrisMoveMoveS, MorrisMovePlaceS, MorrisMoveRemoveS } from './schemas';
+
 // --------------------------------------------------------------------------
 // Schema transforms for string representations of moves
 // P <color> <coord1>   -- Place piece of color on coord1
 // M <coord1> <coord2>  -- Move piece from coord1 -> coord2
 // R <coord1>           -- Remove piece on coord1
-import * as P from '@konker.dev/effect-ts-prelude';
-
-import { MorrisBoardCoordS, MorrisColorS } from '../schemas';
-import { createMoveMove, createMovePlace, createMoveRemove } from './index';
-import { MorrisMoveMoveS, MorrisMovePlaceS, MorrisMoveRemoveS } from './schemas';
-
 export function String_MorrisMovePlace<D extends number>(d: D) {
   return P.Schema.transformOrFail(
     P.Schema.string,

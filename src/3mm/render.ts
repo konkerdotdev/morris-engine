@@ -1,10 +1,10 @@
 import * as P from '@konker.dev/effect-ts-prelude';
 import chalk from 'chalk';
 
-import type { MorrisBoardPoint, MorrisGame } from '../engine';
-import { MorrisColor } from '../engine';
-import { EMPTY } from '../engine/consts';
-import { isOccupied } from '../engine/points';
+import type { MorrisBoardPoint } from '../engine/board';
+import { isOccupied } from '../engine/board/points';
+import { EMPTY, MorrisColor } from '../engine/consts';
+import type { MorrisGame } from '../engine/game';
 import type { D_3, N_3, P_3 } from './index';
 
 export function renderOccupant(p: MorrisBoardPoint<D_3, N_3>): string {

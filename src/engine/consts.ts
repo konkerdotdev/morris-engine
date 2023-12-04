@@ -37,3 +37,35 @@ export const COORD_CHARS = [
   'y',
   'z',
 ] as const;
+
+export enum MorrisColor {
+  BLACK = 'B',
+  WHITE = 'W',
+}
+
+export enum MorrisLinkType {
+  HORIZONTAL = 'HORIZONTAL',
+  VERTICAL = 'VERTICAL',
+  DIAGONAL_B = 'DIAGONAL_B',
+  DIAGONAL_F = 'DIAGONAL_F',
+}
+
+export enum MorrisPhase {
+  PLACING = 'PLACING',
+  MOVING = 'MOVING',
+  FLYING = 'FLYING',
+  LASKER = 'LASKER',
+}
+
+export enum MorrisMoveType {
+  PLACE = 'PLACE',
+  MOVE = 'MOVE',
+  REMOVE = 'REMOVE',
+}
+
+export enum MorrisGameResult {
+  IN_PROGRESS = 'IN_PROGRESS',
+  WIN_WHITE = 'WIN_WHITE',
+  WIN_BLACK = 'WIN_BLACK',
+  DRAW = 'DRAW',
+}

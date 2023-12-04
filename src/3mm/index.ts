@@ -1,8 +1,10 @@
-import type { MorrisBoard, MorrisGame, MorrisGameConfig } from '../engine';
-import { MorrisBlack, MorrisColor, MorrisGameResult, MorrisLinkType, MorrisPhase, MorrisWhite } from '../engine';
-import { boardHash } from '../engine/board';
+import type { MorrisBoard } from '../engine/board';
+import { boardHash } from '../engine/board/query';
+import { EmptyOccupant } from '../engine/board/schemas';
+import { MorrisColor, MorrisGameResult, MorrisLinkType, MorrisPhase } from '../engine/consts';
+import type { MorrisGame, MorrisGameConfig } from '../engine/game';
+import { MorrisBlack, MorrisWhite } from '../engine/morris';
 import { INITIAL_MORRIS_GAME_FACTS } from '../engine/rules/facts';
-import { EmptyOccupant } from '../engine/schemas';
 
 export const P_3 = 9;
 export type P_3 = typeof P_3;

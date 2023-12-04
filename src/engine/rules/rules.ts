@@ -2,11 +2,11 @@ import * as P from '@konker.dev/effect-ts-prelude';
 
 import type { MorrisEngineError } from '../../lib/error';
 import * as R from '../../lib/tiny-rules-fp';
-import { boardHash, countPositionRepeats } from '../board';
-import { MorrisColor, MorrisMoveType, MorrisPhase } from '../index';
+import { countMorris, isPointAdjacent, isPointEmpty } from '../board/points';
+import { boardHash, countPositionRepeats } from '../board/query';
+import { MorrisColor, MorrisMoveType, MorrisPhase } from '../consts';
+import { applyMoveToGame } from '../game';
 import { countValidMovesForColor, moveColor, moveMakesMill } from '../moves';
-import { countMorris, isPointAdjacent, isPointEmpty } from '../points';
-import { applyMoveToGame } from '../tick';
 import type { MorrisGameFacts } from './facts';
 import { INITIAL_MORRIS_GAME_FACTS } from './facts';
 import type { MorrisRulesContext } from './index';

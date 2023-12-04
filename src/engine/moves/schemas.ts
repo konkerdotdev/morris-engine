@@ -1,8 +1,7 @@
-// --------------------------------------------------------------------------
 import * as P from '@konker.dev/effect-ts-prelude';
 
-import { MorrisColor, MorrisMoveType } from '../index';
-import { MorrisBoardCoordS } from '../schemas';
+import { MorrisBoardCoordS } from '../board/schemas';
+import { MorrisColor, MorrisMoveType } from '../consts';
 
 export function MorrisMovePlaceS<D extends number>(d: D) {
   return P.Schema.struct({
