@@ -6,10 +6,9 @@ import * as R from '../../lib/tiny-rules-fp';
 import { boardHash } from '../board/query';
 import { MorrisColor, MorrisGameResult } from '../consts';
 import type { MorrisGame } from '../game';
-import { applyMoveToGame } from '../game';
+import { applyMoveToGame, deriveMessage, deriveNewFacts } from '../game';
 import { strMorrisMove } from '../moves/helpers';
 import type { MorrisMoveS } from '../moves/schemas';
-import type { MorrisRulesContext } from '../rules';
 import { RulesImpl } from '../rules';
 import type { MorrisGameFacts } from '../rules/facts';
 import { INITIAL_MORRIS_GAME_FACTS } from '../rules/facts';
@@ -48,13 +47,17 @@ export function resolveResult(facts: MorrisGameFacts): MorrisGameResult {
 
 // --------------------------------------------------------------------------
 export const execMove =
-  <P extends number, D extends number, N extends number>(move: MorrisMoveS<D>, facts: MorrisGameFacts) =>
+  <P extends number, D extends number, N extends number>(
+    move: MorrisMoveS<D>,
+    moveFacts: MorrisGameFacts,
+    newFacts: MorrisGameFacts
+  ) =>
   (game: MorrisGame<P, D, N>): P.Effect.Effect<never, MorrisEngineError, MorrisGame<P, D, N>> => {
-    if (!R.val(facts.isValidMove)) {
+    if (!R.val(moveFacts.moveIsValid)) {
       return P.Effect.succeed(game);
     }
 
-    const nextMoveColor = R.val(facts.moveMakesNextTurnWhite) ? MorrisColor.WHITE : MorrisColor.BLACK;
+    const nextMoveColor = R.val(moveFacts.moveMakesNextTurnWhite) ? MorrisColor.WHITE : MorrisColor.BLACK;
 
     return P.pipe(
       P.Effect.Do,
@@ -62,12 +65,12 @@ export const execMove =
       P.Effect.map(({ newGame }) => ({
         ...newGame,
         curMoveColor: nextMoveColor,
-        gameOver: R.val(facts.moveMakesGameOver),
-        result: resolveResult(facts),
-        lastMillCounter: R.val(facts.moveMakesMill) ? 0 : game.lastMillCounter + 1,
+        gameOver: R.val(moveFacts.moveMakesGameOver),
+        result: resolveResult(moveFacts),
+        lastMillCounter: R.val(moveFacts.moveMakesMill) ? 0 : game.lastMillCounter + 1,
         moves: [...game.moves, move],
         positions: [...game.positions, boardHash(newGame.board)],
-        facts,
+        facts: newFacts,
       }))
     );
   };
@@ -77,39 +80,38 @@ export const tick =
   <P extends number, D extends number, N extends number>(move: MorrisMoveS<D>) =>
   (gameTick: MorrisGameTick<P, D, N>): P.Effect.Effect<RulesImpl, MorrisEngineError, MorrisGameTick<P, D, N>> => {
     // Formulate a rules context
+    const oldGame = gameTick.game;
+    const oldFacts = gameTick.facts;
+
     const rulesContext = {
-      game: gameTick.game,
+      game: oldGame,
       move,
     };
 
     return P.pipe(
       P.Effect.Do,
-      P.Effect.bind('newFacts', () =>
+      P.Effect.bind('moveFacts', () =>
         // Execute the rules
         P.pipe(
           RulesImpl,
-          P.Effect.flatMap((ruleImpl) =>
-            P.pipe(
-              ruleImpl.ruleSet<P, D, N>(),
-              R.decide<MorrisRulesContext<P, D, N>, MorrisGameFacts, MorrisEngineError>(rulesContext)
-            )
-          ),
-          P.Effect.map((ruleSet) => ruleSet.facts)
+          P.Effect.flatMap((ruleImpl) => P.pipe(ruleImpl.ruleSet<P, D, N>(), R.decide(rulesContext)))
         )
       ),
-      P.Effect.bind('newGame', ({ newFacts }) => P.pipe(gameTick.game, execMove(move, newFacts))),
+      P.Effect.bind('newFacts', ({ moveFacts }) => P.pipe(oldFacts, deriveNewFacts(oldGame, moveFacts))),
+      P.Effect.bind('newGame', ({ moveFacts, newFacts }) => P.pipe(oldGame, execMove(move, moveFacts, newFacts))),
+      P.Effect.bind('message', ({ moveFacts }) => P.pipe(oldGame, deriveMessage(move, moveFacts))),
       P.Effect.tap((_) => P.Console.log('\n-------\n')),
-      // P.Effect.tap((_) => P.Console.log(rulesContext.game)),
-      // P.Effect.tap((x) => P.Console.log(x.newFacts)),
       P.Effect.tap((x) => P.pipe(move, strMorrisMove(x.newGame), P.Effect.flatMap(P.Console.log))),
-      P.Effect.flatMap(({ newFacts, newGame }) =>
-        R.val(newFacts.isValidMove)
+      // P.Effect.tap((_) => P.Console.log(oldGame)),
+      // P.Effect.tap((x) => P.Console.log(x.moveFacts)),
+      P.Effect.flatMap(({ message, moveFacts, newFacts, newGame }) =>
+        R.val(moveFacts.moveIsValid)
           ? // Valid move: execute the move
             // FIXME: derive message from rules
-            makeMorrisGameTick(newGame, newFacts, String(newGame.result))
+            makeMorrisGameTick(newGame, newFacts, message)
           : // Invalid move
             // FIXME: derive message from rules
-            makeMorrisGameTick(gameTick.game, gameTick.facts, 'NOPE')
+            makeMorrisGameTick(newGame, newFacts, message)
       )
     );
   };

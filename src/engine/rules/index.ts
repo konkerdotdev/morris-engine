@@ -11,12 +11,14 @@ export type MorrisRulesContext<P extends number, D extends number, N extends num
   readonly move: MorrisMoveS<D>;
 };
 
+export type MorrisRuleset<P extends number, D extends number, N extends number> = R.RuleSet<
+  MorrisRulesContext<P, D, N>,
+  MorrisGameFacts,
+  MorrisEngineError
+>;
+
 export type RulesImpl = {
-  ruleSet: <P extends number, D extends number, N extends number>() => R.RuleSet<
-    MorrisRulesContext<P, D, N>,
-    MorrisGameFacts,
-    MorrisEngineError
-  >;
+  ruleSet: <P extends number, D extends number, N extends number>() => MorrisRuleset<P, D, N>;
 };
 
 export const RulesImpl = P.Context.Tag<RulesImpl>('RulesImpl');

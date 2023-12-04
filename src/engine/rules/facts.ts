@@ -3,6 +3,7 @@ import type { Fact } from '../../lib/tiny-rules-fp';
 export const UNSET_FACT = 'unset';
 
 export const MorrisGameFactKeys = [
+  // is
   'isFirstMove',
   'isTurnWhite',
   'isTurnBlack',
@@ -10,16 +11,25 @@ export const MorrisGameFactKeys = [
   'isMovingPhase',
   'isLaskerPhase',
   'isFlyingPhase',
-  'moveMakesMill',
   'isRemoveMode',
-  'isMoveCorrectColor',
-  'isMoveCorrectType',
-  'isMovePossibleForPlace',
-  'isMovePossibleForMove',
-  'isMovePossibleForLasker',
-  'isMovePossibleForFlying',
-  'isMovePossible',
-  'isValidMove',
+
+  // move is
+  'moveIsCorrectColor',
+  'moveIsCorrectType',
+  'moveIsPossibleForPlace',
+  'moveIsPossibleForMove',
+  'moveIsPossibleForLasker',
+  'moveIsPossibleForFlying',
+  'moveIsPossible',
+  'moveIsValid',
+
+  // move makes
+  'moveMakesMill',
+  'moveMakesRemoveMode',
+  'moveMakesLaskerPhase',
+  'moveMakesFlyingPhase',
+  'moveMakesPlacingPhase',
+  'moveMakesMovingPhase',
   'moveMakesNextTurnWhite',
   'moveMakesNextTurnBlack',
   'moveMakesDrawPositionRepeatLimit',
@@ -37,6 +47,7 @@ export type MorrisGameFactKeys = typeof MorrisGameFactKeys;
 export type MorrisGameFacts = Record<MorrisGameFactKeys[number], Fact>;
 
 export const INITIAL_MORRIS_GAME_FACTS: MorrisGameFacts = {
+  // is
   isFirstMove: [false, UNSET_FACT],
   isTurnWhite: [false, UNSET_FACT],
   isTurnBlack: [false, UNSET_FACT],
@@ -44,16 +55,25 @@ export const INITIAL_MORRIS_GAME_FACTS: MorrisGameFacts = {
   isMovingPhase: [false, UNSET_FACT],
   isLaskerPhase: [false, UNSET_FACT],
   isFlyingPhase: [false, UNSET_FACT],
-  moveMakesMill: [false, UNSET_FACT],
   isRemoveMode: [false, UNSET_FACT],
-  isMoveCorrectColor: [false, UNSET_FACT],
-  isMoveCorrectType: [false, UNSET_FACT],
-  isMovePossibleForPlace: [false, UNSET_FACT],
-  isMovePossibleForMove: [false, UNSET_FACT],
-  isMovePossibleForLasker: [false, UNSET_FACT],
-  isMovePossibleForFlying: [false, UNSET_FACT],
-  isMovePossible: [false, UNSET_FACT],
-  isValidMove: [false, UNSET_FACT],
+
+  // move is
+  moveIsCorrectColor: [false, UNSET_FACT],
+  moveIsCorrectType: [false, UNSET_FACT],
+  moveIsPossibleForPlace: [false, UNSET_FACT],
+  moveIsPossibleForMove: [false, UNSET_FACT],
+  moveIsPossibleForLasker: [false, UNSET_FACT],
+  moveIsPossibleForFlying: [false, UNSET_FACT],
+  moveIsPossible: [false, UNSET_FACT],
+  moveIsValid: [false, UNSET_FACT],
+
+  // move makes
+  moveMakesMill: [false, UNSET_FACT],
+  moveMakesRemoveMode: [false, UNSET_FACT],
+  moveMakesLaskerPhase: [false, UNSET_FACT],
+  moveMakesFlyingPhase: [false, UNSET_FACT],
+  moveMakesPlacingPhase: [false, UNSET_FACT],
+  moveMakesMovingPhase: [false, UNSET_FACT],
   moveMakesNextTurnWhite: [false, UNSET_FACT],
   moveMakesNextTurnBlack: [false, UNSET_FACT],
   moveMakesDrawPositionRepeatLimit: [false, UNSET_FACT],

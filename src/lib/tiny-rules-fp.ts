@@ -1,10 +1,16 @@
 import * as P from '@konker.dev/effect-ts-prelude';
 
+import { UNSET_FACT } from '../engine/rules/facts';
+
 export type Fact = [boolean, string];
 export type Facts = Record<string, Fact>;
 
-export const val = (fact: Fact): boolean => fact[0];
 export const note = (fact: Fact): string => fact[1];
+export const val = (fact: Fact): boolean => {
+  // eslint-disable-next-line fp/no-throw
+  if (note(fact) === UNSET_FACT) throw new Error('Unset fact access');
+  return fact[0];
+};
 
 //---------------------------------------------------------------------------
 export type Rule<C, F extends Facts, E> = {
@@ -102,9 +108,8 @@ export const addRuleFuncE = <C, F extends Facts, E>(
 //---------------------------------------------------------------------------
 export const decide =
   <C, F extends Facts, E>(context: C) =>
-  (ruleSet: RuleSet<C, F, E>): P.Effect.Effect<never, E, RuleSet<C, F, E>> =>
+  (ruleSet: RuleSet<C, F, E>): P.Effect.Effect<never, E, F> =>
     P.pipe(
       ruleSet.rules,
-      P.Effect.reduce(ruleSet.facts, (facts, rule) => rule.rule(context, facts)),
-      P.Effect.map((facts: F) => setFacts(ruleSet, facts))
+      P.Effect.reduce(ruleSet.facts, (facts, rule) => rule.rule(context, facts))
     );
