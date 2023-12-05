@@ -122,43 +122,36 @@ export function applyMoveToGame<P extends number, D extends number, N extends nu
 }
 
 export const deriveMessage =
-  <P extends number, D extends number, N extends number>(_move: MorrisMoveS<D>, moveFacts: MorrisGameFacts) =>
-  (_oldGame: MorrisGame<P, D, N>): P.Effect.Effect<never, MorrisEngineError, string> => {
+  <P extends number, D extends number, N extends number>(_move: MorrisMoveS<D>, facts: MorrisGameFacts) =>
+  (game: MorrisGame<P, D, N>): P.Effect.Effect<never, MorrisEngineError, string> => {
     const message = () => {
-      if (!R.val(moveFacts.moveIsValid)) return 'Invalid Move';
-      if (R.val(moveFacts.moveMakesWinWhite)) return 'White wins!!';
-      if (R.val(moveFacts.moveMakesWinBlack)) return 'Black wins!!';
-      if (R.val(moveFacts.moveMakesDraw)) return 'Draw :/';
-      if (R.val(moveFacts.isLaskerPhase)) {
-        if (R.val(moveFacts.moveMakesNextTurnWhite)) return 'Place or move White';
-        if (R.val(moveFacts.moveMakesNextTurnBlack)) return 'Place or move Black';
+      if (!R.val(facts.moveIsValid)) return 'Invalid Move';
+      if (game.gameOver) return game.result;
+
+      if (R.val(facts.isLaskerPhase)) {
+        if (R.val(facts.isTurnWhite)) return 'Place or move White';
+        if (R.val(facts.isTurnBlack)) return 'Place or move Black';
       }
-      if (R.val(moveFacts.moveMakesRemoveMode)) {
-        if (R.val(moveFacts.moveMakesNextTurnWhite)) return 'Remove Black';
-        if (R.val(moveFacts.moveMakesNextTurnBlack)) return 'Remove Black';
+      if (R.val(facts.isRemoveMode)) {
+        if (R.val(facts.isTurnWhite)) return 'Remove Black';
+        if (R.val(facts.isTurnBlack)) return 'Remove Black';
       }
-      if (R.val(moveFacts.moveMakesPlacingPhase)) {
-        if (R.val(moveFacts.moveMakesNextTurnWhite)) return 'Place White';
-        if (R.val(moveFacts.moveMakesNextTurnBlack)) return 'Place Black';
+      if (R.val(facts.isPlacingPhase)) {
+        if (R.val(facts.isTurnWhite)) return 'Place White';
+        if (R.val(facts.isTurnBlack)) return 'Place Black';
       }
-      if (R.val(moveFacts.moveMakesFlyingPhase)) {
-        if (R.val(moveFacts.moveMakesNextTurnWhite)) return 'Fly White';
-        if (R.val(moveFacts.moveMakesNextTurnBlack)) return 'Fly Black';
+      if (R.val(facts.isFlyingPhase)) {
+        if (R.val(facts.isTurnWhite)) return 'Fly White';
+        if (R.val(facts.isTurnBlack)) return 'Fly Black';
       }
-      if (R.val(moveFacts.moveMakesMovingPhase)) {
-        if (R.val(moveFacts.moveMakesNextTurnWhite)) return 'Move White';
-        if (R.val(moveFacts.moveMakesNextTurnBlack)) return 'Move Black';
+      if (R.val(facts.isMovingPhase)) {
+        if (R.val(facts.isTurnWhite)) return 'Move White';
+        if (R.val(facts.isTurnBlack)) return 'Move Black';
       }
-      return 'OK';
+
+      return 'OK (not ok)';
     };
 
     const ret = message();
     return ret ? P.Effect.succeed(ret) : P.Effect.fail(toMorrisEngineError('Logic error'));
-  };
-
-// TODO: derive new facts from (oldGame, moveFacts)
-export const deriveNewFacts =
-  <P extends number, D extends number, N extends number>(_game: MorrisGame<P, D, N>, moveFacts: MorrisGameFacts) =>
-  (oldFacts: MorrisGameFacts): P.Effect.Effect<never, never, MorrisGameFacts> => {
-    return R.val(moveFacts.moveIsValid) ? P.Effect.succeed(moveFacts) : P.Effect.succeed(oldFacts);
   };

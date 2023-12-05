@@ -2,17 +2,18 @@
 
 ---
 
-- Fix rules issue of "is" vs "move" facts
-- Derive message from rules
-  - E.g. invalid move, black wins, draw
 - Add "imperative shell"
   - To allow for imperative cli I/O UI
 - Rename schemas types to remove S postfix?
+  - No "non-S" duplicates/shadows
 - Unit tests!!
 - Remove state machine [?]
 - OTHER
   - Clock?
   - Move counts?
+- ~~Fix rules issue of "is" vs "move" facts~~
+- ~~Derive message from rules~~
+  - ~~E.g. invalid move, black wins, draw~~
 - ~~Remove boards.ts when content has been re-housed~~
 - ~~Amend rules to remove `unsafe_*` function calls~~
   - ~~```Remove `unsafe\_\*` function if not needed~~

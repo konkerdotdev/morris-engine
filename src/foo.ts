@@ -8,7 +8,8 @@ import { renderE } from './3mm/render';
 import { MorrisColor } from './engine/consts';
 import { createMoveMove, createMovePlace } from './engine/moves';
 import { RulesImpl } from './engine/rules';
-import { Rules } from './engine/rules/rules';
+import { RulesApply } from './engine/rules/rulesApply';
+import { RulesMove } from './engine/rules/rulesMove';
 import type { MorrisGameTick } from './engine/tick';
 import { startMorrisGame, tick } from './engine/tick';
 
@@ -65,7 +66,8 @@ const prog1 = P.pipe(
       P.Effect.provideService(
         RulesImpl,
         RulesImpl.of({
-          ruleSet: Rules,
+          rulesetMove: RulesMove,
+          rulesetApply: RulesApply,
         })
       )
     )

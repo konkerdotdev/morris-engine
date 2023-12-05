@@ -6,19 +6,24 @@ import type { MorrisGame } from '../game';
 import type { MorrisMoveS } from '../moves/schemas';
 import type { MorrisGameFacts } from './facts';
 
-export type MorrisRulesContext<P extends number, D extends number, N extends number> = {
+export type MorrisRulesContextMove<P extends number, D extends number, N extends number> = {
   readonly game: MorrisGame<P, D, N>;
   readonly move: MorrisMoveS<D>;
 };
 
-export type MorrisRuleset<P extends number, D extends number, N extends number> = R.RuleSet<
-  MorrisRulesContext<P, D, N>,
-  MorrisGameFacts,
-  MorrisEngineError
+export type MorrisRulesContextApply = object;
+
+export type MorrisRulesetMove<P extends number, D extends number, N extends number> = R.RuleSet<
+  MorrisRulesContextMove<P, D, N>,
+  MorrisEngineError,
+  MorrisGameFacts
 >;
 
+export type MorrisRulesetApply = R.RuleSet<MorrisRulesContextApply, MorrisEngineError, MorrisGameFacts>;
+
 export type RulesImpl = {
-  ruleSet: <P extends number, D extends number, N extends number>() => MorrisRuleset<P, D, N>;
+  readonly rulesetMove: <P extends number, D extends number, N extends number>() => MorrisRulesetMove<P, D, N>;
+  readonly rulesetApply: () => MorrisRulesetApply;
 };
 
 export const RulesImpl = P.Context.Tag<RulesImpl>('RulesImpl');

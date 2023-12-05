@@ -13,6 +13,16 @@ export const MorrisGameFactKeys = [
   'isFlyingPhase',
   'isRemoveMode',
 
+  'isDrawPositionRepeatLimit',
+  'isDrawNoMillsLimit',
+  'isDraw',
+  'isNoValidMoveWhite',
+  'isNoValidMoveBlack',
+  'isWinWhite',
+  'isWinBlack',
+  'isWin',
+  'isGameOver',
+
   // move is
   'moveIsCorrectColor',
   'moveIsCorrectType',
@@ -56,6 +66,15 @@ export const INITIAL_MORRIS_GAME_FACTS: MorrisGameFacts = {
   isLaskerPhase: [false, UNSET_FACT],
   isFlyingPhase: [false, UNSET_FACT],
   isRemoveMode: [false, UNSET_FACT],
+  isDrawPositionRepeatLimit: [false, UNSET_FACT],
+  isDrawNoMillsLimit: [false, UNSET_FACT],
+  isDraw: [false, UNSET_FACT],
+  isNoValidMoveWhite: [false, UNSET_FACT],
+  isNoValidMoveBlack: [false, UNSET_FACT],
+  isWinWhite: [false, UNSET_FACT],
+  isWinBlack: [false, UNSET_FACT],
+  isWin: [false, UNSET_FACT],
+  isGameOver: [false, UNSET_FACT],
 
   // move is
   moveIsCorrectColor: [false, UNSET_FACT],
