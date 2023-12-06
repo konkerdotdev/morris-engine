@@ -4,7 +4,6 @@ import { EmptyOccupant } from '../engine/board/schemas';
 import { MorrisColor, MorrisGameResult, MorrisLinkType, MorrisPhase } from '../engine/consts';
 import type { MorrisGame, MorrisGameConfig } from '../engine/game';
 import { MorrisBlack, MorrisWhite } from '../engine/morris';
-import { INITIAL_MORRIS_GAME_FACTS } from '../engine/rules/facts';
 
 export const P_3 = 9;
 export type P_3 = typeof P_3;
@@ -129,10 +128,11 @@ export const board: MorrisBoard<P_3, D_3, N_3> = {
 export const config: MorrisGameConfig<N_3> = {
   name: "3 Men's Morris",
   numMorrisPerPlayer: 3,
-  numPositionRepeatsForDraw: 3,
   numMillsToWinThreshold: 1,
-  flyingThreshold: 3,
+  numMorrisForFlyingThreshold: 3,
+  numMorrisToLoseThreshold: 2,
   numMovesWithoutMillForDraw: 50,
+  numPositionRepeatsForDraw: 3,
   phases: [MorrisPhase.PLACING, MorrisPhase.MOVING],
 };
 
@@ -150,5 +150,4 @@ export const game: MorrisGame<P_3, D_3, N_3> = {
   board,
   moves: [],
   positions: [boardHash(board)],
-  facts: INITIAL_MORRIS_GAME_FACTS,
 };

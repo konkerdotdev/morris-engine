@@ -4,8 +4,10 @@ import chalk from 'chalk';
 import type { MorrisBoardPoint } from '../engine/board';
 import { isOccupied } from '../engine/board/points';
 import { EMPTY, MorrisColor } from '../engine/consts';
-import type { MorrisGame } from '../engine/game';
-import type { D_3, N_3, P_3 } from './index';
+import { strMorrisMove } from '../engine/moves/helpers';
+import type { MorrisGameTick } from '../engine/tick';
+import type { MorrisEngineError } from '../lib/error';
+import type { D_3, N_3 } from './index';
 
 export function renderOccupant(p: MorrisBoardPoint<D_3, N_3>): string {
   return isOccupied(p)
@@ -15,38 +17,44 @@ export function renderOccupant(p: MorrisBoardPoint<D_3, N_3>): string {
     : EMPTY;
 }
 
-export function render(game: MorrisGame<P_3, D_3, N_3>): string {
+export function render3mm<P extends number, D extends number, N extends number>(
+  gameTick: MorrisGameTick<P, D, N>
+): P.Effect.Effect<never, MorrisEngineError, void> {
   return P.pipe(
-    game.board.points,
-    P.ReadonlyArray.map(renderOccupant),
-    (os) =>
-      chalk.dim('3 ') +
-      os[6] +
-      '---' +
-      os[7] +
-      '---' +
-      os[8] +
-      '\n' +
-      '  | \\ | / |\n' +
-      chalk.dim('2 ') +
-      os[3] +
-      '---' +
-      os[4] +
-      '---' +
-      os[5] +
-      '\n' +
-      '  | / | \\ |\n' +
-      chalk.dim('1 ') +
-      os[0] +
-      '---' +
-      os[1] +
-      '---' +
-      os[2] +
-      '\n' +
-      chalk.dim('  a   b   c\n')
+    P.Effect.Do,
+    P.Effect.bind('renderedBoard', () =>
+      P.pipe(
+        gameTick.game.board.points,
+        P.ReadonlyArray.map(renderOccupant),
+        (os) =>
+          chalk.dim('3 ') +
+          os[6] +
+          '---' +
+          os[7] +
+          '---' +
+          os[8] +
+          '\n' +
+          '  | \\ | / |\n' +
+          chalk.dim('2 ') +
+          os[3] +
+          '---' +
+          os[4] +
+          '---' +
+          os[5] +
+          '\n' +
+          '  | / | \\ |\n' +
+          chalk.dim('1 ') +
+          os[0] +
+          '---' +
+          os[1] +
+          '---' +
+          os[2] +
+          '\n' +
+          chalk.dim('  a   b   c\n'),
+        P.Effect.succeed
+      )
+    ),
+    P.Effect.bind('strMove', () => strMorrisMove(gameTick.game, gameTick.move)),
+    P.Effect.flatMap(({ renderedBoard, strMove }) => P.Console.log(`${renderedBoard}${strMove}: ${gameTick.message}\n`))
   );
-}
-
-export function renderE(game: MorrisGame<P_3, D_3, N_3>): P.Effect.Effect<never, Error, string> {
-  return P.pipe(render(game), P.Effect.succeed);
 }

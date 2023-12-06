@@ -54,5 +54,42 @@ export const RulesApply = () =>
         (_c: MorrisRulesContextApply, f: MorrisGameFacts) => R.val(f.moveMakesRemoveMode),
         'Is in remove mode for current player: last move was a mill'
       ),
+      R.addRuleFunc(
+        'isNoValidMoveWhite',
+        (_c: MorrisRulesContextApply, f: MorrisGameFacts) => R.val(f.moveMakesNoValidMoveWhite),
+        'No valid move possible for white'
+      ),
+      R.addRuleFunc(
+        'isNoValidMoveBlack',
+        (_c: MorrisRulesContextApply, f: MorrisGameFacts) => R.val(f.moveMakesNoValidMoveBlack),
+        'No valid move possible for black'
+      ),
+      R.addRuleFunc(
+        'isWinWhite',
+        (_c: MorrisRulesContextApply, f: MorrisGameFacts) => R.val(f.moveMakesWinWhite),
+        'Win for white'
+      ),
+      R.addRuleFunc(
+        'isWinBlack',
+        (_c: MorrisRulesContextApply, f: MorrisGameFacts) => R.val(f.moveMakesWinBlack),
+        'Win for black'
+      ),
+      R.addRuleFunc('isWin', (_c: MorrisRulesContextApply, f: MorrisGameFacts) => R.val(f.moveMakesWin), 'Win'),
+      R.addRuleFunc(
+        'isDrawPositionRepeatLimit',
+        (_c: MorrisRulesContextApply, f: MorrisGameFacts) => R.val(f.moveMakesDrawPositionRepeatLimit),
+        'Draw: position repeated too often'
+      ),
+      R.addRuleFunc(
+        'isDrawNoMillsLimit',
+        (_c: MorrisRulesContextApply, f: MorrisGameFacts) => R.val(f.moveMakesDrawNoMillsLimit),
+        'Draw: too many moves without a mill'
+      ),
+      R.addRuleFunc('isDraw', (_c: MorrisRulesContextApply, f: MorrisGameFacts) => R.val(f.moveMakesDraw), 'Draw'),
+      R.addRuleFunc(
+        'isGameOver',
+        (_c: MorrisRulesContextApply, f: MorrisGameFacts) => R.val(f.moveMakesGameOver),
+        'Game over'
+      ),
     ])
   );

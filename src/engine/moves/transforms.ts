@@ -7,6 +7,7 @@ import { MorrisMoveMoveS, MorrisMovePlaceS, MorrisMoveRemoveS } from './schemas'
 
 // --------------------------------------------------------------------------
 // Schema transforms for string representations of moves
+// -                    -- No move yet
 // P <color> <coord1>   -- Place piece of color on coord1
 // M <coord1> <coord2>  -- Move piece from coord1 -> coord2
 // R <coord1>           -- Remove piece on coord1
