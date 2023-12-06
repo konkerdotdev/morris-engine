@@ -30,9 +30,9 @@ export function makeMorrisGameTick<P extends number, D extends number, N extends
 }
 
 export function startMorrisGame<P extends number, D extends number, N extends number>(
-  morrisGame: MorrisGame<P, D, N>
+  game: MorrisGame<P, D, N>
 ): P.Effect.Effect<never, MorrisEngineError, MorrisGameTick<P, D, N>> {
-  return makeMorrisGameTick(morrisGame, INITIAL_MORRIS_GAME_FACTS, deriveStartMessage(morrisGame));
+  return makeMorrisGameTick(game, INITIAL_MORRIS_GAME_FACTS, deriveStartMessage(game));
 }
 
 // --------------------------------------------------------------------------

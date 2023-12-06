@@ -2,8 +2,7 @@
 
 ---
 
-- Add "imperative shell"
-  - To allow for imperative cli I/O UI
+- Add basic CLI UI example
 - Rename schemas types to remove S postfix?
   - No "non-S" duplicates/shadows
 - Unit tests!!
@@ -11,6 +10,8 @@
 - OTHER
   - Clock?
   - Move counts?
+- ~~Add "imperative shell"~~
+  - ~~To allow for imperative cli I/O UI~~
 - ~~Fix rules issue of "is" vs "move" facts~~
 - ~~Derive message from rules~~
   - ~~E.g. invalid move, black wins, draw~~

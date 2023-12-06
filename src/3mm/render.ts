@@ -5,9 +5,10 @@ import type { MorrisBoardPoint } from '../engine/board';
 import { isOccupied } from '../engine/board/points';
 import { EMPTY, MorrisColor } from '../engine/consts';
 import { strMorrisMove } from '../engine/moves/helpers';
+import { shellRenderString } from '../engine/shell';
 import type { MorrisGameTick } from '../engine/tick';
 import type { MorrisEngineError } from '../lib/error';
-import type { D_3, N_3 } from './index';
+import type { D_3, N_3, P_3 } from './index';
 
 export function renderOccupant(p: MorrisBoardPoint<D_3, N_3>): string {
   return isOccupied(p)
@@ -17,9 +18,9 @@ export function renderOccupant(p: MorrisBoardPoint<D_3, N_3>): string {
     : EMPTY;
 }
 
-export function render3mm<P extends number, D extends number, N extends number>(
+export function renderString3mm<P extends number, D extends number, N extends number>(
   gameTick: MorrisGameTick<P, D, N>
-): P.Effect.Effect<never, MorrisEngineError, void> {
+): P.Effect.Effect<never, MorrisEngineError, string> {
   return P.pipe(
     P.Effect.Do,
     P.Effect.bind('renderedBoard', () =>
@@ -55,6 +56,8 @@ export function render3mm<P extends number, D extends number, N extends number>(
       )
     ),
     P.Effect.bind('strMove', () => strMorrisMove(gameTick.game, gameTick.move)),
-    P.Effect.flatMap(({ renderedBoard, strMove }) => P.Console.log(`${renderedBoard}${strMove}: ${gameTick.message}\n`))
+    P.Effect.map(({ renderedBoard, strMove }) => `${renderedBoard}${strMove}: ${gameTick.message}\n`)
   );
 }
+
+export const shellRenderString3mm = shellRenderString<P_3, D_3, N_3>(renderString3mm);
