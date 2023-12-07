@@ -3,7 +3,7 @@ import * as P from '@konker.dev/effect-ts-prelude';
 import type { MorrisEngineError } from '../../lib/error';
 import * as R from '../../lib/tiny-rules-fp';
 import { someE } from '../../lib/utils';
-import type { MillCandidate, MorrisBoard, OccupiedBoardPoint } from '../board';
+import type { MorrisBoard, OccupiedBoardPoint } from '../board';
 import {
   countEmpty,
   countMorris,
@@ -14,9 +14,11 @@ import {
   getPointsOccupied,
   isOccupied,
 } from '../board/points';
+import { millCandidatesForMove } from '../board/query';
 import type { MorrisBoardCoordS } from '../board/schemas';
 import { MorrisColor, MorrisMoveType } from '../consts';
 import type { MorrisGame } from '../game';
+import { applyMoveToGameBoard } from '../game';
 import type { Morris } from '../morris';
 import type { MorrisGameFacts } from '../rules/facts';
 import type { MorrisMoveMoveS, MorrisMovePlaceS, MorrisMoveRemoveS, MorrisMoveS } from './schemas';
@@ -182,22 +184,6 @@ export function countValidMovesForColor<P extends number, D extends number, N ex
 }
 
 // --------------------------------------------------------------------------
-export function millCandidatesForMove<P extends number, D extends number, N extends number>(
-  game: MorrisGame<P, D, N>,
-  move: MorrisMoveS<D>
-): ReadonlyArray<MillCandidate<D>> {
-  // A REMOVE move can never create a mill
-  if (move.type === MorrisMoveType.REMOVE) {
-    return [];
-  }
-
-  // Find all mill possibilities which include the move.to point
-  // Remove the move.to point from each of the mill possibilities
-  return game.board.millCandidates
-    .filter((m) => m.includes(move.to))
-    .map((m) => m.filter((coord) => coord !== move.to)) as Array<MillCandidate<D>>;
-}
-
 export function moveMakesMill<P extends number, D extends number, N extends number>(
   game: MorrisGame<P, D, N>,
   move: MorrisMoveS<D>
@@ -207,19 +193,18 @@ export function moveMakesMill<P extends number, D extends number, N extends numb
     return P.Effect.succeed(false);
   }
 
-  const candidates = millCandidatesForMove(game, move);
-
   // For each mill possibility, check if the other two points are the same color as the move
   return P.pipe(
     P.Effect.Do,
     P.Effect.bind('moveColor', () => moveColor(game, move)),
-    P.Effect.flatMap(({ moveColor }) =>
+    P.Effect.bind('newGame', () => applyMoveToGameBoard(game, move)),
+    P.Effect.flatMap(({ moveColor, newGame }) =>
       P.pipe(
-        candidates,
+        millCandidatesForMove(newGame.board, move),
         someE<never, MorrisEngineError, ReadonlyArray<MorrisBoardCoordS<D>>>((candidate) =>
           P.pipe(
             candidate,
-            P.ReadonlyArray.map((coord) => getPoint(game.board, coord)),
+            P.ReadonlyArray.map((coord) => getPoint(newGame.board, coord)),
             P.Effect.all,
             P.Effect.map((points) => points.every((p) => isOccupied(p) && p.occupant.color === moveColor))
           )
