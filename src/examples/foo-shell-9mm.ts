@@ -1,12 +1,12 @@
-/* eslint-disable fp/no-unused-expression,@typescript-eslint/ban-ts-comment,fp/no-let,fp/no-mutation */
+/* eslint-disable fp/no-unused-expression,@typescript-eslint/ban-ts-comment,fp/no-let,fp/no-mutation,fp/no-nil */
 import * as console from 'console';
 
-import type { D_9, N_9, P_9 } from '../9mm';
+import type { params } from '../9mm';
 import { game } from '../9mm';
 import { renderString } from '../engine/render/text';
 import { shellStartMorrisGame, shellTick, shellWrapRenderString } from '../engine/shell';
 
-const shellRenderString = shellWrapRenderString<P_9, D_9, N_9>(renderString);
+const shellRenderString = shellWrapRenderString<typeof params.P, typeof params.D, typeof params.N>(renderString);
 
 const MOVES = [
   'P W d7',
@@ -56,7 +56,7 @@ const MOVES = [
 ];
 
 // --------------------------------------------------------------------------
-let gt = shellStartMorrisGame<P_9, D_9, N_9>(game);
+let gt = shellStartMorrisGame<typeof params.P, typeof params.D, typeof params.N>(game);
 console.log(shellRenderString(gt));
 
 MOVES.forEach((moveStr) => {

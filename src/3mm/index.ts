@@ -12,6 +12,12 @@ export type D_3 = typeof D_3;
 export const N_3 = 3;
 export type N_3 = typeof N_3;
 
+export const params = {
+  P: P_3,
+  D: D_3,
+  N: N_3,
+} as const;
+
 /*
 // --------------------------------------------------------------------------
 // 3-Mens-Morris Board

@@ -4,8 +4,9 @@
 
 - Fix optimizations for text render
 - Remove unsafe for text render
-- Add 9mm terminal example
-  - Or choose your size?
+- Functions for varying config, as possible
+  - e.g. start color
+- Themes for text render?
 - Rename schemas types to remove S postfix?
   - No "non-S" duplicates/shadows
 - Unit tests!!
@@ -13,6 +14,8 @@
 - OTHER
   - Clock?
   - Move counts?
+- ~~Add 9mm terminal example~~
+  - ~~Or choose your size?~~
 - ~~Add basic CLI UI example~~
 - ~~Add "imperative shell"~~
   - ~~To allow for imperative cli I/O UI~~

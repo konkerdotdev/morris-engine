@@ -7,13 +7,13 @@ import { game } from '../3mm';
 import { MorrisColor } from '../engine/consts';
 import { createMoveMove, createMovePlace } from '../engine/moves';
 import { RenderImpl } from '../engine/render';
+import { renderString } from '../engine/render/text';
 import { RulesImpl } from '../engine/rules';
 import { RulesApply } from '../engine/rules/rulesApply';
 import { RulesMove } from '../engine/rules/rulesMove';
 import type { MorrisGameTick } from '../engine/tick';
 import { startMorrisGame, tick } from '../engine/tick';
 import type { MorrisEngineError } from '../lib/error';
-import { renderString } from '../render/text';
 
 // --------------------------------------------------------------------------
 export const print =

@@ -7,7 +7,7 @@ import * as readline from 'node:readline/promises';
 import chalk from 'chalk';
 import console from 'console';
 
-import type { D_9, N_9, P_9 } from '../9mm';
+import type { params } from '../9mm';
 import { game } from '../9mm';
 import { renderString } from '../engine/render/text';
 import { shellStartMorrisGame, shellTick, shellWrapRenderString } from '../engine/shell';
@@ -18,9 +18,11 @@ const rl = readline.createInterface({
   output: process.stdout,
 });
 
-const shellRenderString = shellWrapRenderString<P_9, D_9, N_9>(renderString);
+const shellRenderString = shellWrapRenderString<typeof params.P, typeof params.D, typeof params.N>(renderString);
 
-export async function execLoop(gt: MorrisGameTick<P_9, D_9, N_9>): Promise<MorrisGameTick<P_9, D_9, N_9> | undefined> {
+export async function execLoop(
+  gt: MorrisGameTick<typeof params.P, typeof params.D, typeof params.N>
+): Promise<MorrisGameTick<typeof params.P, typeof params.D, typeof params.N> | undefined> {
   const move = await rl.question(`${gt.message} (Q to quit): `);
   if (move.toUpperCase() === 'Q') {
     return undefined;
@@ -35,8 +37,12 @@ export async function execLoop(gt: MorrisGameTick<P_9, D_9, N_9>): Promise<Morri
 (async () => {
   console.log(chalk.cyan.bold(game.config.name) + '\n\n');
 
-  let gt: MorrisGameTick<P_9, D_9, N_9> | undefined = shellStartMorrisGame<P_9, D_9, N_9>(game);
-  console.log(shellRenderString(gt));
+  let gt: MorrisGameTick<typeof params.P, typeof params.D, typeof params.N> | undefined = shellStartMorrisGame<
+    typeof params.P,
+    typeof params.D,
+    typeof params.N
+  >(game);
+  console.log('\n' + shellRenderString(gt));
 
   try {
     while (gt) {
