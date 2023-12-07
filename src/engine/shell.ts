@@ -1,4 +1,5 @@
 import * as P from '@konker.dev/effect-ts-prelude';
+import chalk from 'chalk';
 
 import { toMorrisEngineError } from '../lib/error';
 import type { MorrisGame } from './game';
@@ -18,14 +19,20 @@ export function shellStartMorrisGame<P extends number, D extends number, N exten
 
 export function shellTick<P extends number, D extends number, N extends number>(
   gameTick: MorrisGameTick<P, D, N>,
-  move: string
+  moveStr: string
 ): MorrisGameTick<P, D, N> {
   return P.Effect.runSync(
     P.pipe(
-      move,
+      moveStr,
       P.Schema.decode(String_MorrisMove(gameTick.game.board.dimension)),
-      P.Effect.mapError(toMorrisEngineError),
       P.Effect.flatMap((move) => P.pipe(gameTick, tick(move))),
+      P.Effect.mapError(toMorrisEngineError),
+      P.Effect.orElse(() =>
+        P.pipe(
+          P.Effect.succeed(gameTick),
+          P.Effect.tap(() => P.Console.log(chalk.redBright(chalk.bold('Bad input\n'))))
+        )
+      ),
       P.Effect.provideService(
         RulesImpl,
         RulesImpl.of({
