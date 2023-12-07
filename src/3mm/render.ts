@@ -4,7 +4,6 @@ import chalk from 'chalk';
 import type { MorrisBoardPoint } from '../engine/board';
 import { isOccupied } from '../engine/board/points';
 import { EMPTY, MorrisColor } from '../engine/consts';
-import { strMorrisMove } from '../engine/moves/helpers';
 import { shellRenderString } from '../engine/shell';
 import type { MorrisGameTick } from '../engine/tick';
 import type { MorrisEngineError } from '../lib/error';
@@ -13,50 +12,53 @@ import type { D_3, N_3, P_3 } from './index';
 export function renderOccupant(p: MorrisBoardPoint<D_3, N_3>): string {
   return isOccupied(p)
     ? p.occupant.color === MorrisColor.WHITE
-      ? chalk.yellowBright(chalk.bold(p.occupant.color))
-      : chalk.magentaBright(chalk.bold(p.occupant.color))
-    : EMPTY;
+      ? chalk.bgYellow(chalk.hex('#0000ff').bold('●'))
+      : chalk.bgYellow(chalk.hex('#ff0000').bold('●'))
+    : chalk.bgYellow(chalk.black('⦁'));
 }
 
 export function renderString3mm<P extends number, D extends number, N extends number>(
   gameTick: MorrisGameTick<P, D, N>
 ): P.Effect.Effect<never, MorrisEngineError, string> {
   return P.pipe(
-    P.Effect.Do,
-    P.Effect.bind('renderedBoard', () =>
-      P.pipe(
-        gameTick.game.board.points,
-        P.ReadonlyArray.map(renderOccupant),
-        (os) =>
-          chalk.dim('3 ') +
-          os[6] +
-          '---' +
-          os[7] +
-          '---' +
-          os[8] +
-          '\n' +
-          '  | \\ | / |\n' +
-          chalk.dim('2 ') +
-          os[3] +
-          '---' +
-          os[4] +
-          '---' +
-          os[5] +
-          '\n' +
-          '  | / | \\ |\n' +
-          chalk.dim('1 ') +
-          os[0] +
-          '---' +
-          os[1] +
-          '---' +
-          os[2] +
-          '\n' +
-          chalk.dim('  a   b   c\n'),
-        P.Effect.succeed
-      )
-    ),
-    P.Effect.bind('strMove', () => strMorrisMove(gameTick.game, gameTick.move)),
-    P.Effect.map(({ renderedBoard, strMove }) => `${renderedBoard}${strMove}: ${gameTick.message}\n`)
+    gameTick.game.board.points,
+    P.ReadonlyArray.map(renderOccupant),
+    (os) =>
+      chalk.dim('3 ') +
+      chalk.bgYellow(' ') +
+      os[6] +
+      chalk.bgYellow(chalk.black.dim('───')) +
+      os[7] +
+      chalk.bgYellow(chalk.black.dim('───')) +
+      os[8] +
+      chalk.bgYellow(' ') +
+      '\n' +
+      '  ' +
+      chalk.bgYellow(chalk.black.dim(' │ ╲ │ ╱ │ ')) +
+      '\n' +
+      chalk.dim('2 ') +
+      chalk.bgYellow(' ') +
+      os[3] +
+      chalk.bgYellow(chalk.black.dim('───')) +
+      os[4] +
+      chalk.bgYellow(chalk.black.dim('───')) +
+      os[5] +
+      chalk.bgYellow(' ') +
+      '\n' +
+      '  ' +
+      chalk.bgYellow(chalk.black.dim(' │ ╱ │ ╲ │ ')) +
+      '\n' +
+      chalk.dim('1 ') +
+      chalk.bgYellow(' ') +
+      os[0] +
+      chalk.bgYellow(chalk.black.dim('───')) +
+      os[1] +
+      chalk.bgYellow(chalk.black.dim('───')) +
+      os[2] +
+      chalk.bgYellow(' ') +
+      '\n' +
+      chalk.dim('   a   b   c\n'),
+    P.Effect.succeed
   );
 }
 

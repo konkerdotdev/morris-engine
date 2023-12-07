@@ -15,12 +15,12 @@ export type N_3 = typeof N_3;
 /*
 // --------------------------------------------------------------------------
 3-Mens-Morris Board
-3 o---o---o
-  | \ | / |
-2 o---o---o
-  | / | \ |
-1 o---o---o
-  a   b   c
+3 o----o----o
+  |  \ |  / |
+2 o----o----o
+  | /  |  \ |
+1 o----o----o
+  a    b    c
 */
 export const board: MorrisBoard<P_3, D_3, N_3> = {
   numPoints: P_3,

@@ -4,6 +4,7 @@
  */
 import * as readline from 'node:readline/promises';
 
+import chalk from 'chalk';
 import console from 'console';
 
 import type { D_3, N_3, P_3 } from '../3mm';
@@ -18,7 +19,7 @@ const rl = readline.createInterface({
 });
 
 export async function execLoop(gt: MorrisGameTick<P_3, D_3, N_3>): Promise<MorrisGameTick<P_3, D_3, N_3> | undefined> {
-  const move = await rl.question('Enter move (Q to quit): ');
+  const move = await rl.question(`${gt.message} (Q to quit): `);
   if (move.toUpperCase() === 'Q') {
     return undefined;
   }
@@ -37,6 +38,7 @@ export async function execLoop(gt: MorrisGameTick<P_3, D_3, N_3>): Promise<Morri
     while (gt) {
       gt = await execLoop(gt);
       if (gt?.game?.gameOver) {
+        console.log(`\n${chalk.green.bold(gt.message)}`);
         break;
       }
     }
