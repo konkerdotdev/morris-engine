@@ -136,7 +136,7 @@ export const config: MorrisGameConfig<N_3> = {
   name: "3 Men's Morris",
   numMorrisPerPlayer: 3,
   numMillsToWinThreshold: 1,
-  numMorrisForFlyingThreshold: 3,
+  numMorrisForFlyingThreshold: 0,
   numMorrisToLoseThreshold: 2,
   numMovesWithoutMillForDraw: 50,
   numPositionRepeatsForDraw: 3,
