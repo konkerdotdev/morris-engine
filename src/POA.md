@@ -7,6 +7,10 @@
 - Functions for varying config, as possible
   - e.g. start color
 - Themes for text render?
+- Serialize/deserialize games
+  - What do we need to set up a network game, and send moves over the network?
+    - P2P
+  - Could also be handy for test fixtures
 - Rename schemas types to remove S postfix?
   - No "non-S" duplicates/shadows
 - Unit tests!!

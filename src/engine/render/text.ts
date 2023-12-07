@@ -15,19 +15,48 @@ export const COORD_PAD_V = 1;
 
 export type CoordTuple = [number, number];
 
-export type MorrisBoardRenderConfig = {
+export type MorrisBoardRenderConfigText = {
   readonly xScale: number;
   readonly yScale: number;
   readonly pad: number;
+  readonly colorBoardBg: string;
+  readonly colorBoard: string;
+  readonly colorCoords: string;
+  readonly colorCoordsBg: string;
+  readonly colorWhite: string;
+  readonly colorBlack: string;
+  readonly avatarEmpty: string;
+  readonly avatarWhite: string;
+  readonly avatarBlack: string;
+  readonly boardH: string;
+  readonly boardV: string;
+  readonly boardDB: string;
+  readonly boardDF: string;
+  readonly boardBlack: string;
 };
-export const DEFAULT_MORRIS_BOARD_RENDER_CONFIG: MorrisBoardRenderConfig = {
+
+export const DEFAULT_MORRIS_BOARD_RENDER_CONFIG_TEXT: MorrisBoardRenderConfigText = {
   xScale: 3,
   yScale: 2,
   pad: 1,
+  colorBoardBg: '#a67b5b',
+  colorBoard: '#333333',
+  colorCoords: '#ffffff',
+  colorCoordsBg: '#000000',
+  colorWhite: '#ffffff', //'#ffff00',
+  colorBlack: '#000000', //'#0000aa',
+  avatarEmpty: '⦁',
+  avatarWhite: '●',
+  avatarBlack: '●',
+  boardH: '─',
+  boardV: '│',
+  boardDB: '╲',
+  boardDF: '╱',
+  boardBlack: ' ',
 };
 
 export type MorrisBoardRenderParams = {
-  readonly config: MorrisBoardRenderConfig;
+  readonly config: MorrisBoardRenderConfigText;
   readonly w: number;
   readonly h: number;
   readonly coords: Array<[[COORD_CHAR, number], CoordTuple]>;
@@ -37,14 +66,6 @@ export type MorrisBoardRenderParams = {
   readonly dfLinks: Array<[CoordTuple, CoordTuple]>;
   readonly renderPoints: Array<Array<string>>;
 };
-
-export function renderOccupant<D extends number, N extends number>(p: MorrisBoardPoint<D, N>): string {
-  return isOccupied(p)
-    ? p.occupant.color === MorrisColor.WHITE
-      ? chalk.bgYellow(chalk.hex('#0000cc').bold('●'))
-      : chalk.bgYellow(chalk.hex('#Cc0000').bold('●'))
-    : chalk.bgYellow(chalk.black('⦁'));
-}
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function unsafe_getBoardCoordParts<D extends number>(coord: MorrisBoardCoordS<D>): [COORD_CHAR, number] {
@@ -57,7 +78,7 @@ export function unsafe_getBoardCoordParts<D extends number>(coord: MorrisBoardCo
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function _unsafe_getRenderCoordExec<D extends number>(
-  config: MorrisBoardRenderConfig,
+  config: MorrisBoardRenderConfigText,
   h: number,
   coord: MorrisBoardCoordS<D>
 ): CoordTuple {
@@ -79,7 +100,7 @@ export function unsafe_getRenderCoord<D extends number>(
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function unsafe_initMorrisBoardRenderParams<P extends number, D extends number, N extends number>(
-  config: MorrisBoardRenderConfig,
+  config: MorrisBoardRenderConfigText,
   board: MorrisBoard<P, D, N>
 ): MorrisBoardRenderParams {
   const w = COORD_PAD_H + board.dimension + (board.dimension - 1) * config.xScale + config.pad * 2;
@@ -209,41 +230,65 @@ export function getCoordH(params: MorrisBoardRenderParams, x: CoordTuple): strin
   return coord ?? ' ';
 }
 
+export function renderOccupant<D extends number, N extends number>(
+  params: MorrisBoardRenderParams,
+  p: MorrisBoardPoint<D, N>
+): string {
+  return isOccupied(p)
+    ? p.occupant.color === MorrisColor.WHITE
+      ? chalk.bgHex(params.config.colorBoardBg).hex(params.config.colorWhite).bold(params.config.avatarWhite)
+      : chalk.bgHex(params.config.colorBoardBg).hex(params.config.colorBlack).bold(params.config.avatarBlack)
+    : chalk.bgHex(params.config.colorBoardBg).hex(params.config.colorBoard).bold(params.config.avatarEmpty);
+}
+
 // FIXME: unsafe
 export function renderString<P extends number, D extends number, N extends number>(
   gameTick: MorrisGameTick<P, D, N>
 ): P.Effect.Effect<never, MorrisEngineError, string> {
-  const params = unsafe_initMorrisBoardRenderParams(DEFAULT_MORRIS_BOARD_RENDER_CONFIG, gameTick.game.board);
+  const params = unsafe_initMorrisBoardRenderParams(DEFAULT_MORRIS_BOARD_RENDER_CONFIG_TEXT, gameTick.game.board);
 
   params.renderPoints.forEach((row, j) =>
     row.forEach((_, i) => {
       if (isH(params, [i, j])) {
-        params.renderPoints[j]![i] = chalk.bgYellow.black.dim('─');
+        params.renderPoints[j]![i] = chalk
+          .bgHex(params.config.colorBoardBg)
+          .hex(params.config.colorBoard)
+          .dim(params.config.boardH);
       } else if (isV(params, [i, j])) {
-        params.renderPoints[j]![i] = chalk.bgYellow.black.dim('│');
+        params.renderPoints[j]![i] = chalk
+          .bgHex(params.config.colorBoardBg)
+          .hex(params.config.colorBoard)
+          .dim(params.config.boardV);
       } else if (isDB(params, [i, j])) {
-        params.renderPoints[j]![i] = chalk.bgYellow.black.dim('╲');
+        params.renderPoints[j]![i] = chalk
+          .bgHex(params.config.colorBoardBg)
+          .hex(params.config.colorBoard)
+          .dim(params.config.boardDB);
       } else if (isDF(params, [i, j])) {
-        params.renderPoints[j]![i] = chalk.bgYellow.black.dim('╱');
+        params.renderPoints[j]![i] = chalk
+          .bgHex(params.config.colorBoardBg)
+          .hex(params.config.colorBoard)
+          .dim(params.config.boardDF);
       } else if (isCoordH(params, [i, j])) {
-        params.renderPoints[j]![i] = chalk.bgBlack.white.dim(getCoordH(params, [i, j]));
+        params.renderPoints[j]![i] = chalk
+          .bgHex(params.config.colorCoordsBg)
+          .hex(params.config.colorCoords)
+          .dim(getCoordH(params, [i, j]));
       } else if (isCoordV(params, [i, j])) {
-        params.renderPoints[j]![i] = chalk.bgBlack.white.dim(getCoordV(params, [i, j]));
+        params.renderPoints[j]![i] = chalk
+          .bgHex(params.config.colorCoordsBg)
+          .hex(params.config.colorCoords)
+          .dim(getCoordV(params, [i, j]));
       } else {
-        params.renderPoints[j]![i] = chalk.bgYellow.black.dim(' ');
+        params.renderPoints[j]![i] = chalk.bgHex(params.config.colorBoardBg).hex(params.config.colorBoard).dim(' ');
       }
     })
   );
 
   gameTick.game.board.points.forEach((p) => {
     const [x, y] = unsafe_getRenderCoord(params, p.coord);
-    params.renderPoints[y]![x] = renderOccupant(p);
+    params.renderPoints[y]![x] = renderOccupant(params, p);
   });
 
-  return P.Effect.succeed(
-    params.renderPoints
-      // .map((row) => row.map(renderBoardPoint))
-      .map((row) => row.join(''))
-      .join('\n')
-  );
+  return P.Effect.succeed(params.renderPoints.map((row) => row.join('')).join('\n'));
 }
