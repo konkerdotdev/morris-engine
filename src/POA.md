@@ -2,7 +2,10 @@
 
 ---
 
-- Add basic CLI UI example
+- Fix optimizations for text render
+- Remove unsafe for text render
+- Add 9mm terminal example
+  - Or choose your size?
 - Rename schemas types to remove S postfix?
   - No "non-S" duplicates/shadows
 - Unit tests!!
@@ -10,6 +13,7 @@
 - OTHER
   - Clock?
   - Move counts?
+- ~~Add basic CLI UI example~~
 - ~~Add "imperative shell"~~
   - ~~To allow for imperative cli I/O UI~~
 - ~~Fix rules issue of "is" vs "move" facts~~

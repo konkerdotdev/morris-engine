@@ -44,7 +44,7 @@ export function shellTick<P extends number, D extends number, N extends number>(
   );
 }
 
-export const shellRenderString =
+export const shellWrapRenderString =
   <P extends number, D extends number, N extends number>(renderString: RenderImpl['renderString']) =>
   (gameTick: MorrisGameTick<P, D, N>) =>
     P.Effect.runSync(

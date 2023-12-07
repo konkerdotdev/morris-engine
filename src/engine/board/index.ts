@@ -1,5 +1,5 @@
 import type { RepeatString, Tuple } from '../../lib/type-utils';
-import type { EMPTY, MorrisColor, MorrisLinkType, THREE } from '../consts';
+import type { MorrisLinkType, THREE } from '../consts';
 import type { Morris } from '../morris';
 import type { EmptyOccupant, MorrisBoardCoordS } from './schemas';
 
@@ -30,4 +30,8 @@ export type MorrisBoard<P extends number, D extends number, N extends number> = 
   readonly millCandidates: ReadonlyArray<MillCandidate<D>>;
 };
 
-export type MorrisBoardPositionHash<P extends number> = RepeatString<MorrisColor | EMPTY, P>;
+// Having B|W|EMPTY is too complex for the type system to handle.
+export type MorrisBoardPositionString<P extends number> = RepeatString<
+  string, //MorrisColor.BLACK | MorrisColor.WHITE | EMPTY,
+  P
+>;

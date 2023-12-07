@@ -14,7 +14,7 @@ export type N_3 = typeof N_3;
 
 /*
 // --------------------------------------------------------------------------
-3-Mens-Morris Board
+// 3-Mens-Morris Board
 3 o----o----o
   |  \ |  / |
 2 o----o----o
@@ -26,7 +26,7 @@ export const board: MorrisBoard<P_3, D_3, N_3> = {
   numPoints: P_3,
   dimension: D_3,
   points: [
-    /*0*/ {
+    {
       coord: 'a1',
       links: [
         { to: 'b1', linkType: MorrisLinkType.HORIZONTAL },
@@ -35,7 +35,7 @@ export const board: MorrisBoard<P_3, D_3, N_3> = {
       ] as const,
       occupant: EmptyOccupant,
     },
-    /*1*/ {
+    {
       coord: 'b1',
       links: [
         { to: 'a1', linkType: MorrisLinkType.HORIZONTAL },
@@ -44,7 +44,7 @@ export const board: MorrisBoard<P_3, D_3, N_3> = {
       ],
       occupant: EmptyOccupant,
     },
-    /*2*/ {
+    {
       coord: 'c1',
       links: [
         { to: 'b1', linkType: MorrisLinkType.HORIZONTAL },
@@ -53,7 +53,7 @@ export const board: MorrisBoard<P_3, D_3, N_3> = {
       ],
       occupant: EmptyOccupant,
     },
-    /*3*/ {
+    {
       coord: 'a2',
       links: [
         { to: 'a1', linkType: MorrisLinkType.VERTICAL },
@@ -62,7 +62,7 @@ export const board: MorrisBoard<P_3, D_3, N_3> = {
       ],
       occupant: EmptyOccupant,
     },
-    /*4*/ {
+    {
       coord: 'b2',
       links: [
         { to: 'a1', linkType: MorrisLinkType.DIAGONAL_F },
@@ -76,7 +76,7 @@ export const board: MorrisBoard<P_3, D_3, N_3> = {
       ],
       occupant: EmptyOccupant,
     },
-    /*5*/ {
+    {
       coord: 'c2',
       links: [
         { to: 'c1', linkType: MorrisLinkType.VERTICAL },
@@ -85,7 +85,7 @@ export const board: MorrisBoard<P_3, D_3, N_3> = {
       ],
       occupant: EmptyOccupant,
     },
-    /*6*/ {
+    {
       coord: 'a3',
       links: [
         { to: 'a2', linkType: MorrisLinkType.VERTICAL },
@@ -94,7 +94,7 @@ export const board: MorrisBoard<P_3, D_3, N_3> = {
       ],
       occupant: EmptyOccupant,
     },
-    /*7*/ {
+    {
       coord: 'b3',
       links: [
         { to: 'b2', linkType: MorrisLinkType.VERTICAL },
@@ -103,7 +103,7 @@ export const board: MorrisBoard<P_3, D_3, N_3> = {
       ],
       occupant: EmptyOccupant,
     },
-    /*8*/ {
+    {
       coord: 'c3',
       links: [
         { to: 'b2', linkType: MorrisLinkType.DIAGONAL_F },
@@ -125,6 +125,7 @@ export const board: MorrisBoard<P_3, D_3, N_3> = {
   ],
 };
 
+// --------------------------------------------------------------------------
 export const config: MorrisGameConfig<N_3> = {
   name: "3 Men's Morris",
   numMorrisPerPlayer: 3,

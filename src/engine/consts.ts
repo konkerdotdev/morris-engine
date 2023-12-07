@@ -37,6 +37,8 @@ export const COORD_CHARS = [
   'y',
   'z',
 ] as const;
+export type COORD_CHARS = typeof COORD_CHARS;
+export type COORD_CHAR = COORD_CHARS[number];
 
 export enum MorrisColor {
   BLACK = 'B',

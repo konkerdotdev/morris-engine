@@ -19,3 +19,10 @@ export const filterE =
       P.Effect.all,
       P.Effect.map((bs) => as.filter((_, i) => bs[i]))
     );
+
+/**
+ * See: https://stackoverflow.com/a/64777515
+ */
+export function arrayChunk<T>(arr: Array<T>, size: number): Array<Array<T>> {
+  return [...Array(Math.ceil(arr.length / size))].map((_, i) => arr.slice(size * i, size + size * i));
+}

@@ -3,7 +3,7 @@ import * as P from '@konker.dev/effect-ts-prelude';
 import type { MorrisEngineError } from '../../lib/error';
 import { toMorrisEngineError } from '../../lib/error';
 import * as R from '../../lib/tiny-rules-fp';
-import type { MorrisBoard, MorrisBoardPositionHash } from '../board';
+import type { MorrisBoard, MorrisBoardPositionString } from '../board';
 import { getPoint, getPointMorris, setPointEmpty, setPointOccupant } from '../board/points';
 import type { MorrisPhase } from '../consts';
 import { MorrisColor, MorrisGameResult, MorrisMoveType } from '../consts';
@@ -36,7 +36,7 @@ export type MorrisGame<P extends number, D extends number, N extends number> = {
   readonly morrisBlackRemoved: ReadonlyArray<MorrisBlack<N>>;
   readonly board: MorrisBoard<P, D, N>;
   readonly moves: ReadonlyArray<MorrisMoveS<D>>;
-  readonly positions: ReadonlyArray<MorrisBoardPositionHash<P>>;
+  readonly positions: ReadonlyArray<MorrisBoardPositionString<P>>;
 };
 
 // --------------------------------------------------------------------------

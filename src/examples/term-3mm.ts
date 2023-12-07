@@ -8,8 +8,8 @@ import chalk from 'chalk';
 import console from 'console';
 
 import type { D_3, N_3, P_3 } from '../3mm';
-import { game } from '../3mm';
-import { shellRenderString3mm } from '../3mm/render';
+import { game as game3mm } from '../3mm';
+import { shellRenderString } from '../3mm/render';
 import { shellStartMorrisGame, shellTick } from '../engine/shell';
 import type { MorrisGameTick } from '../engine/tick';
 
@@ -25,20 +25,20 @@ export async function execLoop(gt: MorrisGameTick<P_3, D_3, N_3>): Promise<Morri
   }
 
   const ret = shellTick(gt, move);
-  console.log(shellRenderString3mm(ret));
+  console.log(shellRenderString(ret));
 
   return ret;
 }
 
 (async () => {
-  let gt: MorrisGameTick<P_3, D_3, N_3> | undefined = shellStartMorrisGame<P_3, D_3, N_3>(game);
-  console.log(shellRenderString3mm(gt));
+  let gt3: MorrisGameTick<P_3, D_3, N_3> | undefined = shellStartMorrisGame<P_3, D_3, N_3>(game3mm);
+  console.log(shellRenderString(gt3));
 
   try {
-    while (gt) {
-      gt = await execLoop(gt);
-      if (gt?.game?.gameOver) {
-        console.log(`\n${chalk.green.bold(gt.message)}`);
+    while (gt3) {
+      gt3 = await execLoop(gt3);
+      if (gt3?.game?.gameOver) {
+        console.log(`\n${chalk.green.bold(gt3.message)}`);
         break;
       }
     }

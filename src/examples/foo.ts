@@ -2,18 +2,18 @@
 import * as P from '@konker.dev/effect-ts-prelude';
 import * as console from 'console';
 
-import type { D_3, N_3, P_3 } from './3mm';
-import { game } from './3mm';
-import { renderString3mm } from './3mm/render';
-import { MorrisColor } from './engine/consts';
-import { createMoveMove, createMovePlace } from './engine/moves';
-import { RenderImpl } from './engine/render';
-import { RulesImpl } from './engine/rules';
-import { RulesApply } from './engine/rules/rulesApply';
-import { RulesMove } from './engine/rules/rulesMove';
-import type { MorrisGameTick } from './engine/tick';
-import { startMorrisGame, tick } from './engine/tick';
-import type { MorrisEngineError } from './lib/error';
+import type { D_3, N_3, P_3 } from '../3mm';
+import { game } from '../3mm';
+import { MorrisColor } from '../engine/consts';
+import { createMoveMove, createMovePlace } from '../engine/moves';
+import { RenderImpl } from '../engine/render';
+import { RulesImpl } from '../engine/rules';
+import { RulesApply } from '../engine/rules/rulesApply';
+import { RulesMove } from '../engine/rules/rulesMove';
+import type { MorrisGameTick } from '../engine/tick';
+import { startMorrisGame, tick } from '../engine/tick';
+import type { MorrisEngineError } from '../lib/error';
+import { renderString } from '../render/text';
 
 // --------------------------------------------------------------------------
 export const print =
@@ -75,7 +75,7 @@ const prog1 = P.pipe(
           rulesetApply: RulesApply,
         })
       ),
-      P.Effect.provideService(RenderImpl, RenderImpl.of({ renderString: renderString3mm }))
+      P.Effect.provideService(RenderImpl, RenderImpl.of({ renderString }))
     )
   );
   return "\n\nQ'Pla!";
