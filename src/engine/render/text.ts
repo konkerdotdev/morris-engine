@@ -2,13 +2,13 @@
 import * as P from '@konker.dev/effect-ts-prelude';
 import chalk from 'chalk';
 
-import type { MorrisBoard, MorrisBoardPoint } from '../engine/board';
-import { isOccupied } from '../engine/board/points';
-import type { MorrisBoardCoordS } from '../engine/board/schemas';
-import type { COORD_CHAR } from '../engine/consts';
-import { COORD_CHARS, MorrisColor, MorrisLinkType } from '../engine/consts';
-import type { MorrisGameTick } from '../engine/tick';
-import type { MorrisEngineError } from '../lib/error';
+import type { MorrisEngineError } from '../../lib/error';
+import type { MorrisBoard, MorrisBoardPoint } from '../board';
+import { isOccupied } from '../board/points';
+import type { MorrisBoardCoordS } from '../board/schemas';
+import type { COORD_CHAR } from '../consts';
+import { COORD_CHARS, MorrisColor, MorrisLinkType } from '../consts';
+import type { MorrisGameTick } from '../tick';
 
 export const COORD_PAD_H = 2;
 export const COORD_PAD_V = 1;

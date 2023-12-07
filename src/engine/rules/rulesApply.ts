@@ -65,9 +65,39 @@ export const RulesApply = () =>
         'No valid move possible for black'
       ),
       R.addRuleFunc(
+        'isWinWhiteMillsMade',
+        (_c: MorrisRulesContextApply, f: MorrisGameFacts) => R.val(f.moveMakesWinWhiteMillsMade),
+        'Win for white due to mills made'
+      ),
+      R.addRuleFunc(
+        'isWinWhiteOpponentCount',
+        (_c: MorrisRulesContextApply, f: MorrisGameFacts) => R.val(f.moveMakesWinWhiteOpponentCount),
+        'Win for white due to too few opponent pieces'
+      ),
+      R.addRuleFunc(
+        'isWinWhiteOpponentNoValidMove',
+        (_c: MorrisRulesContextApply, f: MorrisGameFacts) => R.val(f.moveMakesWinWhiteOpponentNoValidMove),
+        'Win for white due to opponent blocked'
+      ),
+      R.addRuleFunc(
         'isWinWhite',
         (_c: MorrisRulesContextApply, f: MorrisGameFacts) => R.val(f.moveMakesWinWhite),
         'Win for white'
+      ),
+      R.addRuleFunc(
+        'isWinBlackMillsMade',
+        (_c: MorrisRulesContextApply, f: MorrisGameFacts) => R.val(f.moveMakesWinBlackMillsMade),
+        'Win for black due to mills made'
+      ),
+      R.addRuleFunc(
+        'isWinBlackOpponentCount',
+        (_c: MorrisRulesContextApply, f: MorrisGameFacts) => R.val(f.moveMakesWinBlackOpponentCount),
+        'Win for black due to too few opponent pieces'
+      ),
+      R.addRuleFunc(
+        'isWinBlackOpponentNoValidMove',
+        (_c: MorrisRulesContextApply, f: MorrisGameFacts) => R.val(f.moveMakesWinBlackOpponentNoValidMove),
+        'Win for black due to opponent blocked'
       ),
       R.addRuleFunc(
         'isWinBlack',

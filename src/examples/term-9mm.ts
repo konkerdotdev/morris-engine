@@ -1,14 +1,14 @@
 /* eslint-disable fp/no-unused-expression,fp/no-mutation,fp/no-let,fp/no-loops,fp/no-nil */
 /**
- * Basic interactive Three-Men's-Morris game for the terminal
+ * Basic interactive Nine-Men's-Morris game for the terminal
  */
 import * as readline from 'node:readline/promises';
 
 import chalk from 'chalk';
 import console from 'console';
 
-import type { D_3, N_3, P_3 } from '../3mm';
-import { game } from '../3mm';
+import type { D_9, N_9, P_9 } from '../9mm';
+import { game } from '../9mm';
 import { renderString } from '../engine/render/text';
 import { shellStartMorrisGame, shellTick, shellWrapRenderString } from '../engine/shell';
 import type { MorrisGameTick } from '../engine/tick';
@@ -18,23 +18,25 @@ const rl = readline.createInterface({
   output: process.stdout,
 });
 
-const shellRenderString = shellWrapRenderString<P_3, D_3, N_3>(renderString);
+const shellRenderString = shellWrapRenderString<P_9, D_9, N_9>(renderString);
 
-export async function execLoop(gt: MorrisGameTick<P_3, D_3, N_3>): Promise<MorrisGameTick<P_3, D_3, N_3> | undefined> {
+export async function execLoop(gt: MorrisGameTick<P_9, D_9, N_9>): Promise<MorrisGameTick<P_9, D_9, N_9> | undefined> {
   const move = await rl.question(`${gt.message} (Q to quit): `);
   if (move.toUpperCase() === 'Q') {
     return undefined;
   }
 
   const ret = shellTick(gt, move);
-  console.log(shellRenderString(ret));
+  console.log('\n' + shellRenderString(ret));
 
   return ret;
 }
 
 (async () => {
-  let gt: MorrisGameTick<P_3, D_3, N_3> | undefined = shellStartMorrisGame<P_3, D_3, N_3>(game);
-  console.log('\n' + shellRenderString(gt));
+  console.log(chalk.cyan.bold(game.config.name) + '\n\n');
+
+  let gt: MorrisGameTick<P_9, D_9, N_9> | undefined = shellStartMorrisGame<P_9, D_9, N_9>(game);
+  console.log(shellRenderString(gt));
 
   try {
     while (gt) {

@@ -69,10 +69,14 @@ export function moveColor<P extends number, D extends number, N extends number>(
     case MorrisMoveType.PLACE:
       return P.Effect.succeed(move.color);
     case MorrisMoveType.MOVE:
-    case MorrisMoveType.REMOVE:
       return P.pipe(
         getPointMorris(game.board, move.from),
         P.Effect.map((morris) => morris.color)
+      );
+    case MorrisMoveType.REMOVE:
+      return P.pipe(
+        getPointMorris(game.board, move.from),
+        P.Effect.map((morris) => flipColor(morris.color))
       );
   }
 }
