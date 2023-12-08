@@ -2,10 +2,18 @@
 
 ---
 
-- Fix optimizations for text render
-- Remove unsafe for text render
+- Refactor text render for common/repeated code
 - Functions for varying config, as possible
   - e.g. start color
+- Minimax algo for computer player:
+  - https://en.wikipedia.org/wiki/Minimax
+  - Fitness func:
+    - num players
+    - num mills
+    - num 2-adjacent
+    - num possible mills for opponent on next move [?]
+    - num of pieces with available move
+    - how "spread out" the pieces are [?]
 - Themes for text render?
 - Serialize/deserialize games
   - What do we need to set up a network game, and send moves over the network?
@@ -18,6 +26,8 @@
 - OTHER
   - Clock?
   - Move counts?
+- ~~Fix optimizations for text render~~
+- ~~Remove unsafe for text render~~
 - ~~Add 9mm terminal example~~
   - ~~Or choose your size?~~
 - ~~Add basic CLI UI example~~

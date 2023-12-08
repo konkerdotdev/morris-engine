@@ -1,19 +1,30 @@
-/* eslint-disable fp/no-mutating-methods,fp/no-unused-expression,fp/no-mutation,fp/no-nil */
+/* eslint-disable fp/no-mutating-methods,fp/no-unused-expression,fp/no-mutation,fp/no-nil,fp/no-loops */
 import * as P from '@konker.dev/effect-ts-prelude';
 import chalk from 'chalk';
+import _uniqWith from 'lodash/uniqWith';
 
 import type { MorrisEngineError } from '../../lib/error';
-import type { MorrisBoard, MorrisBoardPoint } from '../board';
+import { toMorrisEngineError } from '../../lib/error';
+import type { MorrisBoard, MorrisBoardLink, MorrisBoardPoint } from '../board';
 import { isOccupied } from '../board/points';
 import type { MorrisBoardCoordS } from '../board/schemas';
 import type { COORD_CHAR } from '../consts';
-import { COORD_CHARS, MorrisColor, MorrisLinkType } from '../consts';
+import { A, B, COORD_CHARS, LF, MorrisColor, MorrisLinkType, PT, X, Y } from '../consts';
 import type { MorrisGameTick } from '../tick';
 
 export const COORD_PAD_H = 2;
 export const COORD_PAD_V = 1;
 
 export type CoordTuple = [number, number];
+
+export type LineFunc = (x: number) => number;
+
+export function lineFunc(a: CoordTuple, b: CoordTuple): LineFunc {
+  const m = (b[Y] - a[Y]) / (b[X] - a[X]);
+  const c = a[Y] - m * a[X];
+
+  return (x: number) => m * x + c;
+}
 
 export type MorrisBoardRenderConfigText = {
   readonly xScale: number;
@@ -55,240 +66,388 @@ export const DEFAULT_MORRIS_BOARD_RENDER_CONFIG_TEXT: MorrisBoardRenderConfigTex
   boardBlack: ' ',
 };
 
-export type MorrisBoardRenderParams = {
+export type MorrisBoardRenderContext = {
   readonly config: MorrisBoardRenderConfigText;
   readonly w: number;
   readonly h: number;
   readonly coords: Array<[[COORD_CHAR, number], CoordTuple]>;
   readonly hLinks: Array<[CoordTuple, CoordTuple]>;
   readonly vLinks: Array<[CoordTuple, CoordTuple]>;
-  readonly dbLinks: Array<[CoordTuple, CoordTuple]>;
-  readonly dfLinks: Array<[CoordTuple, CoordTuple]>;
+  readonly dbLinks: Array<[CoordTuple, CoordTuple, LineFunc]>;
+  readonly dfLinks: Array<[CoordTuple, CoordTuple, LineFunc]>;
   readonly renderPoints: Array<Array<string>>;
 };
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export function unsafe_getBoardCoordParts<D extends number>(coord: MorrisBoardCoordS<D>): [COORD_CHAR, number] {
-  const parts = coord.split('', 2);
-  const bx = COORD_CHARS.find((c) => c === parts[0]!) as COORD_CHAR;
-  const by = parseInt(parts[1]!, 10);
+export function getBoardCoordParts<D extends number>(
+  coord: MorrisBoardCoordS<D>
+): P.Effect.Effect<never, MorrisEngineError, [COORD_CHAR, number]> {
+  return P.Effect.try({
+    try: () => {
+      const parts = coord.split('', 2);
+      const bx = COORD_CHARS.find((c) => c === parts[0]!) as COORD_CHAR;
+      const by = parseInt(parts[1]!, 10);
 
-  return [bx, by];
+      return [bx, by];
+    },
+    catch: toMorrisEngineError,
+  });
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export function _unsafe_getRenderCoordExec<D extends number>(
+export function _getRenderCoordExec<D extends number>(
   config: MorrisBoardRenderConfigText,
   h: number,
   coord: MorrisBoardCoordS<D>
-): CoordTuple {
-  const [bx, by] = unsafe_getBoardCoordParts(coord);
-  const bxn = COORD_CHARS.indexOf(bx);
-  const x = COORD_PAD_H + config.pad + bxn * config.xScale + bxn;
-  const y = h - (by - 1) * config.yScale - 1 - COORD_PAD_V;
+): P.Effect.Effect<never, MorrisEngineError, CoordTuple> {
+  return P.pipe(
+    getBoardCoordParts(coord),
+    P.Effect.map(([bx, by]) => {
+      const bxn = COORD_CHARS.indexOf(bx);
+      const x = COORD_PAD_H + config.pad + bxn * config.xScale + bxn;
+      const y = h - (by - 1) * config.yScale - 1 - COORD_PAD_V;
 
-  return [x, y];
+      return [x, y];
+    })
+  );
 }
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export function unsafe_getRenderCoord<D extends number>(
-  params: MorrisBoardRenderParams,
+export function getRenderCoord<D extends number>(
+  context: MorrisBoardRenderContext,
   coord: MorrisBoardCoordS<D>
-): CoordTuple {
-  return _unsafe_getRenderCoordExec(params.config, params.h, coord);
+): P.Effect.Effect<never, MorrisEngineError, CoordTuple> {
+  return _getRenderCoordExec(context.config, context.h, coord);
 }
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export function unsafe_initMorrisBoardRenderParams<P extends number, D extends number, N extends number>(
+export function pointsToCoord<D extends number, N extends number>(
+  config: MorrisBoardRenderConfigText,
+  point: MorrisBoardPoint<D, N>,
+  h: number
+): P.Effect.Effect<never, MorrisEngineError, [[COORD_CHAR, number], CoordTuple]> {
+  return P.pipe(
+    P.Effect.Do,
+    P.Effect.bind('boardCoord', () => getBoardCoordParts(point.coord)),
+    P.Effect.bind('renderCoord', () => _getRenderCoordExec(config, h, point.coord)),
+    P.Effect.map(
+      ({ boardCoord, renderCoord }) => [boardCoord, renderCoord as CoordTuple] as [[COORD_CHAR, number], CoordTuple]
+    )
+  );
+}
+
+export function pointsToCoords<D extends number, N extends number>(
+  config: MorrisBoardRenderConfigText,
+  h: number,
+  points: Array<MorrisBoardPoint<D, N>>
+): P.Effect.Effect<never, MorrisEngineError, Array<[[COORD_CHAR, number], CoordTuple]>> {
+  return P.pipe(
+    points.map((p) => pointsToCoord(config, p, h)),
+    P.Effect.all
+  );
+}
+
+export function linkToCoordsH<D extends number, N extends number>(
+  config: MorrisBoardRenderConfigText,
+  h: number,
+  point: MorrisBoardPoint<D, N>,
+  link: MorrisBoardLink<D>
+): P.Effect.Effect<never, MorrisEngineError, [CoordTuple, CoordTuple]> {
+  return P.pipe(
+    P.Effect.Do,
+    P.Effect.bind('c1', () => _getRenderCoordExec(config, h, point.coord)),
+    P.Effect.bind('c2', () => _getRenderCoordExec(config, h, link.to)),
+    P.Effect.map(({ c1, c2 }) => [c1, c2].sort((c1, c2) => c1[X] - c2[X]) as [CoordTuple, CoordTuple])
+  );
+}
+
+export function linksH<D extends number, N extends number>(
+  config: MorrisBoardRenderConfigText,
+  h: number,
+  points: Array<MorrisBoardPoint<D, N>>
+): P.Effect.Effect<never, MorrisEngineError, Array<[CoordTuple, CoordTuple]>> {
+  return P.pipe(
+    points
+      .map((p) =>
+        p.links.filter((l) => l.linkType === MorrisLinkType.HORIZONTAL).map((link) => linkToCoordsH(config, h, p, link))
+      )
+      .flat(),
+    P.Effect.all,
+    P.Effect.map((ret) => _uniqWith(ret, (l1, l2) => l1[A][X] === l2[A][X] && l1[A][Y] === l2[A][Y])),
+    P.Effect.map((ret) => ret.sort((l1, l2) => l2[A]![Y] - l1[B]![Y]))
+  );
+}
+
+export function linkToCoordsV<D extends number, N extends number>(
+  config: MorrisBoardRenderConfigText,
+  h: number,
+  point: MorrisBoardPoint<D, N>,
+  link: MorrisBoardLink<D>
+): P.Effect.Effect<never, MorrisEngineError, [CoordTuple, CoordTuple]> {
+  return P.pipe(
+    P.Effect.Do,
+    P.Effect.bind('c1', () => _getRenderCoordExec(config, h, point.coord)),
+    P.Effect.bind('c2', () => _getRenderCoordExec(config, h, link.to)),
+    P.Effect.map(({ c1, c2 }) => [c1, c2].sort((c1, c2) => c1[Y] - c2[Y]) as [CoordTuple, CoordTuple])
+  );
+}
+
+export function linksV<D extends number, N extends number>(
+  config: MorrisBoardRenderConfigText,
+  h: number,
+  points: Array<MorrisBoardPoint<D, N>>
+): P.Effect.Effect<never, MorrisEngineError, Array<[CoordTuple, CoordTuple]>> {
+  return P.pipe(
+    points
+      .map((p) =>
+        p.links.filter((l) => l.linkType === MorrisLinkType.VERTICAL).map((link) => linkToCoordsV(config, h, p, link))
+      )
+      .flat(),
+    P.Effect.all,
+    P.Effect.map((ret) => _uniqWith(ret, (l1, l2) => l1[A][X] === l2[A][X] && l1[A][Y] === l2[A][Y])),
+    P.Effect.map((ret) => ret.sort((l1, l2) => l2[A]![X] - l1[B]![X]))
+  );
+}
+
+export function linkToCoordsD<D extends number, N extends number>(
+  config: MorrisBoardRenderConfigText,
+  h: number,
+  point: MorrisBoardPoint<D, N>,
+  link: MorrisBoardLink<D>
+): P.Effect.Effect<never, MorrisEngineError, [CoordTuple, CoordTuple]> {
+  return P.pipe(
+    P.Effect.Do,
+    P.Effect.bind('c1', () => _getRenderCoordExec(config, h, point.coord)),
+    P.Effect.bind('c2', () => _getRenderCoordExec(config, h, link.to)),
+    P.Effect.map(({ c1, c2 }) => [c1, c2].sort((c1, c2) => c1[Y] - c2[Y]) as [CoordTuple, CoordTuple])
+  );
+}
+
+export function linksDB<D extends number, N extends number>(
+  config: MorrisBoardRenderConfigText,
+  h: number,
+  points: Array<MorrisBoardPoint<D, N>>
+): P.Effect.Effect<never, MorrisEngineError, Array<[CoordTuple, CoordTuple, LineFunc]>> {
+  return P.pipe(
+    points
+      .map((p) =>
+        p.links.filter((l) => l.linkType === MorrisLinkType.DIAGONAL_B).map((link) => linkToCoordsD(config, h, p, link))
+      )
+      .flat(),
+    P.Effect.all,
+    P.Effect.map((ret) => _uniqWith(ret, (l1, l2) => l1[A][X] === l2[A][X] && l1[A][Y] === l2[A][Y])),
+    P.Effect.map((ret) => ret.sort((l1, l2) => l2[A]![X] - l1[B]![X])),
+    P.Effect.map((ret) => ret.map(([a, b]) => [a, b, lineFunc(a, b)]))
+  );
+}
+
+export function linksDF<D extends number, N extends number>(
+  config: MorrisBoardRenderConfigText,
+  h: number,
+  points: Array<MorrisBoardPoint<D, N>>
+): P.Effect.Effect<never, MorrisEngineError, Array<[CoordTuple, CoordTuple, LineFunc]>> {
+  return P.pipe(
+    points
+      .map((p) =>
+        p.links.filter((l) => l.linkType === MorrisLinkType.DIAGONAL_F).map((link) => linkToCoordsD(config, h, p, link))
+      )
+      .flat(),
+    P.Effect.all,
+    P.Effect.map((ret) => _uniqWith(ret, (l1, l2) => l1[A][X] === l2[A][X] && l1[A][Y] === l2[A][Y])),
+    P.Effect.map((ret) => ret.sort((l1, l2) => l2[A]![X] - l1[B]![X])),
+    P.Effect.map((ret) => ret.map(([a, b]) => [a, b, lineFunc(a, b)]))
+  );
+}
+
+export function initMorrisBoardRenderContext<P extends number, D extends number, N extends number>(
   config: MorrisBoardRenderConfigText,
   board: MorrisBoard<P, D, N>
-): MorrisBoardRenderParams {
+): P.Effect.Effect<never, MorrisEngineError, MorrisBoardRenderContext> {
   const w = COORD_PAD_H + board.dimension + (board.dimension - 1) * config.xScale + config.pad * 2;
   const h = board.dimension * config.yScale - 1 + COORD_PAD_V;
 
-  return {
-    config,
-    w,
-    h,
+  return P.pipe(
+    P.Effect.Do,
+    P.Effect.bind('coords', () => pointsToCoords(config, h, board.points)),
+    P.Effect.bind('hLinks', () => linksH(config, h, board.points)),
+    P.Effect.bind('vLinks', () => linksV(config, h, board.points)),
+    P.Effect.bind('dbLinks', () => linksDB(config, h, board.points)),
+    P.Effect.bind('dfLinks', () => linksDF(config, h, board.points)),
+    P.Effect.map(({ coords, dbLinks, dfLinks, hLinks, vLinks }) => ({
+      config,
+      w,
+      h,
+      coords,
+      hLinks,
+      vLinks,
+      dbLinks,
+      dfLinks,
 
-    coords: board.points.map((p) => [
-      unsafe_getBoardCoordParts(p.coord),
-      _unsafe_getRenderCoordExec(config, h, p.coord),
-    ]),
-
-    // FIXME: de-dup sorted links
-    hLinks: board.points.flatMap((p) =>
-      p.links
-        .filter((l) => l.linkType === MorrisLinkType.HORIZONTAL)
-        .map((l) =>
-          [_unsafe_getRenderCoordExec(config, h, p.coord), _unsafe_getRenderCoordExec(config, h, l.to)].sort(
-            (a, b) => a[0] - b[0]
-          )
-        )
-    ) as Array<[CoordTuple, CoordTuple]>,
-
-    // FIXME: de-dup sorted links
-    vLinks: board.points.flatMap((p) =>
-      p.links
-        .filter((l) => l.linkType === MorrisLinkType.VERTICAL)
-        .map((l) =>
-          [_unsafe_getRenderCoordExec(config, h, p.coord), _unsafe_getRenderCoordExec(config, h, l.to)].sort(
-            (a, b) => a[1] - b[1]
-          )
-        )
-    ) as Array<[CoordTuple, CoordTuple]>,
-
-    // FIXME: de-dup sorted links
-    dbLinks: board.points.flatMap((p) =>
-      p.links
-        .filter((l) => l.linkType === MorrisLinkType.DIAGONAL_B)
-        .map((l) =>
-          [_unsafe_getRenderCoordExec(config, h, p.coord), _unsafe_getRenderCoordExec(config, h, l.to)].sort(
-            (a, b) => a[0] - b[0]
-          )
-        )
-    ) as Array<[CoordTuple, CoordTuple]>,
-
-    // FIXME: de-dup sorted links
-    dfLinks: board.points.flatMap((p) =>
-      p.links
-        .filter((l) => l.linkType === MorrisLinkType.DIAGONAL_F)
-        .map((l) =>
-          [_unsafe_getRenderCoordExec(config, h, p.coord), _unsafe_getRenderCoordExec(config, h, l.to)].sort(
-            (a, b) => a[1] - b[1]
-          )
-        )
-    ) as Array<[CoordTuple, CoordTuple]>,
-
-    renderPoints: Array(h)
-      .fill('_')
-      .map((_) => Array(w).fill('?')),
-  };
+      renderPoints: Array(h)
+        .fill('_')
+        .map((_) => Array(w).fill('?')),
+    }))
+  );
 }
 
-export function isCoordV(_params: MorrisBoardRenderParams, x: CoordTuple): boolean {
-  return x[0] < COORD_PAD_H;
+export function isCoordV(_context: MorrisBoardRenderContext, p: CoordTuple): boolean {
+  return p[X] < COORD_PAD_H;
 }
 
-export function isCoordH(params: MorrisBoardRenderParams, x: CoordTuple): boolean {
-  return x[1] >= params.h - COORD_PAD_V;
+export function isCoordH(context: MorrisBoardRenderContext, p: CoordTuple): boolean {
+  return p[Y] >= context.h - COORD_PAD_V;
 }
 
-export function isOnLineH(a: CoordTuple, b: CoordTuple, x: CoordTuple): boolean {
-  return x[1] === a[1] && x[1] === b[1] && a[0] < x[0] && x[0] < b[0];
+export function isOnLineH(a: CoordTuple, b: CoordTuple, p: CoordTuple): boolean {
+  return p[Y] === a[Y] && p[Y] === b[Y] && a[X] < p[X] && p[X] < b[X];
 }
 
-export function isOnLineV(a: CoordTuple, b: CoordTuple, x: CoordTuple): boolean {
-  return x[0] === a[0] && x[0] === b[0] && a[1] < x[1] && x[1] < b[1];
+export function isOnLineV(a: CoordTuple, b: CoordTuple, p: CoordTuple): boolean {
+  return p[X] === a[X] && p[X] === b[X] && a[Y] < p[Y] && p[Y] < b[Y];
 }
 
-// FIXME: pre-compute l func
-export function isOnLineDB(a: CoordTuple, b: CoordTuple, x: CoordTuple): boolean {
-  const m = (b[1] - a[1]) / (b[0] - a[0]);
-  const c = a[1] - m * a[0];
-  const l = (x: number) => m * x + c;
-
-  return a[0] < x[0] && x[0] < b[0] && x[1] === l(x[0]);
+export function isOnLineDB(a: CoordTuple, b: CoordTuple, l: LineFunc, p: CoordTuple): boolean {
+  return a[X] < p[X] && p[X] < b[X] && p[Y] === l(p[X]);
 }
 
-// FIXME: pre-compute l func
-export function isOnLineDF(a: CoordTuple, b: CoordTuple, x: CoordTuple): boolean {
-  const m = (b[1] - a[1]) / (b[0] - a[0]);
-  const c = a[1] - m * a[0];
-  const l = (x: number) => m * x + c;
-
-  return a[1] < x[1] && x[1] < b[1] && x[1] === l(x[0]);
+export function isOnLineDF(a: CoordTuple, b: CoordTuple, l: LineFunc, p: CoordTuple): boolean {
+  return a[Y] < p[Y] && p[Y] < b[Y] && p[Y] === l(p[X]);
 }
 
-// FIXME: sort list and short-circuit search based on x[0]
-export function isH(params: MorrisBoardRenderParams, x: CoordTuple): boolean {
-  return params.hLinks.some((l) => isOnLineH(l[0], l[1], x));
+export function isH(context: MorrisBoardRenderContext, x: CoordTuple): boolean {
+  for (const l of context.hLinks) {
+    if (isOnLineH(l[A], l[B], x)) {
+      return true;
+    }
+    if (x[Y] > l[A][Y]) {
+      return false;
+    }
+  }
+  return false;
 }
 
-// FIXME: sort list and short-circuit search based on x[1]
-export function isV(params: MorrisBoardRenderParams, x: CoordTuple): boolean {
-  return params.vLinks.some((l) => isOnLineV(l[0], l[1], x));
+export function isV(context: MorrisBoardRenderContext, x: CoordTuple): boolean {
+  for (const l of context.vLinks) {
+    if (isOnLineV(l[A], l[B], x)) {
+      return true;
+    }
+    if (x[X] > l[B][X]) {
+      return false;
+    }
+  }
+  return false;
 }
 
-// FIXME: sort list and short-circuit search based on x
-export function isDB(params: MorrisBoardRenderParams, x: CoordTuple): boolean {
-  return params.dbLinks.some((l) => isOnLineDB(l[0], l[1], x));
+export function isDB(context: MorrisBoardRenderContext, x: CoordTuple): boolean {
+  for (const l of context.dbLinks) {
+    if (isOnLineDB(l[A], l[B], l[LF], x)) {
+      return true;
+    }
+    if (x[X] > l[B][X]) {
+      return false;
+    }
+  }
+  return false;
 }
 
-// FIXME: sort list and short-circuit search based on x
-export function isDF(params: MorrisBoardRenderParams, x: CoordTuple): boolean {
-  return params.dfLinks.some((l) => isOnLineDF(l[0], l[1], x));
+export function isDF(context: MorrisBoardRenderContext, x: CoordTuple): boolean {
+  for (const l of context.dfLinks) {
+    if (isOnLineDF(l[A], l[B], l[LF], x)) {
+      return true;
+    }
+    // if (x[X] > l[B][X]) {
+    //   return false;
+    // }
+  }
+  return false;
 }
 
-export function getCoordV(params: MorrisBoardRenderParams, x: CoordTuple): string {
-  const coord = params.coords.find((c) => c[1][1] === x[1])?.[0]?.[1];
+export function getCoordV(context: MorrisBoardRenderContext, x: CoordTuple): string {
+  const coord = context.coords.find((c) => c[1][1] === x[1])?.[0]?.[1];
   return coord && x[0] === 0 ? String(coord) : ' ';
 }
 
-export function getCoordH(params: MorrisBoardRenderParams, x: CoordTuple): string {
-  const coord = params.coords.find((c) => c[1][0] === x[0])?.[0]?.[0];
+export function getCoordH(context: MorrisBoardRenderContext, x: CoordTuple): string {
+  const coord = context.coords.find((c) => c[1][0] === x[0])?.[0]?.[0];
   return coord ?? ' ';
 }
 
 export function renderOccupant<D extends number, N extends number>(
-  params: MorrisBoardRenderParams,
+  context: MorrisBoardRenderContext,
   p: MorrisBoardPoint<D, N>
 ): string {
   return isOccupied(p)
     ? p.occupant.color === MorrisColor.WHITE
-      ? chalk.bgHex(params.config.colorBoardBg).hex(params.config.colorWhite).bold(params.config.avatarWhite)
-      : chalk.bgHex(params.config.colorBoardBg).hex(params.config.colorBlack).bold(params.config.avatarBlack)
-    : chalk.bgHex(params.config.colorBoardBg).hex(params.config.colorBoard).bold(params.config.avatarEmpty);
+      ? chalk.bgHex(context.config.colorBoardBg).hex(context.config.colorWhite).bold(context.config.avatarWhite)
+      : chalk.bgHex(context.config.colorBoardBg).hex(context.config.colorBlack).bold(context.config.avatarBlack)
+    : chalk.bgHex(context.config.colorBoardBg).hex(context.config.colorBoard).bold(context.config.avatarEmpty);
 }
 
-// FIXME: unsafe
 export function renderString<P extends number, D extends number, N extends number>(
   gameTick: MorrisGameTick<P, D, N>
 ): P.Effect.Effect<never, MorrisEngineError, string> {
-  const params = unsafe_initMorrisBoardRenderParams(DEFAULT_MORRIS_BOARD_RENDER_CONFIG_TEXT, gameTick.game.board);
-
-  params.renderPoints.forEach((row, j) =>
-    row.forEach((_, i) => {
-      if (isH(params, [i, j])) {
-        params.renderPoints[j]![i] = chalk
-          .bgHex(params.config.colorBoardBg)
-          .hex(params.config.colorBoard)
-          .dim(params.config.boardH);
-      } else if (isV(params, [i, j])) {
-        params.renderPoints[j]![i] = chalk
-          .bgHex(params.config.colorBoardBg)
-          .hex(params.config.colorBoard)
-          .dim(params.config.boardV);
-      } else if (isDB(params, [i, j])) {
-        params.renderPoints[j]![i] = chalk
-          .bgHex(params.config.colorBoardBg)
-          .hex(params.config.colorBoard)
-          .dim(params.config.boardDB);
-      } else if (isDF(params, [i, j])) {
-        params.renderPoints[j]![i] = chalk
-          .bgHex(params.config.colorBoardBg)
-          .hex(params.config.colorBoard)
-          .dim(params.config.boardDF);
-      } else if (isCoordH(params, [i, j])) {
-        params.renderPoints[j]![i] = chalk
-          .bgHex(params.config.colorCoordsBg)
-          .hex(params.config.colorCoords)
-          .dim(getCoordH(params, [i, j]));
-      } else if (isCoordV(params, [i, j])) {
-        params.renderPoints[j]![i] = chalk
-          .bgHex(params.config.colorCoordsBg)
-          .hex(params.config.colorCoords)
-          .dim(getCoordV(params, [i, j]));
-      } else {
-        params.renderPoints[j]![i] = chalk.bgHex(params.config.colorBoardBg).hex(params.config.colorBoard).dim(' ');
-      }
+  return P.pipe(
+    initMorrisBoardRenderContext(DEFAULT_MORRIS_BOARD_RENDER_CONFIG_TEXT, gameTick.game.board),
+    P.Effect.map((context) => {
+      console.log(context.dbLinks);
+      console.log(context.dfLinks);
+      context.renderPoints.forEach((row, j) =>
+        row.forEach((_, i) => {
+          if (isH(context, [i, j])) {
+            context.renderPoints[j]![i] = chalk
+              .bgHex(context.config.colorBoardBg)
+              .hex(context.config.colorBoard)
+              .dim(context.config.boardH);
+          } else if (isV(context, [i, j])) {
+            context.renderPoints[j]![i] = chalk
+              .bgHex(context.config.colorBoardBg)
+              .hex(context.config.colorBoard)
+              .dim(context.config.boardV);
+          } else if (isDB(context, [i, j])) {
+            context.renderPoints[j]![i] = chalk
+              .bgHex(context.config.colorBoardBg)
+              .hex(context.config.colorBoard)
+              .dim(context.config.boardDB);
+          } else if (isDF(context, [i, j])) {
+            context.renderPoints[j]![i] = chalk
+              .bgHex(context.config.colorBoardBg)
+              .hex(context.config.colorBoard)
+              .dim(context.config.boardDF);
+          } else if (isCoordH(context, [i, j])) {
+            context.renderPoints[j]![i] = chalk
+              .bgHex(context.config.colorCoordsBg)
+              .hex(context.config.colorCoords)
+              .dim(getCoordH(context, [i, j]));
+          } else if (isCoordV(context, [i, j])) {
+            context.renderPoints[j]![i] = chalk
+              .bgHex(context.config.colorCoordsBg)
+              .hex(context.config.colorCoords)
+              .dim(getCoordV(context, [i, j]));
+          } else {
+            context.renderPoints[j]![i] = chalk
+              .bgHex(context.config.colorBoardBg)
+              .hex(context.config.colorBoard)
+              .dim(' ');
+          }
+        })
+      );
+      return context;
+    }),
+    P.Effect.flatMap((context) => {
+      return P.pipe(
+        gameTick.game.board.points.map((p) =>
+          P.pipe(
+            P.Effect.Do,
+            P.Effect.bind('renderCoords', () => getRenderCoord(context, p.coord)),
+            P.Effect.map(({ renderCoords }) => [...renderCoords, p] as [number, number, MorrisBoardPoint<D, N>])
+          )
+        ),
+        P.Effect.all,
+        P.Effect.map((pointCoords) => {
+          pointCoords.forEach((pointCoord) => {
+            context.renderPoints[pointCoord[Y]]![pointCoord[X]] = renderOccupant(context, pointCoord[PT]);
+          });
+          return context;
+        }),
+        P.Effect.map((context) => context.renderPoints.map((row) => row.join('')).join('\n'))
+      );
     })
   );
-
-  gameTick.game.board.points.forEach((p) => {
-    const [x, y] = unsafe_getRenderCoord(params, p.coord);
-    params.renderPoints[y]![x] = renderOccupant(params, p);
-  });
-
-  return P.Effect.succeed(params.renderPoints.map((row) => row.join('')).join('\n'));
 }

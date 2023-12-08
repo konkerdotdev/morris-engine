@@ -71,3 +71,11 @@ export enum MorrisGameResult {
   WIN_BLACK = 'WIN_BLACK',
   DRAW = 'DRAW',
 }
+
+export const X = 0;
+export const Y = 1;
+
+export const A = 0;
+export const B = 1;
+export const LF = 2;
+export const PT = 2;
