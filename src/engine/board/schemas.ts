@@ -25,7 +25,7 @@ export type MorrisColorS = P.Schema.Schema.To<typeof MorrisColorS>;
 export const isBoardCoord =
   <D extends number>(d: D) =>
   (s: string): boolean => {
-    const parts = s.split('', 2);
+    const parts = s.split('', 2).map((c) => c.toLowerCase());
     if (parts.length !== 2) return false;
     const y = parseInt(parts[1]!, 10);
 
@@ -35,6 +35,7 @@ export const isBoardCoord =
 export function MorrisBoardCoordS<D extends number>(d: D) {
   return P.pipe(
     P.Schema.string,
+    P.Schema.compose(P.Schema.Lowercase),
     P.Schema.filter(isBoardCoord(d), {
       title: 'MorrisBoardCoord',
       message: () => `Invalid board coordinate for dimension ${d}`,

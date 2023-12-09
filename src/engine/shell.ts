@@ -27,12 +27,8 @@ export function shellTick<P extends number, D extends number, N extends number>(
       P.Schema.decode(String_MorrisMove(gameTick.game.board.dimension)),
       P.Effect.flatMap((move) => P.pipe(gameTick, tick(move))),
       P.Effect.mapError(toMorrisEngineError),
-      P.Effect.orElse(() =>
-        P.pipe(
-          P.Effect.succeed(gameTick),
-          P.Effect.tap(() => P.Console.log(chalk.redBright(chalk.bold('Bad input\n'))))
-        )
-      ),
+      P.Effect.tapError((e) => P.Console.error(chalk.redBright.bold(e.message))),
+      P.Effect.orElse(() => P.pipe(P.Effect.succeed(gameTick))),
       P.Effect.provideService(
         RulesImpl,
         RulesImpl.of({

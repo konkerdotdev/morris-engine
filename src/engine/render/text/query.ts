@@ -4,12 +4,12 @@ import type { CoordTuple, LineFunc, MorrisBoardRenderContext } from './index';
 
 export function isCoordV(context: MorrisBoardRenderContext, p: CoordTuple): boolean {
   if (!context.config.showCoords) return false;
-  return p[X] < context.config.coordPadH;
+  return p[X] < context.config.coordPadH + 1;
 }
 
 export function isCoordH(context: MorrisBoardRenderContext, p: CoordTuple): boolean {
   if (!context.config.showCoords) return false;
-  return p[Y] >= context.h - context.config.coordPadV;
+  return p[Y] >= context.h - (context.config.coordPadV + 1);
 }
 
 export function isOnLineH(a: CoordTuple, b: CoordTuple, p: CoordTuple): boolean {

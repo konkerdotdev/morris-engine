@@ -17,9 +17,11 @@ export type CoordTuple = [number, number];
 export type LineFunc = (x: number) => number;
 
 export type MorrisBoardRenderConfigText = {
-  readonly xScale: number;
-  readonly yScale: number;
-  readonly pad: number;
+  readonly spacingX: number;
+  readonly spacingY: number;
+  readonly scaleX: number;
+  readonly scaleY: number;
+  readonly boardPadH: number;
   readonly coordPadH: number;
   readonly coordPadV: number;
   readonly showCoords: boolean;
@@ -40,11 +42,13 @@ export type MorrisBoardRenderConfigText = {
 };
 
 export const DEFAULT_MORRIS_BOARD_RENDER_CONFIG_TEXT: MorrisBoardRenderConfigText = {
-  xScale: 3,
-  yScale: 2,
-  pad: 1,
-  coordPadH: 2,
-  coordPadV: 1,
+  spacingX: 3,
+  spacingY: 1,
+  scaleX: 1,
+  scaleY: 1,
+  boardPadH: 1,
+  coordPadH: 1,
+  coordPadV: 0,
   showCoords: true,
   colorBoardBg: '#a67b5b',
   colorBoard: '#333333',
@@ -84,12 +88,15 @@ export function initMorrisBoardRenderParams<P extends number, D extends number, 
   return {
     config,
     w:
-      (config.showCoords ? config.coordPadH : 0) +
-      config.pad +
+      (config.showCoords ? config.coordPadH + 1 : 0) +
+      config.boardPadH +
       board.dimension +
-      (board.dimension - 1) * config.xScale +
-      config.pad,
-    h: board.dimension * config.yScale - 1 + (config.showCoords ? config.coordPadV : 0),
+      (board.dimension - 1) * config.scaleX * config.spacingX +
+      config.boardPadH,
+    h:
+      board.dimension +
+      (board.dimension - 1) * config.scaleY * config.spacingY +
+      (config.showCoords ? config.coordPadV + 1 : 0),
   };
 }
 

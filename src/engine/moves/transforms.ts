@@ -16,7 +16,7 @@ export function String_MorrisMovePlace<D extends number>(d: D) {
     P.Schema.string,
     MorrisMovePlaceS(d),
     (s: string) => {
-      const parts = s.match(/^P ([bBwW])\s+([a-zA-Z]\d+)$/);
+      const parts = s.match(/^[Pp] ([bBwW])\s+([a-zA-Z]\d+)$/);
       if (!parts || parts.length < 3) {
         return P.ParseResult.fail(
           P.ParseResult.parseError([P.ParseResult.type(P.Schema.string.ast, `Failed to deserialize move string: ${s}`)])
@@ -38,7 +38,7 @@ export function String_MorrisMoveMove<D extends number>(d: D) {
     P.Schema.string,
     MorrisMoveMoveS(d),
     (s: string) => {
-      const parts = s.match(/^M ([a-zA-Z]\d+)\s+([a-zA-Z]\d+)$/);
+      const parts = s.match(/^[Mm] ([a-zA-Z]\d+)\s+([a-zA-Z]\d+)$/);
       if (!parts || parts.length < 3) {
         return P.ParseResult.fail(
           P.ParseResult.parseError([P.ParseResult.type(P.Schema.string.ast, `Failed to deserialize move string: ${s}`)])
@@ -60,7 +60,7 @@ export function String_MorrisMoveRemove<D extends number>(d: D) {
     P.Schema.string,
     MorrisMoveRemoveS(d),
     (s: string) => {
-      const parts = s.match(/^R ([a-zA-Z]\d+)$/);
+      const parts = s.match(/^[Rr] ([a-zA-Z]\d+)$/);
       if (!parts || parts.length < 2) {
         return P.ParseResult.fail(
           P.ParseResult.parseError([P.ParseResult.type(P.Schema.string.ast, `Failed to deserialize move string: ${s}`)])

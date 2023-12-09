@@ -31,10 +31,15 @@ export function getRenderCoord<D extends number>(
     getBoardCoordParts(coord),
     P.Effect.map(([bx, by]) => {
       const bxn = COORD_CHARS.indexOf(bx);
+      const byn = by - 1;
       const x =
-        (params.config.showCoords ? params.config.coordPadH : 0) + params.config.pad + bxn * params.config.xScale + bxn;
+        (params.config.showCoords ? params.config.coordPadH + 1 : 0) +
+        params.config.boardPadH +
+        bxn * (params.config.scaleX * params.config.spacingX + 1);
       const y =
-        params.h - (by - 1) * params.config.yScale - 1 - (params.config.showCoords ? params.config.coordPadV : 0);
+        params.h -
+        ((params.config.showCoords ? params.config.coordPadV + 1 : 0) +
+          (byn * (params.config.scaleY * params.config.spacingY + 1) + 1));
 
       return [x, y];
     })
