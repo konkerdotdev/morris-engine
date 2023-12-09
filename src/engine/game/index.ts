@@ -5,6 +5,7 @@ import { toMorrisEngineError } from '../../lib/error';
 import * as R from '../../lib/tiny-rules-fp';
 import type { MorrisBoard, MorrisBoardPositionString } from '../board';
 import { getPoint, getPointMorris, setPointEmpty, setPointOccupant } from '../board/points';
+import type { MorrisBoardCoordS } from '../board/schemas';
 import type { MorrisPhase } from '../consts';
 import { MorrisColor, MorrisGameResult, MorrisMoveType } from '../consts';
 import type { Morris, MorrisBlack, MorrisWhite } from '../morris';
@@ -15,6 +16,9 @@ import type { MorrisGameFacts } from '../rules/facts';
 export type MorrisGameConfig<N extends number> = {
   readonly name: string;
   readonly numMorrisPerPlayer: N;
+  readonly forbiddenPointsFirstMove: Array<MorrisBoardCoordS<any>>;
+  readonly forbiddenPointsSecondMove: Array<MorrisBoardCoordS<any>>;
+  readonly forbiddenPointsPlacingPhase: Array<MorrisBoardCoordS<any>>;
   readonly numMillsToWinThreshold: number; // 1 for 3MM
   readonly numMorrisForFlyingThreshold: number;
   readonly numMorrisToLoseThreshold: number; // 2 for 9MM

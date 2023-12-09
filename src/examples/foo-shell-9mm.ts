@@ -1,10 +1,10 @@
 /* eslint-disable fp/no-unused-expression,@typescript-eslint/ban-ts-comment,fp/no-let,fp/no-mutation,fp/no-nil */
 import * as console from 'console';
 
-import type { params } from '../9mm';
-import { game } from '../9mm';
 import { renderString } from '../engine/render/text';
 import { shellStartMorrisGame, shellTick, shellWrapRenderString } from '../engine/shell';
+import type { params } from '../games/9mm';
+import { game } from '../games/9mm';
 
 const shellRenderString = shellWrapRenderString<typeof params.P, typeof params.D, typeof params.N>(renderString);
 

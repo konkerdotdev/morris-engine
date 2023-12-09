@@ -2,8 +2,6 @@
 import * as P from '@konker.dev/effect-ts-prelude';
 import * as console from 'console';
 
-import type { D_3, N_3, P_3 } from '../3mm';
-import { game } from '../3mm';
 import { MorrisColor } from '../engine/consts';
 import { createMoveMove, createMovePlace } from '../engine/moves';
 import { RenderImpl } from '../engine/render';
@@ -13,6 +11,8 @@ import { RulesApply } from '../engine/rules/rulesApply';
 import { RulesMove } from '../engine/rules/rulesMove';
 import type { MorrisGameTick } from '../engine/tick';
 import { startMorrisGame, tick } from '../engine/tick';
+import type { D_3, N_3, P_3 } from '../games/3mm';
+import { game } from '../games/3mm';
 import type { MorrisEngineError } from '../lib/error';
 
 // --------------------------------------------------------------------------

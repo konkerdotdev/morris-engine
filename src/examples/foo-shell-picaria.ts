@@ -3,12 +3,12 @@ import * as console from 'console';
 
 import { renderString } from '../engine/render/text';
 import { shellStartMorrisGame, shellTick, shellWrapRenderString } from '../engine/shell';
-import type { params } from '../games/3mm';
-import { game } from '../games/3mm';
+import type { params } from '../games/picaria';
+import { game } from '../games/picaria';
 
 const shellRenderString = shellWrapRenderString<typeof params.P, typeof params.D, typeof params.N>(renderString);
 
-const MOVES = ['P W a1', 'P B c2', 'P W b3', 'P B c3', 'M b2 a3', 'P W b1', 'P B b2', 'M b3 a3', 'M b2 c1', 'M a1 b2'];
+const MOVES = ['P W b4', 'P B d2', 'P W e5', 'P B e3', 'P W c1', 'P B e1', 'M b4 c3'];
 
 // --------------------------------------------------------------------------
 let gt = shellStartMorrisGame<typeof params.P, typeof params.D, typeof params.N>(game);

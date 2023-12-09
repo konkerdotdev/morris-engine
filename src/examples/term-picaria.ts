@@ -1,6 +1,6 @@
 /* eslint-disable fp/no-unused-expression,fp/no-mutation,fp/no-let,fp/no-loops,fp/no-nil */
 /**
- * Basic interactive Three-Men's-Morris game for the terminal
+ * Basic interactive Picaria game for the terminal
  */
 import * as readline from 'node:readline/promises';
 
@@ -10,8 +10,8 @@ import console from 'console';
 import { renderString } from '../engine/render/text';
 import { shellStartMorrisGame, shellTick, shellWrapRenderString } from '../engine/shell';
 import type { MorrisGameTick } from '../engine/tick';
-import type { params } from '../games/3mm';
-import { game } from '../games/3mm';
+import type { params } from '../games/picaria';
+import { game } from '../games/picaria';
 
 const rl = readline.createInterface({
   input: process.stdin,

@@ -7,11 +7,11 @@ import * as readline from 'node:readline/promises';
 import chalk from 'chalk';
 import console from 'console';
 
-import type { params } from '../9mm';
-import { game } from '../9mm';
 import { renderString } from '../engine/render/text';
 import { shellStartMorrisGame, shellTick, shellWrapRenderString } from '../engine/shell';
 import type { MorrisGameTick } from '../engine/tick';
+import type { params } from '../games/9mm';
+import { game } from '../games/9mm';
 
 const rl = readline.createInterface({
   input: process.stdin,

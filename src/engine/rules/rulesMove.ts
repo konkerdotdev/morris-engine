@@ -24,6 +24,11 @@ export const RulesMove = <P extends number, D extends number, N extends number>(
         'Is first move'
       ),
       R.addRuleFunc(
+        'isSecondMove',
+        (c: MorrisRulesContextMove<P, D, N>, _f: MorrisGameFacts) => c.game.moves.length === 1,
+        'Is second move'
+      ),
+      R.addRuleFunc(
         'isTurnWhite',
         (c: MorrisRulesContextMove<P, D, N>, _f: MorrisGameFacts) => c.game.curMoveColor === MorrisColor.WHITE,
         'Is current turn white'
@@ -96,6 +101,31 @@ export const RulesMove = <P extends number, D extends number, N extends number>(
             R.val(f.isLaskerPhase) &&
             (c.move.type === MorrisMoveType.PLACE || c.move.type === MorrisMoveType.MOVE)),
         'The move is of the correct type for the phase'
+      ),
+      R.addRuleFunc(
+        'moveIsForbiddenOnFirstMove',
+        (c: MorrisRulesContextMove<P, D, N>, f: MorrisGameFacts) =>
+          R.val(f.isFirstMove) &&
+          c.move.type === MorrisMoveType.PLACE &&
+          c.game.config.forbiddenPointsFirstMove.includes(c.move.to),
+        'The move is forbidden on the first move'
+      ),
+      R.addRuleFunc(
+        'moveIsForbiddenOnSecondMove',
+        (c: MorrisRulesContextMove<P, D, N>, f: MorrisGameFacts) =>
+          R.val(f.isSecondMove) &&
+          c.move.type === MorrisMoveType.PLACE &&
+          c.game.config.forbiddenPointsFirstMove.includes(c.move.to),
+        'The move is forbidden on the second move'
+      ),
+      R.addRuleFunc(
+        'moveIsForbiddenInPlacingPhase',
+        (c: MorrisRulesContextMove<P, D, N>, f: MorrisGameFacts) =>
+          !R.val(f.isRemoveMode) &&
+          (R.val(f.isPlacingPhase) || R.val(f.isLaskerPhase)) &&
+          (c.move.type === MorrisMoveType.PLACE || c.move.type === MorrisMoveType.MOVE) &&
+          c.game.config.forbiddenPointsPlacingPhase.includes(c.move.to),
+        'The move is forbidden in placing phase'
       ),
       R.addRuleFuncEffect(
         'moveIsPossibleForPlace',
@@ -170,11 +200,14 @@ export const RulesMove = <P extends number, D extends number, N extends number>(
       R.addRuleFunc(
         'moveIsPossible',
         (_c: MorrisRulesContextMove<P, D, N>, f: MorrisGameFacts) =>
-          R.val(f.moveIsPossibleForPlace) ||
-          R.val(f.moveIsPossibleForMove) ||
-          R.val(f.moveIsPossibleForRemove) ||
-          R.val(f.moveIsPossibleForLasker) ||
-          R.val(f.moveIsPossibleForFlying),
+          !R.val(f.moveIsForbiddenOnFirstMove) &&
+          !R.val(f.moveIsForbiddenOnSecondMove) &&
+          !R.val(f.moveIsForbiddenInPlacingPhase) &&
+          (R.val(f.moveIsPossibleForPlace) ||
+            R.val(f.moveIsPossibleForMove) ||
+            R.val(f.moveIsPossibleForRemove) ||
+            R.val(f.moveIsPossibleForLasker) ||
+            R.val(f.moveIsPossibleForFlying)),
         'The move is possible'
       ),
       R.addRuleFunc(

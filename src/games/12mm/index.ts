@@ -1,49 +1,50 @@
-import type { MorrisBoard } from '../engine/board';
-import { boardHash } from '../engine/board/query';
-import { EmptyOccupant } from '../engine/board/schemas';
-import { MorrisColor, MorrisGameResult, MorrisLinkType, MorrisPhase } from '../engine/consts';
-import type { MorrisGame, MorrisGameConfig } from '../engine/game';
-import { MorrisBlack, MorrisWhite } from '../engine/morris';
+import type { MorrisBoard } from '../../engine/board';
+import { boardHash } from '../../engine/board/query';
+import { EmptyOccupant } from '../../engine/board/schemas';
+import { MorrisColor, MorrisGameResult, MorrisLinkType, MorrisPhase } from '../../engine/consts';
+import type { MorrisGame, MorrisGameConfig } from '../../engine/game';
+import { MorrisBlack, MorrisWhite } from '../../engine/morris';
 
-export const P_10 = 24;
-export type P_10 = typeof P_10;
-export const D_10 = 7;
-export type D_10 = typeof D_10;
-export const N_10 = 10;
-export type N_10 = typeof N_10;
+export const P_12 = 24;
+export type P_12 = typeof P_12;
+export const D_12 = 7;
+export type D_12 = typeof D_12;
+export const N_12 = 12;
+export type N_12 = typeof N_12;
 
 export const params = {
-  P: P_10,
-  D: D_10,
-  N: N_10,
+  P: P_12,
+  D: D_12,
+  N: N_12,
 } as const;
 
 /*
 // --------------------------------------------------------------------------
-// 10-Mens-Morris Board
-7 o--------------o--------------o
-  |              |              |
-6 |    o---------o---------o    |
-  |    |         |         |    |
-5 |    |    o----o----o    |    |
-  |    |    |         |    |    |
-4 o----o----o         o----o----o
-  |    |    |         |    |    |
-3 |    |    o----o----o    |    |
-  |    |         |         |    |
-2 |    o---------o---------o    |
-  |              |              |
-1 o--------------o--------------o
-  a    b    c    d    e    f    g
+// 12-Mens-Morris Board
+7  o--------------o--------------o
+   | \            |            / |
+6  |    o---------o---------o    |
+   |    | \       |       / |    |
+5  |    |    o----o----o    |    |
+   |    |    |         |    |    |
+4  o----o----o         o----o----o
+   |    |    |         |    |    |
+3  |    |    o----o----o    |    |
+   |    | /       |       \ |    |
+2  |    o---------o---------o    |
+   | /            |            \ |
+1  o--------------o--------------o
+   a    b    c    d    e    f    g
 */
-export const board: MorrisBoard<P_10, D_10, N_10> = {
-  numPoints: P_10,
-  dimension: D_10,
+export const board: MorrisBoard<P_12, D_12, N_12> = {
+  numPoints: P_12,
+  dimension: D_12,
   points: [
     {
       coord: 'a1',
       links: [
         { to: 'd1', linkType: MorrisLinkType.HORIZONTAL },
+        { to: 'b2', linkType: MorrisLinkType.DIAGONAL_F },
         { to: 'a4', linkType: MorrisLinkType.VERTICAL },
       ] as const,
       occupant: EmptyOccupant,
@@ -61,6 +62,7 @@ export const board: MorrisBoard<P_10, D_10, N_10> = {
       coord: 'g1',
       links: [
         { to: 'd1', linkType: MorrisLinkType.HORIZONTAL },
+        { to: 'f2', linkType: MorrisLinkType.DIAGONAL_B },
         { to: 'g4', linkType: MorrisLinkType.VERTICAL },
       ] as const,
       occupant: EmptyOccupant,
@@ -70,6 +72,8 @@ export const board: MorrisBoard<P_10, D_10, N_10> = {
       coord: 'b2',
       links: [
         { to: 'd2', linkType: MorrisLinkType.HORIZONTAL },
+        { to: 'a1', linkType: MorrisLinkType.DIAGONAL_F },
+        { to: 'c3', linkType: MorrisLinkType.DIAGONAL_F },
         { to: 'b4', linkType: MorrisLinkType.VERTICAL },
       ] as const,
       occupant: EmptyOccupant,
@@ -88,6 +92,8 @@ export const board: MorrisBoard<P_10, D_10, N_10> = {
       coord: 'f2',
       links: [
         { to: 'd2', linkType: MorrisLinkType.HORIZONTAL },
+        { to: 'g1', linkType: MorrisLinkType.DIAGONAL_B },
+        { to: 'e3', linkType: MorrisLinkType.DIAGONAL_B },
         { to: 'f4', linkType: MorrisLinkType.VERTICAL },
       ] as const,
       occupant: EmptyOccupant,
@@ -180,6 +186,7 @@ export const board: MorrisBoard<P_10, D_10, N_10> = {
       coord: 'c5',
       links: [
         { to: 'd5', linkType: MorrisLinkType.HORIZONTAL },
+        { to: 'b6', linkType: MorrisLinkType.DIAGONAL_B },
         { to: 'c4', linkType: MorrisLinkType.VERTICAL },
       ] as const,
       occupant: EmptyOccupant,
@@ -197,6 +204,7 @@ export const board: MorrisBoard<P_10, D_10, N_10> = {
       coord: 'e5',
       links: [
         { to: 'd5', linkType: MorrisLinkType.HORIZONTAL },
+        { to: 'f6', linkType: MorrisLinkType.DIAGONAL_F },
         { to: 'e4', linkType: MorrisLinkType.VERTICAL },
       ] as const,
       occupant: EmptyOccupant,
@@ -206,6 +214,8 @@ export const board: MorrisBoard<P_10, D_10, N_10> = {
       coord: 'b6',
       links: [
         { to: 'd6', linkType: MorrisLinkType.HORIZONTAL },
+        { to: 'a7', linkType: MorrisLinkType.DIAGONAL_B },
+        { to: 'c5', linkType: MorrisLinkType.DIAGONAL_B },
         { to: 'b4', linkType: MorrisLinkType.VERTICAL },
       ] as const,
       occupant: EmptyOccupant,
@@ -224,7 +234,9 @@ export const board: MorrisBoard<P_10, D_10, N_10> = {
       coord: 'f6',
       links: [
         { to: 'd6', linkType: MorrisLinkType.HORIZONTAL },
-        { to: 'f4', linkType: MorrisLinkType.VERTICAL },
+        { to: 'g7', linkType: MorrisLinkType.DIAGONAL_F },
+        { to: 'd6', linkType: MorrisLinkType.DIAGONAL_F },
+        { to: 'e5', linkType: MorrisLinkType.VERTICAL },
       ] as const,
       occupant: EmptyOccupant,
     },
@@ -274,22 +286,30 @@ export const board: MorrisBoard<P_10, D_10, N_10> = {
     ['e3', 'e4', 'e5'],
     ['f2', 'f4', 'f6'],
     ['g1', 'g4', 'g7'],
+    //---
+    ['a1', 'b2', 'c3'],
+    ['g1', 'f2', 'e3'],
+    ['a7', 'b6', 'c5'],
+    ['g7', 'f6', 'e5'],
   ],
 };
 
 // --------------------------------------------------------------------------
-export const config: MorrisGameConfig<N_10> = {
-  name: 'Lasker Morris',
-  numMorrisPerPlayer: 10,
+export const config: MorrisGameConfig<N_12> = {
+  name: "9 Men's Morris",
+  numMorrisPerPlayer: 12,
   numMillsToWinThreshold: 0,
   numMorrisForFlyingThreshold: 3,
   numMorrisToLoseThreshold: 2,
   numMovesWithoutMillForDraw: 50,
   numPositionRepeatsForDraw: 3,
-  phases: [MorrisPhase.LASKER, MorrisPhase.MOVING],
+  phases: [MorrisPhase.PLACING, MorrisPhase.MOVING],
+  forbiddenPointsFirstMove: [],
+  forbiddenPointsSecondMove: [],
+  forbiddenPointsPlacingPhase: [],
 };
 
-export const game: MorrisGame<P_10, D_10, N_10> = {
+export const game: MorrisGame<P_12, D_12, N_12> = {
   config,
   startColor: MorrisColor.WHITE,
   curMoveColor: MorrisColor.WHITE,
@@ -307,6 +327,8 @@ export const game: MorrisGame<P_10, D_10, N_10> = {
     MorrisWhite(8),
     MorrisWhite(9),
     MorrisWhite(10),
+    MorrisWhite(11),
+    MorrisWhite(12),
   ],
   morrisWhiteRemoved: [],
   morrisBlack: [
@@ -320,6 +342,8 @@ export const game: MorrisGame<P_10, D_10, N_10> = {
     MorrisBlack(8),
     MorrisBlack(9),
     MorrisBlack(10),
+    MorrisBlack(11),
+    MorrisBlack(12),
   ],
   morrisBlackRemoved: [],
   board,

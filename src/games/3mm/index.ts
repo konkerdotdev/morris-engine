@@ -1,9 +1,9 @@
-import type { MorrisBoard } from '../engine/board';
-import { boardHash } from '../engine/board/query';
-import { EmptyOccupant } from '../engine/board/schemas';
-import { MorrisColor, MorrisGameResult, MorrisLinkType, MorrisPhase } from '../engine/consts';
-import type { MorrisGame, MorrisGameConfig } from '../engine/game';
-import { MorrisBlack, MorrisWhite } from '../engine/morris';
+import type { MorrisBoard } from '../../engine/board';
+import { boardHash } from '../../engine/board/query';
+import { EmptyOccupant } from '../../engine/board/schemas';
+import { MorrisColor, MorrisGameResult, MorrisLinkType, MorrisPhase } from '../../engine/consts';
+import type { MorrisGame, MorrisGameConfig } from '../../engine/game';
+import { MorrisBlack, MorrisWhite } from '../../engine/morris';
 
 export const P_3 = 9;
 export type P_3 = typeof P_3;
@@ -141,6 +141,9 @@ export const config: MorrisGameConfig<N_3> = {
   numMovesWithoutMillForDraw: 50,
   numPositionRepeatsForDraw: 3,
   phases: [MorrisPhase.PLACING, MorrisPhase.MOVING],
+  forbiddenPointsFirstMove: [],
+  forbiddenPointsSecondMove: [],
+  forbiddenPointsPlacingPhase: [],
 };
 
 export const game: MorrisGame<P_3, D_3, N_3> = {

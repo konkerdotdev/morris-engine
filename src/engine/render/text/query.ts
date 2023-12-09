@@ -55,9 +55,6 @@ export function isDB(context: MorrisBoardRenderContext, x: CoordTuple): boolean 
     if (isOnLineDB(l[A], l[B], l[LF], x)) {
       return true;
     }
-    if (x[X] > l[B][X]) {
-      return false;
-    }
   }
   return false;
 }
@@ -66,9 +63,6 @@ export function isDF(context: MorrisBoardRenderContext, x: CoordTuple): boolean 
   for (const l of context.dfLinks) {
     if (isOnLineDF(l[A], l[B], l[LF], x)) {
       return true;
-    }
-    if (x[X] > l[B][X]) {
-      return false;
     }
   }
   return false;

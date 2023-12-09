@@ -5,6 +5,7 @@ export const UNSET_FACT = 'unset';
 export const MorrisGameFactKeys = [
   // is
   'isFirstMove',
+  'isSecondMove',
   'isTurnWhite',
   'isTurnBlack',
   'isPlacingPhase',
@@ -38,6 +39,9 @@ export const MorrisGameFactKeys = [
   'moveIsPossibleForLasker',
   'moveIsPossibleForFlying',
   'moveIsPossible',
+  'moveIsForbiddenOnFirstMove',
+  'moveIsForbiddenOnSecondMove',
+  'moveIsForbiddenInPlacingPhase',
   'moveIsValid',
 
   // move makes
@@ -72,6 +76,7 @@ export type MorrisGameFacts = Record<MorrisGameFactKeys[number], Fact>;
 export const INITIAL_MORRIS_GAME_FACTS: MorrisGameFacts = {
   // is
   isFirstMove: [false, UNSET_FACT],
+  isSecondMove: [false, UNSET_FACT],
   isTurnWhite: [false, UNSET_FACT],
   isTurnBlack: [false, UNSET_FACT],
   isPlacingPhase: [false, UNSET_FACT],
@@ -104,6 +109,9 @@ export const INITIAL_MORRIS_GAME_FACTS: MorrisGameFacts = {
   moveIsPossibleForLasker: [false, UNSET_FACT],
   moveIsPossibleForFlying: [false, UNSET_FACT],
   moveIsPossible: [false, UNSET_FACT],
+  moveIsForbiddenOnFirstMove: [false, UNSET_FACT],
+  moveIsForbiddenOnSecondMove: [false, UNSET_FACT],
+  moveIsForbiddenInPlacingPhase: [false, UNSET_FACT],
   moveIsValid: [false, UNSET_FACT],
 
   // move makes
