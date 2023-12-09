@@ -79,3 +79,5 @@ export const A = 0;
 export const B = 1;
 export const LF = 2;
 export const PT = 2;
+export const LETTER = 0;
+export const NUMBER = 1;

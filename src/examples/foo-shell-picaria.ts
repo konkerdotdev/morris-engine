@@ -8,7 +8,7 @@ import { game } from '../games/picaria';
 
 const shellRenderString = shellWrapRenderString<typeof params.P, typeof params.D, typeof params.N>(renderString);
 
-const MOVES = ['P W b4', 'P B d2', 'P W e5', 'P B e3', 'P W c1', 'P B e1', 'M b4 c3'];
+const MOVES = ['P W b4', 'P B d2', 'P W e5', 'P B e3', 'P W c1', 'P B e1', 'M b4 c3', 'M e3 d4', 'M e5 c5'];
 
 // --------------------------------------------------------------------------
 let gt = shellStartMorrisGame<typeof params.P, typeof params.D, typeof params.N>(game);

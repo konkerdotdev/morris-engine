@@ -36,7 +36,7 @@ export async function execLoop(
 }
 
 (async () => {
-  console.log(chalk.cyan.bold(game.config.name) + '\n\n');
+  console.log(chalk.cyan.bold(game.config.name));
 
   let gt: MorrisGameTick<typeof params.P, typeof params.D, typeof params.N> | undefined = shellStartMorrisGame(
     gameSetStartColorRandom(game)

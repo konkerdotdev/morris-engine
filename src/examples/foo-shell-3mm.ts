@@ -8,7 +8,7 @@ import { game } from '../games/3mm';
 
 const shellRenderString = shellWrapRenderString<typeof params.P, typeof params.D, typeof params.N>(renderString);
 
-const MOVES = ['P W a1', 'P B c2', 'P W b3', 'P B c3', 'M b2 a3', 'P W b1', 'P B b2', 'M b3 a3', 'M b2 c1', 'M a1 b2'];
+const MOVES = ['P W a1', 'P B c2', 'P W b3', 'P B c3', 'M b2 a3', 'P W b1', 'P B b2', 'M b3 a3', 'M b2 c1'];
 
 // --------------------------------------------------------------------------
 let gt = shellStartMorrisGame<typeof params.P, typeof params.D, typeof params.N>(game);
@@ -18,4 +18,5 @@ MOVES.forEach((moveStr) => {
   gt = shellTick(gt, moveStr);
   console.log('\n' + shellRenderString(gt));
   console.log(gt.message + '\n');
+  // console.log(gt.facts);
 });

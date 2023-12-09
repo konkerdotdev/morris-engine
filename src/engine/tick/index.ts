@@ -94,7 +94,7 @@ export const tick =
         )
       ),
       P.Effect.bind('newGame', ({ moveFacts, newFacts }) => P.pipe(oldGame, execMove(move, moveFacts, newFacts))),
-      P.Effect.bind('message', ({ newFacts, newGame }) => deriveMessage(newGame, newFacts, move)),
+      P.Effect.bind('message', ({ newFacts, newGame }) => deriveMessage(move, newGame, newFacts)),
       P.Effect.flatMap(({ message, newFacts, newGame }) => makeMorrisGameTick(newGame, newFacts, message, move))
     );
   };

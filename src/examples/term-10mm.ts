@@ -1,6 +1,6 @@
 /* eslint-disable fp/no-unused-expression,fp/no-mutation,fp/no-let,fp/no-loops,fp/no-nil */
 /**
- * Basic interactive Twelve-Men's-Morris game for the terminal
+ * Basic interactive Ten-Men's-Morris (Lasker) game for the terminal
  */
 import * as readline from 'node:readline/promises';
 
@@ -11,8 +11,8 @@ import { gameSetStartColorRandom } from '../engine/game';
 import { renderString } from '../engine/render/text';
 import { shellStartMorrisGame, shellTick, shellWrapRenderString } from '../engine/shell';
 import type { MorrisGameTick } from '../engine/tick';
-import type { params } from '../games/12mm';
-import { game } from '../games/12mm';
+import type { params } from '../games/10mm';
+import { game } from '../games/10mm';
 
 const rl = readline.createInterface({
   input: process.stdin,

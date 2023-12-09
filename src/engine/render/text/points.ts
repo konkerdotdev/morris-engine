@@ -6,7 +6,7 @@ import type { MorrisBoardPoint } from '../../board';
 import type { MorrisBoardCoordS } from '../../board/schemas';
 import type { COORD_CHAR } from '../../consts';
 import { COORD_CHARS } from '../../consts';
-import type { CoordTuple, MorrisBoardRenderConfigText, MorrisBoardRenderParams } from './index';
+import type { CoordTuple, MorrisBoardRenderParamsText } from './index';
 
 export function getBoardCoordParts<D extends number>(
   coord: MorrisBoardCoordS<D>
@@ -23,60 +23,42 @@ export function getBoardCoordParts<D extends number>(
   });
 }
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export function _getRenderCoordExec<D extends number>(
-  config: MorrisBoardRenderConfigText,
-  h: number,
-  coord: MorrisBoardCoordS<D>
-): P.Effect.Effect<never, MorrisEngineError, CoordTuple> {
-  return P.pipe(
-    getBoardCoordParts(coord),
-    P.Effect.map(([bx, by]) => {
-      const bxn = COORD_CHARS.indexOf(bx);
-      const x = config.coordPadH + config.pad + bxn * config.xScale + bxn;
-      const y = h - (by - 1) * config.yScale - 1 - config.coordPadV;
-
-      return [x, y];
-    })
-  );
-}
-
 export function getRenderCoord<D extends number>(
-  params: MorrisBoardRenderParams,
+  params: MorrisBoardRenderParamsText,
   coord: MorrisBoardCoordS<D>
 ): P.Effect.Effect<never, MorrisEngineError, CoordTuple> {
   return P.pipe(
     getBoardCoordParts(coord),
     P.Effect.map(([bx, by]) => {
       const bxn = COORD_CHARS.indexOf(bx);
-      const x = params.config.coordPadH + params.config.pad + bxn * params.config.xScale + bxn;
-      const y = params.h - (by - 1) * params.config.yScale - 1 - params.config.coordPadV;
+      const x =
+        (params.config.showCoords ? params.config.coordPadH : 0) + params.config.pad + bxn * params.config.xScale + bxn;
+      const y =
+        params.h - (by - 1) * params.config.yScale - 1 - (params.config.showCoords ? params.config.coordPadV : 0);
 
       return [x, y];
     })
   );
 }
 
-export function pointsToCoord<D extends number, N extends number>(
-  params: MorrisBoardRenderParams,
+export function boardPointToCoord<D extends number, N extends number>(
+  params: MorrisBoardRenderParamsText,
   point: MorrisBoardPoint<D, N>
-): P.Effect.Effect<never, MorrisEngineError, [[COORD_CHAR, number], CoordTuple]> {
+): P.Effect.Effect<never, MorrisEngineError, [COORD_CHAR, number, CoordTuple]> {
   return P.pipe(
     P.Effect.Do,
     P.Effect.bind('boardCoord', () => getBoardCoordParts(point.coord)),
     P.Effect.bind('renderCoord', () => getRenderCoord(params, point.coord)),
-    P.Effect.map(
-      ({ boardCoord, renderCoord }) => [boardCoord, renderCoord as CoordTuple] as [[COORD_CHAR, number], CoordTuple]
-    )
+    P.Effect.map(({ boardCoord, renderCoord }) => [...boardCoord, renderCoord] as [COORD_CHAR, number, CoordTuple])
   );
 }
 
-export function pointsToCoords<D extends number, N extends number>(
-  params: MorrisBoardRenderParams,
+export function boardPointsToCoords<D extends number, N extends number>(
+  params: MorrisBoardRenderParamsText,
   points: Array<MorrisBoardPoint<D, N>>
-): P.Effect.Effect<never, MorrisEngineError, Array<[[COORD_CHAR, number], CoordTuple]>> {
+): P.Effect.Effect<never, MorrisEngineError, Array<[COORD_CHAR, number, CoordTuple]>> {
   return P.pipe(
-    points.map((p) => pointsToCoord(params, p)),
+    points.map((p) => boardPointToCoord(params, p)),
     P.Effect.all
   );
 }

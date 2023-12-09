@@ -6,11 +6,11 @@ import type { MorrisEngineError } from '../../../lib/error';
 import type { MorrisBoard, MorrisBoardPoint } from '../../board';
 import { isOccupied } from '../../board/points';
 import type { COORD_CHAR } from '../../consts';
-import { MorrisColor, PT, X, Y } from '../../consts';
+import { MorrisColor, MorrisLinkType, PT, X, Y } from '../../consts';
 import type { MorrisGameTick } from '../../tick';
-import { linksDB, linksDF, linksH, linksV } from './links';
-import { getRenderCoord, pointsToCoords } from './points';
-import { getCoordH, getCoordV, isCoordH, isCoordV, isDB, isDF, isH, isV } from './query';
+import { links, linksD } from './links';
+import { boardPointsToCoords, getRenderCoord } from './points';
+import { getCoordXAxis, getCoordYAxis, isCoordH, isCoordV, isDB, isDF, isH, isV } from './query';
 
 export type CoordTuple = [number, number];
 
@@ -22,6 +22,7 @@ export type MorrisBoardRenderConfigText = {
   readonly pad: number;
   readonly coordPadH: number;
   readonly coordPadV: number;
+  readonly showCoords: boolean;
   readonly colorBoardBg: string;
   readonly colorBoard: string;
   readonly colorCoords: string;
@@ -44,12 +45,13 @@ export const DEFAULT_MORRIS_BOARD_RENDER_CONFIG_TEXT: MorrisBoardRenderConfigTex
   pad: 1,
   coordPadH: 2,
   coordPadV: 1,
+  showCoords: true,
   colorBoardBg: '#a67b5b',
   colorBoard: '#333333',
   colorCoords: '#ffffff',
   colorCoordsBg: '#000000',
-  colorWhite: '#ffffff', //'#ffff00',
-  colorBlack: '#000000', //'#0000aa',
+  colorWhite: '#ffffff',
+  colorBlack: '#000000',
   avatarEmpty: '⦁',
   avatarWhite: '●',
   avatarBlack: '●',
@@ -60,50 +62,55 @@ export const DEFAULT_MORRIS_BOARD_RENDER_CONFIG_TEXT: MorrisBoardRenderConfigTex
   boardBlack: ' ',
 };
 
-export type MorrisBoardRenderParams = {
+export type MorrisBoardRenderParamsText = {
   readonly config: MorrisBoardRenderConfigText;
   readonly w: number;
   readonly h: number;
 };
 
-export type MorrisBoardRenderContext = MorrisBoardRenderParams & {
-  readonly coords: Array<[[COORD_CHAR, number], CoordTuple]>;
-  readonly hLinks: Array<[CoordTuple, CoordTuple]>;
-  readonly vLinks: Array<[CoordTuple, CoordTuple]>;
-  readonly dbLinks: Array<[CoordTuple, CoordTuple, LineFunc]>;
-  readonly dfLinks: Array<[CoordTuple, CoordTuple, LineFunc]>;
+export type MorrisBoardRenderContext = MorrisBoardRenderParamsText & {
+  readonly boardPointCoords: Array<[COORD_CHAR, number, CoordTuple]>;
+  readonly linksH: Array<[CoordTuple, CoordTuple]>;
+  readonly linksV: Array<[CoordTuple, CoordTuple]>;
+  readonly linksDB: Array<[CoordTuple, CoordTuple, LineFunc]>;
+  readonly linksDF: Array<[CoordTuple, CoordTuple, LineFunc]>;
   readonly renderPoints: Array<Array<string>>;
 };
 
 export function initMorrisBoardRenderParams<P extends number, D extends number, N extends number>(
   config: MorrisBoardRenderConfigText,
   board: MorrisBoard<P, D, N>
-): MorrisBoardRenderParams {
+): MorrisBoardRenderParamsText {
   return {
     config,
-    w: config.coordPadH + board.dimension + (board.dimension - 1) * config.xScale + config.pad * 2,
-    h: board.dimension * config.yScale - 1 + config.coordPadV,
+    w:
+      (config.showCoords ? config.coordPadH : 0) +
+      config.pad +
+      board.dimension +
+      (board.dimension - 1) * config.xScale +
+      config.pad,
+    h: board.dimension * config.yScale - 1 + (config.showCoords ? config.coordPadV : 0),
   };
 }
 
 export function initMorrisBoardRenderContext<P extends number, D extends number, N extends number>(
-  params: MorrisBoardRenderParams,
+  params: MorrisBoardRenderParamsText,
   board: MorrisBoard<P, D, N>
 ): P.Effect.Effect<never, MorrisEngineError, MorrisBoardRenderContext> {
   return P.pipe(
     P.Effect.Do,
-    P.Effect.bind('coords', () => pointsToCoords(params, board.points)),
-    P.Effect.bind('hLinks', () => linksH(params, board.points)),
-    P.Effect.bind('vLinks', () => linksV(params, board.points)),
-    P.Effect.bind('dbLinks', () => linksDB(params, board.points)),
-    P.Effect.bind('dfLinks', () => linksDF(params, board.points)),
-    P.Effect.map(({ coords, dbLinks, dfLinks, hLinks, vLinks }) => ({
+    P.Effect.bind('boardPointCoords', () => boardPointsToCoords(params, board.points)),
+    P.Effect.bind('linksH', () => links(params, board.points, MorrisLinkType.HORIZONTAL, Y, X)),
+    P.Effect.bind('linksV', () => links(params, board.points, MorrisLinkType.VERTICAL, X, Y)),
+    P.Effect.bind('linksDB', () => linksD(params, board.points, MorrisLinkType.DIAGONAL_B, X, Y)),
+    P.Effect.bind('linksDF', () => linksD(params, board.points, MorrisLinkType.DIAGONAL_F, X, X)),
+    P.Effect.map(({ boardPointCoords, linksDB, linksDF, linksH, linksV }) => ({
       ...params,
-      coords,
-      hLinks,
-      vLinks,
-      dbLinks,
-      dfLinks,
+      boardPointCoords,
+      linksH,
+      linksV,
+      linksDB,
+      linksDF,
 
       renderPoints: Array(params.h)
         .fill('_')
@@ -157,12 +164,12 @@ export function renderString<P extends number, D extends number, N extends numbe
             context.renderPoints[j]![i] = chalk
               .bgHex(context.config.colorCoordsBg)
               .hex(context.config.colorCoords)
-              .dim(getCoordH(context, [i, j]));
+              .dim(getCoordXAxis(context, [i, j]));
           } else if (isCoordV(context, [i, j])) {
             context.renderPoints[j]![i] = chalk
               .bgHex(context.config.colorCoordsBg)
               .hex(context.config.colorCoords)
-              .dim(getCoordV(context, [i, j]));
+              .dim(getCoordYAxis(context, [i, j]));
           } else {
             context.renderPoints[j]![i] = chalk
               .bgHex(context.config.colorBoardBg)

@@ -5,17 +5,18 @@ import { MorrisColor, MorrisGameResult, MorrisLinkType, MorrisPhase } from '../.
 import type { MorrisGame, MorrisGameConfig } from '../../engine/game';
 import { MorrisBlack, MorrisWhite } from '../../engine/morris';
 
-export const P_12 = 24;
-export type P_12 = typeof P_12;
-export const D_12 = 7;
-export type D_12 = typeof D_12;
-export const N_12 = 12;
-export type N_12 = typeof N_12;
+// Not exported
+const P = 24;
+type P = typeof P;
+const D = 7;
+type D = typeof D;
+const N = 12;
+type N = typeof N;
 
 export const params = {
-  P: P_12,
-  D: D_12,
-  N: N_12,
+  P: P,
+  D: D,
+  N: N,
 } as const;
 
 /*
@@ -36,9 +37,9 @@ export const params = {
 1  o--------------o--------------o
    a    b    c    d    e    f    g
 */
-export const board: MorrisBoard<P_12, D_12, N_12> = {
-  numPoints: P_12,
-  dimension: D_12,
+export const board: MorrisBoard<P, D, N> = {
+  numPoints: P,
+  dimension: D,
   points: [
     {
       coord: 'a1',
@@ -295,7 +296,7 @@ export const board: MorrisBoard<P_12, D_12, N_12> = {
 };
 
 // --------------------------------------------------------------------------
-export const config: MorrisGameConfig<N_12> = {
+export const config: MorrisGameConfig<N> = {
   name: "9 Men's Morris",
   numMorrisPerPlayer: 12,
   numMillsToWinThreshold: 0,
@@ -309,7 +310,7 @@ export const config: MorrisGameConfig<N_12> = {
   forbiddenPointsPlacingPhase: [],
 };
 
-export const game: MorrisGame<P_12, D_12, N_12> = {
+export const game: MorrisGame<P, D, N> = {
   config,
   startColor: MorrisColor.WHITE,
   curMoveColor: MorrisColor.WHITE,

@@ -1,6 +1,6 @@
 /* eslint-disable fp/no-unused-expression,fp/no-mutation,fp/no-let,fp/no-loops,fp/no-nil */
 /**
- * Basic interactive Twelve-Men's-Morris game for the terminal
+ * Basic interactive Six-Men's-Morris game for the terminal
  */
 import * as readline from 'node:readline/promises';
 
@@ -11,8 +11,8 @@ import { gameSetStartColorRandom } from '../engine/game';
 import { renderString } from '../engine/render/text';
 import { shellStartMorrisGame, shellTick, shellWrapRenderString } from '../engine/shell';
 import type { MorrisGameTick } from '../engine/tick';
-import type { params } from '../games/12mm';
-import { game } from '../games/12mm';
+import type { params } from '../games/6mm';
+import { game } from '../games/6mm';
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -36,7 +36,7 @@ export async function execLoop(
 }
 
 (async () => {
-  console.log(chalk.cyan.bold(game.config.name));
+  console.log(chalk.cyan.bold(game.config.name) + '\n\n');
 
   let gt: MorrisGameTick<typeof params.P, typeof params.D, typeof params.N> | undefined = shellStartMorrisGame(
     gameSetStartColorRandom(game)

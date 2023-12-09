@@ -155,14 +155,37 @@ export function deriveStartMessage<P extends number, D extends number, N extends
   return newGame.startColor === MorrisColor.WHITE ? 'Place White' : 'Place Black';
 }
 
+// eslint-disable-next-line fp/no-nil
+export function deriveResultMessage<P extends number, D extends number, N extends number>(
+  _move: MorrisMoveS<D>,
+  _newGame: MorrisGame<P, D, N>,
+  newFacts: MorrisGameFacts
+): string {
+  if (R.val(newFacts.isWinWhite)) {
+    if (R.val(newFacts.isWinWhiteMillsMade)) return 'White wins! (number of mills made)';
+    else if (R.val(newFacts.isWinWhiteOpponentCount)) return 'White wins! (too few black pieces left)';
+    else if (R.val(newFacts.isWinWhiteOpponentNoValidMove)) return 'White wins! (no valid move left for black)';
+    else return 'White wins!';
+  } else if (R.val(newFacts.isWinBlack)) {
+    if (R.val(newFacts.isWinBlackMillsMade)) return 'Black wins! (number of mills made)';
+    else if (R.val(newFacts.isWinBlackOpponentCount)) return 'Black wins! (too few white pieces left)';
+    else if (R.val(newFacts.isWinBlackOpponentNoValidMove)) return 'Black wins! (no valid move left for white)';
+    else return 'Black wins!';
+  } else {
+    if (R.val(newFacts.isDrawNoMillsLimit)) return 'Draw (too many moves without a mill)';
+    if (R.val(newFacts.isDrawPositionRepeatLimit)) return 'Draw (position repeated too many times)';
+    else return 'Draw';
+  }
+}
+
 export function deriveMessage<P extends number, D extends number, N extends number>(
-  newGame: MorrisGame<P, D, N>,
-  newFacts: MorrisGameFacts,
-  _move: MorrisMoveS<D>
+  _move: MorrisMoveS<D>,
+  _newGame: MorrisGame<P, D, N>,
+  newFacts: MorrisGameFacts
 ): P.Effect.Effect<never, MorrisEngineError, string> {
   const message = () => {
     if (!R.val(newFacts.moveIsValid)) return 'Invalid Move';
-    if (R.val(newFacts.isGameOver)) return newGame.result;
+    if (R.val(newFacts.isGameOver)) return deriveResultMessage(_move, _newGame, newFacts);
 
     if (R.val(newFacts.isLaskerPhase)) {
       if (R.val(newFacts.isTurnWhite)) return 'Place or move White';

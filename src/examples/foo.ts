@@ -11,7 +11,7 @@ import { RulesApply } from '../engine/rules/rulesApply';
 import { RulesMove } from '../engine/rules/rulesMove';
 import type { MorrisGameTick } from '../engine/tick';
 import { startMorrisGame, tick } from '../engine/tick';
-import type { D_3, N_3, P_3 } from '../games/3mm';
+import type { params } from '../games/3mm';
 import { game } from '../games/3mm';
 import type { MorrisEngineError } from '../lib/error';
 
@@ -25,38 +25,68 @@ const prog1 = P.pipe(
   RenderImpl,
   P.Effect.flatMap(({ renderString }) =>
     P.pipe(
-      startMorrisGame<P_3, D_3, N_3>(game),
+      startMorrisGame<typeof params.P, typeof params.D, typeof params.N>(game),
       P.Effect.tapDefect((e) => P.Console.log(e._tag)),
-      P.Effect.tap(print<P_3, D_3, N_3>(renderString)),
+      P.Effect.tap(print<typeof params.P, typeof params.D, typeof params.N>(renderString)),
 
-      P.Effect.flatMap((gameTick) => P.pipe(gameTick, tick<P_3, D_3, N_3>(createMovePlace(MorrisColor.WHITE, 'a1')))),
-      P.Effect.tap(print<P_3, D_3, N_3>(renderString)),
+      P.Effect.flatMap((gameTick) =>
+        P.pipe(
+          gameTick,
+          tick<typeof params.P, typeof params.D, typeof params.N>(createMovePlace(MorrisColor.WHITE, 'a1'))
+        )
+      ),
+      P.Effect.tap(print<typeof params.P, typeof params.D, typeof params.N>(renderString)),
 
-      P.Effect.flatMap((gameTick) => P.pipe(gameTick, tick<P_3, D_3, N_3>(createMovePlace(MorrisColor.BLACK, 'c2')))),
-      P.Effect.tap(print<P_3, D_3, N_3>(renderString)),
+      P.Effect.flatMap((gameTick) =>
+        P.pipe(
+          gameTick,
+          tick<typeof params.P, typeof params.D, typeof params.N>(createMovePlace(MorrisColor.BLACK, 'c2'))
+        )
+      ),
+      P.Effect.tap(print<typeof params.P, typeof params.D, typeof params.N>(renderString)),
 
-      P.Effect.flatMap((gameTick) => P.pipe(gameTick, tick<P_3, D_3, N_3>(createMovePlace(MorrisColor.WHITE, 'b3')))),
-      P.Effect.tap(print<P_3, D_3, N_3>(renderString)),
+      P.Effect.flatMap((gameTick) =>
+        P.pipe(
+          gameTick,
+          tick<typeof params.P, typeof params.D, typeof params.N>(createMovePlace(MorrisColor.WHITE, 'b3'))
+        )
+      ),
+      P.Effect.tap(print<typeof params.P, typeof params.D, typeof params.N>(renderString)),
 
-      P.Effect.flatMap((gameTick) => P.pipe(gameTick, tick<P_3, D_3, N_3>(createMovePlace(MorrisColor.BLACK, 'c3')))),
-      P.Effect.tap(print<P_3, D_3, N_3>(renderString)),
+      P.Effect.flatMap((gameTick) =>
+        P.pipe(
+          gameTick,
+          tick<typeof params.P, typeof params.D, typeof params.N>(createMovePlace(MorrisColor.BLACK, 'c3'))
+        )
+      ),
+      P.Effect.tap(print<typeof params.P, typeof params.D, typeof params.N>(renderString)),
 
-      // P.Effect.flatMap(tick<P_3, D_3, N_3>(createMoveMove('b2', 'a3'))),
+      // P.Effect.flatMap(tick<typeof params.P, typeof params.D, typeof params.N>(createMoveMove('b2', 'a3'))),
       // P.Effect.tap(gameTick => P.pipe(renderString(gameTick), P.Effect.flatMap(P.Console.log))),
 
-      P.Effect.flatMap((gameTick) => P.pipe(gameTick, tick<P_3, D_3, N_3>(createMovePlace(MorrisColor.WHITE, 'b1')))),
-      P.Effect.tap(print<P_3, D_3, N_3>(renderString)),
+      P.Effect.flatMap((gameTick) =>
+        P.pipe(
+          gameTick,
+          tick<typeof params.P, typeof params.D, typeof params.N>(createMovePlace(MorrisColor.WHITE, 'b1'))
+        )
+      ),
+      P.Effect.tap(print<typeof params.P, typeof params.D, typeof params.N>(renderString)),
 
-      P.Effect.flatMap((gameTick) => P.pipe(gameTick, tick<P_3, D_3, N_3>(createMovePlace(MorrisColor.BLACK, 'b2')))),
-      P.Effect.tap(print<P_3, D_3, N_3>(renderString)),
+      P.Effect.flatMap((gameTick) =>
+        P.pipe(
+          gameTick,
+          tick<typeof params.P, typeof params.D, typeof params.N>(createMovePlace(MorrisColor.BLACK, 'b2'))
+        )
+      ),
+      P.Effect.tap(print<typeof params.P, typeof params.D, typeof params.N>(renderString)),
 
-      P.Effect.flatMap(tick<P_3, D_3, N_3>(createMoveMove('b3', 'a3'))),
-      P.Effect.tap(print<P_3, D_3, N_3>(renderString)),
+      P.Effect.flatMap(tick<typeof params.P, typeof params.D, typeof params.N>(createMoveMove('b3', 'a3'))),
+      P.Effect.tap(print<typeof params.P, typeof params.D, typeof params.N>(renderString)),
 
-      P.Effect.flatMap(tick<P_3, D_3, N_3>(createMoveMove('b2', 'c1'))),
-      P.Effect.tap(print<P_3, D_3, N_3>(renderString))
+      P.Effect.flatMap(tick<typeof params.P, typeof params.D, typeof params.N>(createMoveMove('b2', 'c1'))),
+      P.Effect.tap(print<typeof params.P, typeof params.D, typeof params.N>(renderString))
 
-      // P.Effect.flatMap(tick<P_3, D_3, N_3>(createMoveMove('a1', 'b2'))),
+      // P.Effect.flatMap(tick<typeof params.P, typeof params.D, typeof params.N>(createMoveMove('a1', 'b2'))),
       // P.Effect.tap(gameTick => P.pipe(renderString(gameTick), P.Effect.flatMap(P.Console.log))),
     )
   )
