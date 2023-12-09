@@ -12,7 +12,6 @@ import type { Morris, MorrisBlack, MorrisWhite } from '../morris';
 import type { MorrisMoveS } from '../moves/schemas';
 import type { MorrisGameFacts } from '../rules/facts';
 
-// --------------------------------------------------------------------------
 export type MorrisGameConfig<N extends number> = {
   readonly name: string;
   readonly numMorrisPerPlayer: N;
@@ -42,6 +41,20 @@ export type MorrisGame<P extends number, D extends number, N extends number> = {
   readonly moves: ReadonlyArray<MorrisMoveS<D>>;
   readonly positions: ReadonlyArray<MorrisBoardPositionString<P>>;
 };
+
+// --------------------------------------------------------------------------
+export function gameSetStartColor<P extends number, D extends number, N extends number>(
+  game: MorrisGame<P, D, N>,
+  color: MorrisColor
+): MorrisGame<P, D, N> {
+  return { ...game, startColor: color };
+}
+
+export function gameSetStartColorRandom<P extends number, D extends number, N extends number>(
+  game: MorrisGame<P, D, N>
+): MorrisGame<P, D, N> {
+  return gameSetStartColor(game, Math.random() <= 0.5 ? MorrisColor.WHITE : MorrisColor.BLACK);
+}
 
 // --------------------------------------------------------------------------
 export function getNextPlaceMorris<P extends number, D extends number, N extends number>(

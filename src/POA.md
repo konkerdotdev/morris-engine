@@ -5,6 +5,8 @@
 - Refactor text render for common/repeated code
 - Functions for varying config, as possible
   - e.g. start color
+- Derive win message
+  - Derive draw message => derive result message
 - Minimax algo for computer player:
   - https://en.wikipedia.org/wiki/Minimax
   - Fitness func:

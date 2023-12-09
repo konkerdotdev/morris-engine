@@ -7,6 +7,7 @@ import * as readline from 'node:readline/promises';
 import chalk from 'chalk';
 import console from 'console';
 
+import { gameSetStartColorRandom } from '../engine/game';
 import { renderString } from '../engine/render/text';
 import { shellStartMorrisGame, shellTick, shellWrapRenderString } from '../engine/shell';
 import type { MorrisGameTick } from '../engine/tick';
@@ -37,11 +38,9 @@ export async function execLoop(
 (async () => {
   console.log(chalk.cyan.bold(game.config.name) + '\n\n');
 
-  let gt: MorrisGameTick<typeof params.P, typeof params.D, typeof params.N> | undefined = shellStartMorrisGame<
-    typeof params.P,
-    typeof params.D,
-    typeof params.N
-  >(game);
+  let gt: MorrisGameTick<typeof params.P, typeof params.D, typeof params.N> | undefined = shellStartMorrisGame(
+    gameSetStartColorRandom(game)
+  );
   console.log('\n' + shellRenderString(gt));
 
   try {
