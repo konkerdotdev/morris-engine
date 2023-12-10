@@ -6,6 +6,7 @@ import { boardHash } from '../board/query';
 import { MorrisColor } from '../consts';
 import type { MorrisGame } from '../game';
 import { applyMoveToGameBoard, deriveMessage, deriveStartMessage, resolveResult } from '../game';
+import { createMoveRoot } from '../moves';
 import type { MorrisMoveS } from '../moves/schemas';
 import { RulesImpl } from '../rules';
 import type { MorrisGameFacts } from '../rules/facts';
@@ -14,7 +15,7 @@ import { INITIAL_MORRIS_GAME_FACTS } from '../rules/facts';
 // --------------------------------------------------------------------------
 export type MorrisGameTick<P extends number, D extends number, N extends number> = {
   readonly game: MorrisGame<P, D, N>;
-  readonly move: P.Option.Option<MorrisMoveS<D>>;
+  readonly move: MorrisMoveS<D>;
   readonly facts: MorrisGameFacts;
   readonly factsN: number;
   readonly message: string;
@@ -26,15 +27,15 @@ export function makeMorrisGameTick<P extends number, D extends number, N extends
   facts: MorrisGameFacts,
   factsN: number,
   message: string,
-  move?: MorrisMoveS<D>
+  move: MorrisMoveS<D>
 ): P.Effect.Effect<never, MorrisEngineError, MorrisGameTick<P, D, N>> {
-  return P.Effect.succeed({ game, facts, factsN, move: P.Option.fromNullable(move), message });
+  return P.Effect.succeed({ game, facts, factsN, move, message });
 }
 
 export function startMorrisGame<P extends number, D extends number, N extends number>(
   game: MorrisGame<P, D, N>
 ): P.Effect.Effect<never, MorrisEngineError, MorrisGameTick<P, D, N>> {
-  return makeMorrisGameTick(game, INITIAL_MORRIS_GAME_FACTS, 0, deriveStartMessage(game));
+  return makeMorrisGameTick(game, INITIAL_MORRIS_GAME_FACTS, 0, deriveStartMessage(game), createMoveRoot());
 }
 
 // --------------------------------------------------------------------------

@@ -60,6 +60,7 @@ export enum MorrisPhase {
 }
 
 export enum MorrisMoveType {
+  ROOT = 'ROOT',
   PLACE = 'PLACE',
   MOVE = 'MOVE',
   REMOVE = 'REMOVE',

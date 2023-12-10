@@ -5,9 +5,15 @@ import { getPointMorris } from '../board/points';
 import type { MorrisBoardCoordS } from '../board/schemas';
 import { MorrisColor, MorrisMoveType } from '../consts';
 import type { MorrisGame } from '../game';
-import type { MorrisMoveMoveS, MorrisMovePlaceS, MorrisMoveRemoveS, MorrisMoveS } from './schemas';
+import type { MorrisMoveMoveS, MorrisMovePlaceS, MorrisMoveRemoveS, MorrisMoveRootS, MorrisMoveS } from './schemas';
 
 // --------------------------------------------------------------------------
+export const ROOT_MOVE_STR = '-';
+
+export const createMoveRoot = (): MorrisMoveRootS => ({
+  type: MorrisMoveType.ROOT,
+});
+
 export const createMovePlace = <D extends number>(
   color: MorrisColor,
   to: MorrisBoardCoordS<D>
@@ -55,5 +61,7 @@ export function moveColor<P extends number, D extends number, N extends number>(
         getPointMorris(game.board, move.from),
         P.Effect.map((morris) => flipColor(morris.color))
       );
+    case MorrisMoveType.ROOT:
+      return P.Effect.succeed(game.startColor);
   }
 }

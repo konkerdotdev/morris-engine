@@ -2,8 +2,8 @@
 import * as P from '@konker.dev/effect-ts-prelude';
 
 import { MorrisBoardCoordS, MorrisColorS } from '../board/schemas';
-import { createMoveMove, createMovePlace, createMoveRemove } from './index';
-import { MorrisMoveMoveS, MorrisMovePlaceS, MorrisMoveRemoveS } from './schemas';
+import { createMoveMove, createMovePlace, createMoveRemove, createMoveRoot, ROOT_MOVE_STR } from './index';
+import { MorrisMoveMoveS, MorrisMovePlaceS, MorrisMoveRemoveS, MorrisMoveRootS } from './schemas';
 
 // --------------------------------------------------------------------------
 // Schema transforms for string representations of moves
@@ -11,6 +11,22 @@ import { MorrisMoveMoveS, MorrisMovePlaceS, MorrisMoveRemoveS } from './schemas'
 // P <color> <coord1>   -- Place piece of color on coord1
 // M <coord1> <coord2>  -- Move piece from coord1 -> coord2
 // R <coord1>           -- Remove piece on coord1
+export const String_MorrisMoveRoot = P.Schema.transformOrFail(
+  P.Schema.string,
+  MorrisMoveRootS,
+  (s: string) => {
+    if (s !== ROOT_MOVE_STR) {
+      return P.ParseResult.fail(
+        P.ParseResult.parseError([
+          P.ParseResult.type(P.Schema.string.ast, `Failed to deserialize root move string: ${s}`),
+        ])
+      );
+    }
+    return P.pipe(createMoveRoot(), P.Effect.succeed);
+  },
+  (_m: MorrisMoveRootS) => P.ParseResult.success(ROOT_MOVE_STR)
+);
+
 export function String_MorrisMovePlace<D extends number>(d: D) {
   return P.Schema.transformOrFail(
     P.Schema.string,
@@ -77,4 +93,9 @@ export function String_MorrisMoveRemove<D extends number>(d: D) {
 }
 
 export const String_MorrisMove = <D extends number>(d: D) =>
-  P.Schema.union(String_MorrisMovePlace(d), String_MorrisMoveMove(d), String_MorrisMoveRemove(d));
+  P.Schema.union(
+    String_MorrisMovePlace(d),
+    String_MorrisMoveMove(d),
+    String_MorrisMoveRemove(d),
+    String_MorrisMoveRoot
+  );

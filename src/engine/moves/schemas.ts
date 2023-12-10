@@ -3,6 +3,11 @@ import * as P from '@konker.dev/effect-ts-prelude';
 import { MorrisBoardCoordS } from '../board/schemas';
 import { MorrisColor, MorrisMoveType } from '../consts';
 
+export const MorrisMoveRootS = P.Schema.struct({
+  type: P.Schema.literal(MorrisMoveType.ROOT),
+});
+export type MorrisMoveRootS = P.Schema.Schema.To<typeof MorrisMoveRootS>;
+
 export function MorrisMovePlaceS<D extends number>(d: D) {
   return P.Schema.struct({
     type: P.Schema.literal(MorrisMoveType.PLACE),
@@ -30,6 +35,6 @@ export function MorrisMoveRemoveS<D extends number>(d: D) {
 export type MorrisMoveRemoveS<D extends number> = P.Schema.Schema.To<ReturnType<typeof MorrisMoveRemoveS<D>>>;
 
 export function MorrisMoveS<D extends number>(d: D) {
-  return P.Schema.union(MorrisMovePlaceS(d), MorrisMoveMoveS(d), MorrisMoveRemoveS(d));
+  return P.Schema.union(MorrisMovePlaceS(d), MorrisMoveMoveS(d), MorrisMoveRemoveS(d), MorrisMoveRootS);
 }
 export type MorrisMoveS<D extends number> = P.Schema.Schema.To<ReturnType<typeof MorrisMoveS<D>>>;

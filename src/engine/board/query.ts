@@ -9,7 +9,7 @@ export function millCandidatesForMove<P extends number, D extends number, N exte
   move: MorrisMoveS<D>
 ): ReadonlyArray<MillCandidate<D>> {
   // A REMOVE move can never create a mill
-  if (move.type === MorrisMoveType.REMOVE) {
+  if (move.type === MorrisMoveType.REMOVE || move.type === MorrisMoveType.ROOT) {
     return [];
   }
 

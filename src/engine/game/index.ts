@@ -162,6 +162,8 @@ export function applyMoveToGameBoard<P extends number, D extends number, N exten
           )
         )
       );
+    case MorrisMoveType.ROOT:
+      return P.Effect.fail(toMorrisEngineError('Logic error: cannot apply the root move'));
   }
 }
 
