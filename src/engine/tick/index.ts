@@ -16,6 +16,7 @@ export type MorrisGameTick<P extends number, D extends number, N extends number>
   readonly game: MorrisGame<P, D, N>;
   readonly move: P.Option.Option<MorrisMoveS<D>>;
   readonly facts: MorrisGameFacts;
+  readonly factsN: number;
   readonly message: string;
 };
 
@@ -23,16 +24,17 @@ export type MorrisGameTick<P extends number, D extends number, N extends number>
 export function makeMorrisGameTick<P extends number, D extends number, N extends number>(
   game: MorrisGame<any, any, any>,
   facts: MorrisGameFacts,
+  factsN: number,
   message: string,
   move?: MorrisMoveS<D>
 ): P.Effect.Effect<never, MorrisEngineError, MorrisGameTick<P, D, N>> {
-  return P.Effect.succeed({ game, facts, move: P.Option.fromNullable(move), message });
+  return P.Effect.succeed({ game, facts, factsN, move: P.Option.fromNullable(move), message });
 }
 
 export function startMorrisGame<P extends number, D extends number, N extends number>(
   game: MorrisGame<P, D, N>
 ): P.Effect.Effect<never, MorrisEngineError, MorrisGameTick<P, D, N>> {
-  return makeMorrisGameTick(game, INITIAL_MORRIS_GAME_FACTS, deriveStartMessage(game));
+  return makeMorrisGameTick(game, INITIAL_MORRIS_GAME_FACTS, 0, deriveStartMessage(game));
 }
 
 // --------------------------------------------------------------------------
@@ -95,6 +97,8 @@ export const tick =
       ),
       P.Effect.bind('newGame', ({ moveFacts, newFacts }) => P.pipe(oldGame, execMove(move, moveFacts, newFacts))),
       P.Effect.bind('message', ({ newFacts, newGame }) => deriveMessage(move, newGame, newFacts)),
-      P.Effect.flatMap(({ message, newFacts, newGame }) => makeMorrisGameTick(newGame, newFacts, message, move))
+      P.Effect.flatMap(({ message, newFacts, newGame }) =>
+        makeMorrisGameTick(newGame, newFacts, gameTick.factsN + 1, message, move)
+      )
     );
   };

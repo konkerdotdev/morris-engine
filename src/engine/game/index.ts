@@ -4,7 +4,7 @@ import type { MorrisEngineError } from '../../lib/error';
 import { toMorrisEngineError } from '../../lib/error';
 import * as R from '../../lib/tiny-rules-fp';
 import type { MorrisBoard, MorrisBoardPositionString } from '../board';
-import { getPoint, getPointMorris, setPointEmpty, setPointOccupant } from '../board/points';
+import { getPoint, getPointMorris, getPointsOccupied, setPointEmpty, setPointOccupant } from '../board/points';
 import type { MorrisBoardCoordS } from '../board/schemas';
 import type { MorrisPhase } from '../consts';
 import { MorrisColor, MorrisGameResult, MorrisMoveType } from '../consts';
@@ -65,6 +65,33 @@ export function getNextPlaceMorris<P extends number, D extends number, N extends
   return nextMorris
     ? P.Effect.succeed(nextMorris)
     : P.Effect.fail(toMorrisEngineError(`No available Morris to place for ${color}`));
+}
+
+export function hasUnplacedMorris<P extends number, D extends number, N extends number>(
+  game: MorrisGame<P, D, N>,
+  color: MorrisColor
+): boolean {
+  return color === MorrisColor.WHITE ? game.morrisWhite.length > 0 : game.morrisBlack.length > 0;
+}
+
+export function getPossibleNextPlaceMorris<P extends number, D extends number, N extends number>(
+  game: MorrisGame<P, D, N>,
+  color: MorrisColor
+): P.Effect.Effect<never, MorrisEngineError, P.Option.Option<Morris<N>>> {
+  return P.pipe(
+    getNextPlaceMorris(game, color),
+    P.Effect.map((morris) => P.Option.some(morris)),
+    P.Effect.orElseSucceed(P.Option.none)
+  );
+}
+
+export function getPlacedMorrisForColor<P extends number, D extends number, N extends number>(
+  game: MorrisGame<P, D, N>,
+  color: MorrisColor
+): ReadonlyArray<Morris<N>> {
+  return getPointsOccupied(game.board, color)
+    .filter((p) => p.occupant.color === color)
+    .map((p) => p.occupant);
 }
 
 export function useMorris<P extends number, D extends number, N extends number>(
@@ -178,13 +205,26 @@ export function deriveResultMessage<P extends number, D extends number, N extend
   }
 }
 
+export function deriveInvalidMoveError<P extends number, D extends number, N extends number>(
+  _move: MorrisMoveS<D>,
+  _newGame: MorrisGame<P, D, N>,
+  newFacts: MorrisGameFacts
+): string {
+  if (R.val(newFacts.isGameOver)) return 'Invalid move: game is over';
+  if (R.val(newFacts.moveIsCorrectColor)) return 'Invalid move: wrong color';
+  if (R.val(newFacts.moveIsCorrectType)) return 'Invalid move: wrong move type';
+  if (R.val(newFacts.moveIsPossible)) return 'Invalid move: move is not possible';
+  return 'Invalid move';
+}
+
 export function deriveMessage<P extends number, D extends number, N extends number>(
   _move: MorrisMoveS<D>,
   _newGame: MorrisGame<P, D, N>,
   newFacts: MorrisGameFacts
 ): P.Effect.Effect<never, MorrisEngineError, string> {
   const message = () => {
-    if (!R.val(newFacts.moveIsValid)) return 'Invalid Move';
+    if (!R.val(newFacts.moveIsValid)) return deriveInvalidMoveError(_move, _newGame, newFacts);
+
     if (R.val(newFacts.isGameOver)) return deriveResultMessage(_move, _newGame, newFacts);
 
     if (R.val(newFacts.isLaskerPhase)) {

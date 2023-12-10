@@ -69,6 +69,23 @@ export function getPointMorris<P extends number, D extends number, N extends num
   );
 }
 
+export function hasMorrisBeenPlaced<P extends number, D extends number, N extends number>(
+  board: MorrisBoard<P, D, N>,
+  morris: Morris<N>
+): boolean {
+  return board.points.some((p) => isOccupied(p) && p.occupant.n === morris.n && p.occupant.color === morris.color);
+}
+
+export function getOccupiedPointForMorris<P extends number, D extends number, N extends number>(
+  board: MorrisBoard<P, D, N>,
+  morris: Morris<N>
+): P.Effect.Effect<never, MorrisEngineError, OccupiedBoardPoint<D, N>> {
+  const occupiedPoints = getPointsOccupied(board, morris.color);
+  const point = occupiedPoints.find((p) => p.occupant.n === morris.n && p.occupant.color === morris.color);
+
+  return point ? P.Effect.succeed(point) : P.Effect.fail(toMorrisEngineError('Point not found for morris'));
+}
+
 export function isPointEmpty<P extends number, D extends number, N extends number>(
   board: MorrisBoard<P, D, N>,
   coord: MorrisBoardCoordS<D>

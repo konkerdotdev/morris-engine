@@ -3,12 +3,32 @@ import * as console from 'console';
 
 import { renderString } from '../engine/render/text';
 import { shellStartMorrisGame, shellTick, shellWrapRenderString } from '../engine/shell';
-import type { params } from '../games/3mm';
-import { game } from '../games/3mm';
+import type { params } from '../games/9mm';
+import { game } from '../games/9mm';
 
 const shellRenderString = shellWrapRenderString<typeof params.P, typeof params.D, typeof params.N>(renderString);
 
-const MOVES = ['P W a1', 'P B c2', 'P W b3', 'P B c3', 'P W b1', 'P B b2', 'M b3 a3', 'M b2 c1'];
+const MOVES = [
+  'P W a7',
+  'P B e5',
+  'P W d3',
+  'P B g7',
+  'P W d5',
+  'P B f4',
+  'P W e4',
+  'P B g1',
+  'P W b2',
+  'P B d7',
+  'P W b4',
+  'P B f6',
+  'P W f2',
+  'P B e3',
+  'P W g4',
+  'P B d2',
+  'P W d1',
+  'P B d6',
+  'M b4 b6',
+];
 
 // --------------------------------------------------------------------------
 let gt = shellStartMorrisGame<typeof params.P, typeof params.D, typeof params.N>(game);
@@ -18,8 +38,4 @@ MOVES.forEach((moveStr) => {
   gt = shellTick(gt, moveStr);
   console.log('\n' + shellRenderString(gt));
   console.log(gt.message + '\n');
-  // if (!gt.facts.moveIsValid[0]) {
-  // console.log(gt.factsN, moveStr, gt.facts);
-  // }
-  // console.log(gt.factsN);
 });

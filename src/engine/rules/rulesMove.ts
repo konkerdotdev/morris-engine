@@ -7,7 +7,8 @@ import { countMorris, isPointAdjacent, isPointEmpty } from '../board/points';
 import { boardHash, countPositionRepeats } from '../board/query';
 import { MorrisColor, MorrisMoveType, MorrisPhase } from '../consts';
 import { applyMoveToGameBoard } from '../game';
-import { countValidMovesForColor, moveColor, moveMakesMill } from '../moves';
+import { moveColor } from '../moves';
+import { countValidMovesForColor, moveMakesMill } from '../moves/query';
 import type { MorrisGameFacts } from './facts';
 import { INITIAL_MORRIS_GAME_FACTS } from './facts';
 import type { MorrisRulesContextMove } from './index';
@@ -321,9 +322,7 @@ export const RulesMove = <P extends number, D extends number, N extends number>(
           P.pipe(
             P.Effect.Do,
             P.Effect.bind('newGame', () => applyMoveToGameBoard(c.game, c.move)),
-            P.Effect.bind('validMovesCount', ({ newGame }) =>
-              countValidMovesForColor(newGame.board, f, MorrisColor.WHITE)
-            ),
+            P.Effect.bind('validMovesCount', ({ newGame }) => countValidMovesForColor(newGame, f, MorrisColor.WHITE)),
             P.Effect.map(({ validMovesCount }) => R.val(f.moveIsValid) && validMovesCount === 0)
           ),
         'The move will result in no valid moves for white'
@@ -334,9 +333,7 @@ export const RulesMove = <P extends number, D extends number, N extends number>(
           P.pipe(
             P.Effect.Do,
             P.Effect.bind('newGame', () => applyMoveToGameBoard(c.game, c.move)),
-            P.Effect.bind('validMovesCount', ({ newGame }) =>
-              countValidMovesForColor(newGame.board, f, MorrisColor.BLACK)
-            ),
+            P.Effect.bind('validMovesCount', ({ newGame }) => countValidMovesForColor(newGame, f, MorrisColor.BLACK)),
             P.Effect.map(({ validMovesCount }) => R.val(f.moveIsValid) && validMovesCount === 0)
           ),
         'The move will result in no valid moves for black'
