@@ -47,7 +47,7 @@ export function gameSetStartColor<P extends number, D extends number, N extends 
   game: MorrisGame<P, D, N>,
   color: MorrisColor
 ): MorrisGame<P, D, N> {
-  return { ...game, startColor: color };
+  return { ...game, startColor: color, curMoveColor: color };
 }
 
 export function gameSetStartColorRandom<P extends number, D extends number, N extends number>(
@@ -211,9 +211,9 @@ export function deriveInvalidMoveError<P extends number, D extends number, N ext
   newFacts: MorrisGameFacts
 ): string {
   if (R.val(newFacts.isGameOver)) return 'Invalid move: game is over';
-  if (R.val(newFacts.moveIsCorrectColor)) return 'Invalid move: wrong color';
-  if (R.val(newFacts.moveIsCorrectType)) return 'Invalid move: wrong move type';
-  if (R.val(newFacts.moveIsPossible)) return 'Invalid move: move is not possible';
+  if (!R.val(newFacts.moveIsCorrectColor)) return 'Invalid move: wrong color';
+  if (!R.val(newFacts.moveIsCorrectType)) return 'Invalid move: wrong move type';
+  if (!R.val(newFacts.moveIsPossible)) return 'Invalid move: move is not possible';
   return 'Invalid move';
 }
 

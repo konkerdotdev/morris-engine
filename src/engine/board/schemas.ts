@@ -25,7 +25,7 @@ export type MorrisColorS = P.Schema.Schema.To<typeof MorrisColorS>;
 export const isBoardCoord =
   <D extends number>(d: D) =>
   (s: string): boolean => {
-    const parts = s.split('', 2).map((c) => c.toLowerCase());
+    const parts = s.split('', 2).map((c) => c?.toLowerCase());
     if (parts.length !== 2) return false;
     const y = parseInt(parts[1]!, 10);
 
