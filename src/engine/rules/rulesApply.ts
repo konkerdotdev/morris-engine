@@ -8,7 +8,7 @@ import type { MorrisRulesContextApply } from './index';
 
 export const RulesApply = () =>
   P.pipe(
-    R.createRuleSet<MorrisRulesContextApply, MorrisEngineError, MorrisGameFacts>(INITIAL_MORRIS_GAME_FACTS),
+    R.createRuleSet<never, MorrisRulesContextApply, MorrisEngineError, MorrisGameFacts>(INITIAL_MORRIS_GAME_FACTS),
 
     // Derive new "is" facts from given "makes" facts
     R.sequence([

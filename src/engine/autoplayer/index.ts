@@ -1,6 +1,42 @@
+import * as P from '@konker.dev/effect-ts-prelude';
+
+import type { MorrisEngineError } from '../../lib/error';
+import { toMorrisEngineError } from '../../lib/error';
+import { getValidMovesForColor } from '../moves/query';
 import type { MorrisMoveS } from '../moves/schemas';
 import type { MorrisGameTick } from '../tick';
 
+export type AutoPlayer<P extends number, D extends number, N extends number> = (
+  gameTick: MorrisGameTick<P, D, N>
+) => P.Effect.Effect<never, MorrisEngineError, MorrisMoveS<D>>;
+
+export function autoPlayerFirstValid<P extends number, D extends number, N extends number>(
+  gameTick: MorrisGameTick<P, D, N>
+): P.Effect.Effect<never, MorrisEngineError, MorrisMoveS<D>> {
+  return P.pipe(
+    getValidMovesForColor(gameTick.game, gameTick.facts, gameTick.game.curMoveColor),
+    P.Effect.flatMap((validMoves) =>
+      0 in validMoves ? P.Effect.succeed(validMoves[0]) : P.Effect.fail(toMorrisEngineError('No valid move'))
+    )
+  );
+}
+
+export function autoPlayerRandomValid<P extends number, D extends number, N extends number>(
+  gameTick: MorrisGameTick<P, D, N>
+): P.Effect.Effect<never, MorrisEngineError, MorrisMoveS<D>> {
+  return P.pipe(
+    getValidMovesForColor(gameTick.game, gameTick.facts, gameTick.game.curMoveColor),
+    P.Effect.flatMap((validMoves) => {
+      if (0 in validMoves) {
+        const i = Math.floor(Math.random() * validMoves.length);
+        return P.Effect.succeed(validMoves[i]!);
+      }
+      return P.Effect.fail(toMorrisEngineError('No valid move'));
+    })
+  );
+}
+
+// --------------------------------------------------------------------------
 export type GameTreeNode<P extends number, D extends number, N extends number> = {
   readonly gameTick: MorrisGameTick<P, D, N>;
   readonly score: number;
@@ -37,11 +73,11 @@ export const morrisCreateGameTreeNodeChildren = <P extends number, D extends num
   // };
   return null as any;
 };
-*/
 
 export type evaluateGameTreeNode<P extends number, D extends number, N extends number> = (
   node: GameTreeNode<P, D, N>
 ) => number;
+*/
 
 /*
 export function evaluateGameTree<P extends number, D extends number, N extends number>(

@@ -2,6 +2,32 @@ import type { Fact } from '../../lib/tiny-rules-fp';
 
 export const UNSET_FACT = 'unset';
 
+export const MorrisMoveFactKeys = [
+  // move is
+  'moveIsCorrectColor',
+  'moveIsCorrectType',
+  'moveIsPossibleForPlace',
+  'moveIsPossibleForMove',
+  'moveIsPossibleForRemove',
+  'moveIsPossibleForLasker',
+  'moveIsPossibleForFlying',
+  'moveIsPossible',
+  'moveIsForbiddenOnFirstMove',
+  'moveIsForbiddenOnSecondMove',
+  'moveIsForbiddenInPlacingPhase',
+  'moveIsValid',
+
+  // move makes
+  'moveMakesMill',
+  'moveMakesRemoveMode',
+  'moveMakesLaskerPhase',
+  'moveMakesFlyingPhase',
+  'moveMakesPlacingPhase',
+  'moveMakesMovingPhase',
+  'moveMakesNextTurnWhite',
+  'moveMakesNextTurnBlack',
+];
+
 export const MorrisGameFactKeys = [
   // is
   'isFirstMove',

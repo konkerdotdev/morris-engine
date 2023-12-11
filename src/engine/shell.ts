@@ -2,6 +2,7 @@ import * as P from '@konker.dev/effect-ts-prelude';
 import chalk from 'chalk';
 
 import { toMorrisEngineError } from '../lib/error';
+import type { AutoPlayer } from './autoplayer';
 import type { MorrisGame } from './game';
 import { String_MorrisMove } from './moves/transforms';
 import { RenderImpl } from './render';
@@ -27,6 +28,28 @@ export function shellTick<P extends number, D extends number, N extends number>(
       P.Schema.decode(String_MorrisMove(gameTick.game.board.dimension)),
       P.Effect.flatMap((move) => P.pipe(gameTick, tick(move))),
       P.Effect.mapError(toMorrisEngineError),
+      P.Effect.tapError((e) => P.Console.error(chalk.redBright.bold(e.message))),
+      P.Effect.orElse(() => P.pipe(P.Effect.succeed(gameTick))),
+      P.Effect.provideService(
+        RulesImpl,
+        RulesImpl.of({
+          rulesetMove: RulesMove,
+          rulesetApply: RulesApply,
+        })
+      )
+    )
+  );
+}
+
+export function shellTickAutoPlayer<P extends number, D extends number, N extends number>(
+  autoPlayer: AutoPlayer<P, D, N>,
+  gameTick: MorrisGameTick<P, D, N>
+): MorrisGameTick<P, D, N> {
+  return P.Effect.runSync(
+    P.pipe(
+      autoPlayer(gameTick),
+      P.Effect.tap(P.Console.log),
+      P.Effect.flatMap((move) => P.pipe(gameTick, tick(move))),
       P.Effect.tapError((e) => P.Console.error(chalk.redBright.bold(e.message))),
       P.Effect.orElse(() => P.pipe(P.Effect.succeed(gameTick))),
       P.Effect.provideService(
