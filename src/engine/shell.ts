@@ -7,7 +7,7 @@ import type { MorrisGame } from './game';
 import { String_MorrisMove } from './moves/transforms';
 import { RenderImpl } from './render';
 import { RulesImpl } from './rules';
-import { RulesApply } from './rules/rulesApply';
+import { RulesGame } from './rules/rulesGame';
 import { RulesMove } from './rules/rulesMove';
 import type { MorrisGameTick } from './tick';
 import { startMorrisGame, tick } from './tick';
@@ -33,8 +33,8 @@ export function shellTick<P extends number, D extends number, N extends number>(
       P.Effect.provideService(
         RulesImpl,
         RulesImpl.of({
+          rulesetGame: RulesGame,
           rulesetMove: RulesMove,
-          rulesetApply: RulesApply,
         })
       )
     )
@@ -55,8 +55,8 @@ export function shellTickAutoPlayer<P extends number, D extends number, N extend
       P.Effect.provideService(
         RulesImpl,
         RulesImpl.of({
+          rulesetGame: RulesGame,
           rulesetMove: RulesMove,
-          rulesetApply: RulesApply,
         })
       )
     )

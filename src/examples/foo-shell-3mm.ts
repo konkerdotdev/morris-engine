@@ -10,21 +10,17 @@ import { game } from '../games/3mm';
 
 const shellRenderString = shellWrapRenderString<typeof params.P, typeof params.D, typeof params.N>(renderString);
 
-// const MOVES = ['P W a1', 'P B c2', 'P W b3', 'P B c3', 'P W b1', 'P B b2', 'M b3 a3', 'M b2 c1'];
-const MOVES = ['P B a1', 'P W c3', 'P B c1', 'P W b2', 'P B b1'];
+const MOVES = ['P W a1', 'P B c2', 'P W b3', 'P B c3', 'P W b1', 'P B b2', 'P W c1', 'M b2 a2', 'M c1 b2'];
 
 // --------------------------------------------------------------------------
 let gt = shellStartMorrisGame<typeof params.P, typeof params.D, typeof params.N>(
   gameSetStartColor(game, MorrisColor.BLACK)
 );
 console.log(shellRenderString(gt));
+console.log(gt.message + '\n');
 
 MOVES.forEach((moveStr) => {
   gt = shellTick(gt, moveStr);
   console.log('\n' + shellRenderString(gt));
-  console.log(gt.message + '\n');
-  // if (!gt.facts.moveIsValid[0]) {
-  console.log(gt.factsN, moveStr, gt.facts);
-  // }
-  // console.log(gt.factsN);
+  console.log(`[${moveStr}] ${gt.message}\n`);
 });

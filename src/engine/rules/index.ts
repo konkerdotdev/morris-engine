@@ -2,29 +2,42 @@ import * as P from '@konker.dev/effect-ts-prelude';
 
 import type { MorrisEngineError } from '../../lib/error';
 import type * as R from '../../lib/tiny-rules-fp';
+import type { MorrisGame } from '../game';
 import type { MorrisMoveS } from '../moves/schemas';
 import type { MorrisGameTick } from '../tick';
-import type { MorrisGameFacts } from './facts';
+import type { MorrisFactsGame } from './factsGame';
+import type { MorrisFactsMove } from './factsMove';
 
+// --------------------------------------------------------------------------
+export type MorrisRulesContextGame<P extends number, D extends number, N extends number> = {
+  readonly game: MorrisGame<P, D, N>;
+  readonly moveFacts: MorrisFactsMove;
+};
+
+export type MorrisRulesetGame<P extends number, D extends number, N extends number> = R.RuleSet<
+  never,
+  MorrisRulesContextGame<P, D, N>,
+  MorrisEngineError,
+  MorrisFactsGame
+>;
+
+// --------------------------------------------------------------------------
 export type MorrisRulesContextMove<P extends number, D extends number, N extends number> = {
   readonly gameTick: MorrisGameTick<P, D, N>;
   readonly move: MorrisMoveS<D>;
 };
 
-export type MorrisRulesContextApply = object;
-
 export type MorrisRulesetMove<P extends number, D extends number, N extends number> = R.RuleSet<
   never,
   MorrisRulesContextMove<P, D, N>,
   MorrisEngineError,
-  MorrisGameFacts
+  MorrisFactsMove
 >;
 
-export type MorrisRulesetApply = R.RuleSet<never, MorrisRulesContextApply, MorrisEngineError, MorrisGameFacts>;
-
+// --------------------------------------------------------------------------
 export type RulesImpl = {
+  readonly rulesetGame: <P extends number, D extends number, N extends number>() => MorrisRulesetGame<P, D, N>;
   readonly rulesetMove: <P extends number, D extends number, N extends number>() => MorrisRulesetMove<P, D, N>;
-  readonly rulesetApply: () => MorrisRulesetApply;
 };
 
 export const RulesImpl = P.Context.Tag<RulesImpl>('RulesImpl');

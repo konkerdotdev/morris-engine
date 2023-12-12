@@ -7,7 +7,7 @@ import { createMoveMove, createMovePlace } from '../engine/moves';
 import { RenderImpl } from '../engine/render';
 import { renderString } from '../engine/render/text';
 import { RulesImpl } from '../engine/rules';
-import { RulesApply } from '../engine/rules/rulesApply';
+import { RulesGame } from '../engine/rules/rulesGame';
 import { RulesMove } from '../engine/rules/rulesMove';
 import type { MorrisGameTick } from '../engine/tick';
 import { startMorrisGame, tick } from '../engine/tick';
@@ -102,7 +102,7 @@ const prog1 = P.pipe(
         RulesImpl,
         RulesImpl.of({
           rulesetMove: RulesMove,
-          rulesetApply: RulesApply,
+          rulesetGame: RulesGame,
         })
       ),
       P.Effect.provideService(RenderImpl, RenderImpl.of({ renderString }))

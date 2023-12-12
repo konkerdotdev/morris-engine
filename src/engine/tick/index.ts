@@ -1,21 +1,29 @@
 import * as P from '@konker.dev/effect-ts-prelude';
 
 import type { MorrisEngineError } from '../../lib/error';
+import { toMorrisEngineError } from '../../lib/error';
 import * as R from '../../lib/tiny-rules-fp';
 import type { AutoPlayer } from '../autoplayer';
 import { boardHash } from '../board/query';
 import { MorrisColor } from '../consts';
 import type { MorrisGame } from '../game';
-import { applyMoveToGameBoard, deriveMessage, deriveStartMessage, resolveResult } from '../game';
+import {
+  applyMoveToGameBoard,
+  deriveInvalidMoveErrorMessage,
+  deriveMessage,
+  deriveStartMessage,
+  resolveResult,
+} from '../game';
 import type { MorrisMoveS } from '../moves/schemas';
 import { RulesImpl } from '../rules';
-import type { MorrisGameFacts } from '../rules/facts';
-import { INITIAL_MORRIS_GAME_FACTS } from '../rules/facts';
+import type { MorrisFactsGame } from '../rules/factsGame';
+import { BOOTSTRAP_INITIAL_MORRIS_FACTS_GAME } from '../rules/factsGame';
+import type { MorrisFactsMove } from '../rules/factsMove';
 
 // --------------------------------------------------------------------------
 export type MorrisGameTick<P extends number, D extends number, N extends number> = {
   readonly game: MorrisGame<P, D, N>;
-  readonly facts: MorrisGameFacts;
+  readonly facts: MorrisFactsGame;
   readonly factsN: number;
   readonly message: string;
 };
@@ -23,7 +31,7 @@ export type MorrisGameTick<P extends number, D extends number, N extends number>
 // --------------------------------------------------------------------------
 export function makeMorrisGameTick<P extends number, D extends number, N extends number>(
   game: MorrisGame<P, D, N>,
-  facts: MorrisGameFacts,
+  facts: MorrisFactsGame,
   factsN: number,
   message: string
 ): P.Effect.Effect<never, MorrisEngineError, MorrisGameTick<P, D, N>> {
@@ -33,15 +41,15 @@ export function makeMorrisGameTick<P extends number, D extends number, N extends
 export function startMorrisGame<P extends number, D extends number, N extends number>(
   game: MorrisGame<P, D, N>
 ): P.Effect.Effect<never, MorrisEngineError, MorrisGameTick<P, D, N>> {
-  return makeMorrisGameTick(game, INITIAL_MORRIS_GAME_FACTS, 0, deriveStartMessage(game));
+  return makeMorrisGameTick(game, BOOTSTRAP_INITIAL_MORRIS_FACTS_GAME(game), 0, deriveStartMessage(game));
 }
 
 // --------------------------------------------------------------------------
 export const execMove =
   <P extends number, D extends number, N extends number>(
-    move: MorrisMoveS<D>,
-    moveFacts: MorrisGameFacts,
-    newFacts: MorrisGameFacts
+    gameFacts: MorrisFactsGame,
+    moveFacts: MorrisFactsMove,
+    move: MorrisMoveS<D>
   ) =>
   (oldGame: MorrisGame<P, D, N>): P.Effect.Effect<never, MorrisEngineError, MorrisGame<P, D, N>> => {
     if (!R.val(moveFacts.moveIsValid)) {
@@ -52,13 +60,13 @@ export const execMove =
       applyMoveToGameBoard(oldGame, move),
       P.Effect.map((newGame) => ({
         ...newGame,
-        curMoveColor: R.val(newFacts.isTurnWhite) ? MorrisColor.WHITE : MorrisColor.BLACK,
-        gameOver: R.val(newFacts.isGameOver),
-        result: resolveResult(newFacts),
+        curMoveColor: R.val(gameFacts.isTurnWhite) ? MorrisColor.WHITE : MorrisColor.BLACK,
+        gameOver: R.val(gameFacts.isGameOver),
+        result: resolveResult(gameFacts),
         lastMillCounter: R.val(moveFacts.moveMakesMill) ? 0 : oldGame.lastMillCounter + 1,
         moves: [...oldGame.moves, move],
         positions: [...oldGame.positions, boardHash(newGame.board)],
-        facts: newFacts,
+        facts: gameFacts,
       }))
     );
   };
@@ -68,6 +76,7 @@ export const tick =
   <P extends number, D extends number, N extends number>(move: MorrisMoveS<D>) =>
   (gameTick: MorrisGameTick<P, D, N>): P.Effect.Effect<RulesImpl, MorrisEngineError, MorrisGameTick<P, D, N>> => {
     const oldGame = gameTick.game;
+    const oldGameFacts = gameTick.facts;
 
     return P.pipe(
       P.Effect.Do,
@@ -86,17 +95,30 @@ export const tick =
           )
         )
       ),
-      P.Effect.bind('newFacts', ({ moveFacts }) =>
+      P.Effect.flatMap((binding) =>
+        R.val(binding.moveFacts.moveIsValid)
+          ? P.Effect.succeed(binding)
+          : P.Effect.fail(toMorrisEngineError(deriveInvalidMoveErrorMessage(move, oldGame, binding.moveFacts)))
+      ),
+      P.Effect.bind('newGame', ({ moveFacts }) => P.pipe(oldGame, execMove(oldGameFacts, moveFacts, move))),
+      P.Effect.bind('newGameFacts', ({ moveFacts, newGame }) =>
         // Execute the rules to apply the move facts
         P.pipe(
           RulesImpl,
-          P.Effect.flatMap((ruleImpl) => P.pipe(ruleImpl.rulesetApply(), R.overrideDecide({}, moveFacts)))
+          P.Effect.flatMap((ruleImpl) =>
+            P.pipe(
+              ruleImpl.rulesetGame<P, D, N>(),
+              R.decide({
+                game: newGame,
+                moveFacts,
+              })
+            )
+          )
         )
       ),
-      P.Effect.bind('newGame', ({ moveFacts, newFacts }) => P.pipe(oldGame, execMove(move, moveFacts, newFacts))),
-      P.Effect.bind('message', ({ newFacts, newGame }) => deriveMessage(move, newGame, newFacts)),
-      P.Effect.flatMap(({ message, newFacts, newGame }) =>
-        makeMorrisGameTick(newGame, newFacts, gameTick.factsN + 1, message)
+      P.Effect.bind('message', ({ newGame, newGameFacts }) => deriveMessage(move, newGame, newGameFacts)),
+      P.Effect.flatMap(({ message, newGame, newGameFacts }) =>
+        makeMorrisGameTick(newGame, newGameFacts, gameTick.factsN + 1, message)
       )
     );
   };

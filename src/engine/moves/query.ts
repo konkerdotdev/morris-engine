@@ -21,7 +21,7 @@ import { MorrisColor, MorrisMoveType } from '../consts';
 import type { MorrisGame } from '../game';
 import { applyMoveToGameBoard, getPlacedMorrisForColor, getPossibleNextPlaceMorris } from '../game';
 import type { Morris } from '../morris';
-import type { MorrisGameFacts } from '../rules/facts';
+import type { MorrisFactsGame } from '../rules/factsGame';
 import { createMoveMove, createMovePlace, createMoveRemove, flipColor, moveColor } from './index';
 import type { MorrisMoveS } from './schemas';
 
@@ -88,11 +88,11 @@ export function getValidMovesForMorrisRemove<P extends number, D extends number,
 // --------------------------------------------------------------------------
 export function getValidMovesForMorris<P extends number, D extends number, N extends number>(
   game: MorrisGame<P, D, N>,
-  facts: MorrisGameFacts,
+  facts: MorrisFactsGame,
   morris: Morris<N>
 ): P.Effect.Effect<never, MorrisEngineError, ReadonlyArray<MorrisMoveS<D>>> {
   if (hasMorrisBeenPlaced(game.board, morris)) {
-    if (!R.val(facts.isMovingPhase) && !R.val(facts.moveMakesMovingPhase) && !R.val(facts.isLaskerPhase)) {
+    if (!R.val(facts.isMovingPhase) && !R.val(facts.isLaskerPhase)) {
       return P.Effect.succeed([]);
     }
 
@@ -118,7 +118,7 @@ export function getValidMovesForMorris<P extends number, D extends number, N ext
 // --------------------------------------------------------------------------
 export function getValidMovesForColor<P extends number, D extends number, N extends number>(
   game: MorrisGame<P, D, N>,
-  facts: MorrisGameFacts,
+  facts: MorrisFactsGame,
   color: MorrisColor
 ): P.Effect.Effect<never, MorrisEngineError, ReadonlyArray<MorrisMoveS<D>>> {
   // eslint-disable-next-line fp/no-nil
@@ -152,7 +152,7 @@ export function getValidMovesForColor<P extends number, D extends number, N exte
 // --------------------------------------------------------------------------
 export function countValidMovesForColor<P extends number, D extends number, N extends number>(
   game: MorrisGame<P, D, N>,
-  facts: MorrisGameFacts,
+  facts: MorrisFactsGame,
   color: MorrisColor
 ): P.Effect.Effect<never, MorrisEngineError, number> {
   return P.pipe(
@@ -163,7 +163,7 @@ export function countValidMovesForColor<P extends number, D extends number, N ex
 
 export function countValidMovesForColor0<P extends number, D extends number, N extends number>(
   game: MorrisGame<P, D, N>,
-  facts: MorrisGameFacts,
+  facts: MorrisFactsGame,
   color: MorrisColor
 ): P.Effect.Effect<never, MorrisEngineError, number> {
   if (R.val(facts.isRemoveMode)) {

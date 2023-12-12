@@ -10,7 +10,8 @@ import type { MorrisPhase } from '../consts';
 import { MorrisColor, MorrisGameResult, MorrisMoveType } from '../consts';
 import type { Morris, MorrisBlack, MorrisWhite } from '../morris';
 import type { MorrisMoveS } from '../moves/schemas';
-import type { MorrisGameFacts } from '../rules/facts';
+import type { MorrisFactsGame } from '../rules/factsGame';
+import type { MorrisFactsMove } from '../rules/factsMove';
 
 export type MorrisGameConfig<N extends number> = {
   readonly name: string;
@@ -168,7 +169,7 @@ export function applyMoveToGameBoard<P extends number, D extends number, N exten
 }
 
 // --------------------------------------------------------------------------
-export function resolveResult(newFacts: MorrisGameFacts): MorrisGameResult {
+export function resolveResult(newFacts: MorrisFactsGame): MorrisGameResult {
   return R.val(newFacts.isWinWhite)
     ? MorrisGameResult.WIN_WHITE
     : R.val(newFacts.isWinBlack)
@@ -188,7 +189,7 @@ export function deriveStartMessage<P extends number, D extends number, N extends
 export function deriveResultMessage<P extends number, D extends number, N extends number>(
   _move: MorrisMoveS<D>,
   _newGame: MorrisGame<P, D, N>,
-  newFacts: MorrisGameFacts
+  newFacts: MorrisFactsGame
 ): string {
   if (R.val(newFacts.isWinWhite)) {
     if (R.val(newFacts.isWinWhiteMillsMade)) return 'White wins! (number of mills made)';
@@ -207,47 +208,47 @@ export function deriveResultMessage<P extends number, D extends number, N extend
   }
 }
 
-export function deriveInvalidMoveError<P extends number, D extends number, N extends number>(
+export function deriveInvalidMoveErrorMessage<P extends number, D extends number, N extends number>(
   _move: MorrisMoveS<D>,
-  _newGame: MorrisGame<P, D, N>,
-  newFacts: MorrisGameFacts
+  _oldGame: MorrisGame<P, D, N>,
+  moveFacts: MorrisFactsMove
 ): string {
-  if (R.val(newFacts.isGameOver)) return 'Invalid move: game is over';
-  if (!R.val(newFacts.moveIsCorrectColor)) return 'Invalid move: wrong color';
-  if (!R.val(newFacts.moveIsCorrectType)) return 'Invalid move: wrong move type';
-  if (!R.val(newFacts.moveIsPossible)) return 'Invalid move: move is not possible';
+  // TODO: more comprehensive]
+  if (!R.val(moveFacts.moveIsCorrectColor)) return 'Invalid move: wrong color';
+  if (!R.val(moveFacts.moveIsCorrectType)) return 'Invalid move: wrong move type';
+  if (!R.val(moveFacts.moveIsPossible)) return 'Invalid move: move is not possible';
   return 'Invalid move';
 }
 
 export function deriveMessage<P extends number, D extends number, N extends number>(
   _move: MorrisMoveS<D>,
   _newGame: MorrisGame<P, D, N>,
-  newFacts: MorrisGameFacts
+  gameFacts: MorrisFactsGame
 ): P.Effect.Effect<never, MorrisEngineError, string> {
   const message = () => {
-    if (!R.val(newFacts.moveIsValid)) return deriveInvalidMoveError(_move, _newGame, newFacts);
+    // if (!R.val(gameFacts.moveIsValid)) return deriveInvalidMoveError(_move, _newGame, gameFacts);
 
-    if (R.val(newFacts.isGameOver)) return deriveResultMessage(_move, _newGame, newFacts);
+    if (R.val(gameFacts.isGameOver)) return deriveResultMessage(_move, _newGame, gameFacts);
 
-    if (R.val(newFacts.isLaskerPhase)) {
-      if (R.val(newFacts.isTurnWhite)) return 'Place or move White';
-      if (R.val(newFacts.isTurnBlack)) return 'Place or move Black';
+    if (R.val(gameFacts.isLaskerPhase)) {
+      if (R.val(gameFacts.isTurnWhite)) return 'Place or move White';
+      if (R.val(gameFacts.isTurnBlack)) return 'Place or move Black';
     }
-    if (R.val(newFacts.isRemoveMode)) {
-      if (R.val(newFacts.isTurnWhite)) return 'Remove Black';
-      if (R.val(newFacts.isTurnBlack)) return 'Remove White';
+    if (R.val(gameFacts.isRemoveMode)) {
+      if (R.val(gameFacts.isTurnWhite)) return 'Remove Black';
+      if (R.val(gameFacts.isTurnBlack)) return 'Remove White';
     }
-    if (R.val(newFacts.isPlacingPhase)) {
-      if (R.val(newFacts.isTurnWhite)) return 'Place White';
-      if (R.val(newFacts.isTurnBlack)) return 'Place Black';
+    if (R.val(gameFacts.isPlacingPhase)) {
+      if (R.val(gameFacts.isTurnWhite)) return 'Place White';
+      if (R.val(gameFacts.isTurnBlack)) return 'Place Black';
     }
-    if (R.val(newFacts.isFlyingPhase)) {
-      if (R.val(newFacts.isTurnWhite)) return 'Fly White';
-      if (R.val(newFacts.isTurnBlack)) return 'Fly Black';
+    if (R.val(gameFacts.isFlyingPhase)) {
+      if (R.val(gameFacts.isTurnWhite)) return 'Fly White';
+      if (R.val(gameFacts.isTurnBlack)) return 'Fly Black';
     }
-    if (R.val(newFacts.isMovingPhase)) {
-      if (R.val(newFacts.isTurnWhite)) return 'Move White';
-      if (R.val(newFacts.isTurnBlack)) return 'Move Black';
+    if (R.val(gameFacts.isMovingPhase)) {
+      if (R.val(gameFacts.isTurnWhite)) return 'Move White';
+      if (R.val(gameFacts.isTurnBlack)) return 'Move Black';
     }
 
     // eslint-disable-next-line fp/no-nil

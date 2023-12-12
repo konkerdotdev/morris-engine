@@ -1,9 +1,9 @@
 import * as P from '@konker.dev/effect-ts-prelude';
 
-import { UNSET_FACT } from '../engine/rules/facts';
-
 export type Fact = [boolean, string];
 export type Facts = Record<string, Fact>;
+
+export const UNSET_FACT = 'unset';
 
 export const note = (fact: Fact): string => fact[1];
 export const val = (fact: Fact): boolean => {
