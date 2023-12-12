@@ -26,6 +26,7 @@ export function shellTick<P extends number, D extends number, N extends number>(
     P.pipe(
       moveStr,
       P.Schema.decode(String_MorrisMove(gameTick.game.board.dimension)),
+      P.Effect.mapError((_e) => 'Invalid input'),
       P.Effect.flatMap((move) => P.pipe(gameTick, tick(move))),
       P.Effect.mapError(toMorrisEngineError),
       P.Effect.tapError((e) => P.Console.error(chalk.redBright.bold(e.message))),
