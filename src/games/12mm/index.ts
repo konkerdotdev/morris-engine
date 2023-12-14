@@ -313,8 +313,6 @@ export const config: MorrisGameConfig<N> = {
 export const game: MorrisGame<P, D, N> = {
   config,
   startColor: MorrisColor.WHITE,
-  curMoveColor: MorrisColor.WHITE,
-  gameOver: false,
   result: MorrisGameResult.IN_PROGRESS,
   lastMillCounter: 0,
   morrisWhite: [

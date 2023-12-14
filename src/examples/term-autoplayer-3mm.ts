@@ -8,12 +8,15 @@ import chalk from 'chalk';
 import console from 'console';
 
 import { autoPlayerRandomValid } from '../engine/autoplayer';
-import { gameSetStartColorRandom } from '../engine/game';
+import { MorrisColor } from '../engine/consts';
+import { gameSetStartColor } from '../engine/game';
 import { renderString } from '../engine/render/text';
 import { shellStartMorrisGame, shellTick, shellTickAutoPlayer, shellWrapRenderString } from '../engine/shell';
 import type { MorrisGameTick } from '../engine/tick';
+import { tickTurn } from '../engine/tick';
 import type { params } from '../games/3mm';
 import { game } from '../games/3mm';
+import * as R from '../lib/tiny-rules-fp';
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -25,7 +28,7 @@ const shellRenderString = shellWrapRenderString<typeof params.P, typeof params.D
 export async function execLoop(
   gt: MorrisGameTick<typeof params.P, typeof params.D, typeof params.N>
 ): Promise<MorrisGameTick<typeof params.P, typeof params.D, typeof params.N> | undefined> {
-  if (gt.game.curMoveColor === gt.game.startColor) {
+  if (tickTurn(gt) === gt.game.startColor) {
     const move = await rl.question(`${gt.message} (Q to quit): `);
     if (move.toUpperCase() === 'Q') {
       return undefined;
@@ -47,15 +50,15 @@ export async function execLoop(
   console.log(chalk.cyan.bold(game.config.name));
 
   let gt: MorrisGameTick<typeof params.P, typeof params.D, typeof params.N> | undefined = shellStartMorrisGame(
-    gameSetStartColorRandom(game)
+    gameSetStartColor(game, MorrisColor.WHITE)
   );
   console.log('\n' + shellRenderString(gt));
 
   try {
     while (gt) {
       gt = await execLoop(gt);
-      if (gt?.game?.gameOver) {
-        console.log(`\n${chalk.green.bold(gt.message)}`);
+      if (R.val(gt?.facts?.isGameOver)) {
+        console.log(`\n${chalk.green.bold(gt?.message)}`);
         break;
       }
     }

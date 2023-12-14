@@ -25,19 +25,6 @@ import type { MorrisFactsGame } from '../rules/factsGame';
 import { createMoveMove, createMovePlace, createMoveRemove, flipColor, moveColor } from './index';
 import type { MorrisMoveS } from './schemas';
 
-export function getTurnColor<P extends number, D extends number, N extends number>(
-  game: MorrisGame<P, D, N>
-): MorrisColor {
-  return game.curMoveColor;
-}
-
-export function isTurn<P extends number, D extends number, N extends number>(
-  game: MorrisGame<P, D, N>,
-  color: MorrisColor
-): boolean {
-  return color === getTurnColor(game);
-}
-
 // --------------------------------------------------------------------------
 export function getUnusedMorraeForColor<P extends number, D extends number, N extends number>(
   game: MorrisGame<P, D, N>,

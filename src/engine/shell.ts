@@ -10,7 +10,7 @@ import { RulesImpl } from './rules';
 import { RulesGame } from './rules/rulesGame';
 import { RulesMove } from './rules/rulesMove';
 import type { MorrisGameTick } from './tick';
-import { startMorrisGame, tick } from './tick';
+import { startMorrisGame, tick, tickAutoPlayer } from './tick';
 
 export function shellStartMorrisGame<P extends number, D extends number, N extends number>(
   game: MorrisGame<P, D, N>
@@ -48,9 +48,8 @@ export function shellTickAutoPlayer<P extends number, D extends number, N extend
 ): MorrisGameTick<P, D, N> {
   return P.Effect.runSync(
     P.pipe(
-      autoPlayer(gameTick),
-      P.Effect.tap(P.Console.log),
-      P.Effect.flatMap((move) => P.pipe(gameTick, tick(move))),
+      gameTick,
+      tickAutoPlayer(autoPlayer),
       P.Effect.tapError((e) => P.Console.error(chalk.redBright.bold(e.message))),
       P.Effect.orElse(() => P.pipe(P.Effect.succeed(gameTick))),
       P.Effect.provideService(

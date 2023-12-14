@@ -13,6 +13,7 @@ import { shellStartMorrisGame, shellTick, shellWrapRenderString } from '../engin
 import type { MorrisGameTick } from '../engine/tick';
 import type { params } from '../games/12mm';
 import { game } from '../games/12mm';
+import * as R from '../lib/tiny-rules-fp';
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -46,8 +47,8 @@ export async function execLoop(
   try {
     while (gt) {
       gt = await execLoop(gt);
-      if (gt?.game?.gameOver) {
-        console.log(`\n${chalk.green.bold(gt.message)}`);
+      if (R.val(gt?.facts?.isGameOver)) {
+        console.log(`\n${chalk.green.bold(gt?.message)}`);
         break;
       }
     }

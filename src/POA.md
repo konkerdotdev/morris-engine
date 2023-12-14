@@ -11,6 +11,11 @@
     - num possible mills for opponent on next move [?]
     - num of pieces with available move
     - how "spread out" the pieces are [?]
+- Unit tests!!
+- Integration tests
+  - Run a game with a list of moves, check expected "snapshot" output (of some kind)
+  - Have a bunch of these to test edge cases, error cases, long cases (e.g. draw after x repeats)
+- Remove RulesImpl (for now at least) [?]
 - Themes for text render?
 - Serialize/deserialize games
   - What do we need to set up a network game, and send moves over the network?
@@ -18,7 +23,6 @@
   - Could also be handy for test fixtures
 - Rename schemas types to remove S postfix?
   - No "non-S" duplicates/shadows
-- Unit tests!!
 - Remove state machine [?]
 - OTHER
   - Clock?

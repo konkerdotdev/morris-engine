@@ -5,11 +5,11 @@ export type Facts = Record<string, Fact>;
 
 export const UNSET_FACT = 'unset';
 
-export const note = (fact: Fact): string => fact[1];
-export const val = (fact: Fact): boolean => {
+export const note = (fact: Fact | undefined): string => fact?.[1] ?? UNSET_FACT;
+export const val = (fact: Fact | undefined): boolean => {
   // eslint-disable-next-line fp/no-throw
   if (note(fact) === UNSET_FACT) throw new Error('Unset fact access');
-  return fact[0];
+  return fact?.[0] ?? false;
 };
 
 //---------------------------------------------------------------------------

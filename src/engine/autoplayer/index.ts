@@ -5,6 +5,7 @@ import { toMorrisEngineError } from '../../lib/error';
 import { getValidMovesForColor } from '../moves/query';
 import type { MorrisMoveS } from '../moves/schemas';
 import type { MorrisGameTick } from '../tick';
+import { tickTurn } from '../tick';
 
 export type AutoPlayer<P extends number, D extends number, N extends number> = (
   gameTick: MorrisGameTick<P, D, N>
@@ -14,7 +15,7 @@ export function autoPlayerFirstValid<P extends number, D extends number, N exten
   gameTick: MorrisGameTick<P, D, N>
 ): P.Effect.Effect<never, MorrisEngineError, MorrisMoveS<D>> {
   return P.pipe(
-    getValidMovesForColor(gameTick.game, gameTick.facts, gameTick.game.curMoveColor),
+    getValidMovesForColor(gameTick.game, gameTick.facts, tickTurn(gameTick)),
     P.Effect.flatMap((validMoves) =>
       0 in validMoves ? P.Effect.succeed(validMoves[0]) : P.Effect.fail(toMorrisEngineError('No valid move'))
     )
@@ -25,7 +26,7 @@ export function autoPlayerRandomValid<P extends number, D extends number, N exte
   gameTick: MorrisGameTick<P, D, N>
 ): P.Effect.Effect<never, MorrisEngineError, MorrisMoveS<D>> {
   return P.pipe(
-    getValidMovesForColor(gameTick.game, gameTick.facts, gameTick.game.curMoveColor),
+    getValidMovesForColor(gameTick.game, gameTick.facts, tickTurn(gameTick)),
     P.Effect.flatMap((validMoves) => {
       if (0 in validMoves) {
         const i = Math.floor(Math.random() * validMoves.length);

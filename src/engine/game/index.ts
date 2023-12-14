@@ -30,8 +30,6 @@ export type MorrisGameConfig<N extends number> = {
 export type MorrisGame<P extends number, D extends number, N extends number> = {
   readonly config: MorrisGameConfig<N>;
   readonly startColor: MorrisColor;
-  readonly curMoveColor: MorrisColor;
-  readonly gameOver: boolean;
   readonly result: MorrisGameResult;
   readonly lastMillCounter: number;
   readonly morrisWhite: ReadonlyArray<MorrisWhite<N>>;
@@ -48,7 +46,7 @@ export function gameSetStartColor<P extends number, D extends number, N extends 
   game: MorrisGame<P, D, N>,
   color: MorrisColor
 ): MorrisGame<P, D, N> {
-  return { ...game, startColor: color, curMoveColor: color };
+  return { ...game, startColor: color };
 }
 
 export function gameSetStartColorRandom<P extends number, D extends number, N extends number>(

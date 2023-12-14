@@ -170,11 +170,8 @@ export const RulesMove = <P extends number, D extends number, N extends number>(
       ),
       R.addRuleFunc(
         'moveIsValid',
-        (c: MorrisRulesContextMove<P, D, N>, f: MorrisFactsMove) =>
-          !c.gameTick.game.gameOver &&
-          R.val(f.moveIsCorrectColor) &&
-          R.val(f.moveIsCorrectType) &&
-          R.val(f.moveIsPossible),
+        (_c: MorrisRulesContextMove<P, D, N>, f: MorrisFactsMove) =>
+          R.val(f.moveIsCorrectColor) && R.val(f.moveIsCorrectType) && R.val(f.moveIsPossible),
         'The move is valid: not game over; correct color; correct type for phase; the move is possible'
       ),
 

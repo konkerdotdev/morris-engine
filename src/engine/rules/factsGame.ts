@@ -69,8 +69,8 @@ export const BOOTSTRAP_INITIAL_MORRIS_FACTS_GAME = <P extends number, D extends 
   // is
   isFirstMove: [true, 'default'],
   isSecondMove: [false, 'default'],
-  isTurnWhite: [game.curMoveColor === MorrisColor.WHITE, 'default'],
-  isTurnBlack: [game.curMoveColor === MorrisColor.BLACK, 'default'],
+  isTurnWhite: [game.startColor === MorrisColor.WHITE, 'default'],
+  isTurnBlack: [game.startColor === MorrisColor.BLACK, 'default'],
   isPlacingPhase: [game.config.phases[0] === MorrisPhase.PLACING, 'default'],
   isLaskerPhase: [game.config.phases[0] === MorrisPhase.LASKER, 'default'],
   isMovingPhase: [false, 'default'],

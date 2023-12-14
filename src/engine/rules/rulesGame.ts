@@ -72,8 +72,7 @@ export const RulesGame = <P extends number, D extends number, N extends number>(
       ),
       R.addRuleFunc(
         'isRemoveMode',
-        (c: MorrisRulesContextGame<P, D, N>, _f: MorrisFactsGame) =>
-          !c.game.gameOver && R.val(c.moveFacts.moveMakesRemoveMode),
+        (c: MorrisRulesContextGame<P, D, N>, _f: MorrisFactsGame) => R.val(c.moveFacts.moveMakesRemoveMode),
         'Is in remove mode for current player: last move was a mill'
       ),
       R.addRuleFunc(
