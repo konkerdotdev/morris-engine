@@ -323,6 +323,6 @@ export const game: MorrisGame<P, D, N> = {
   ],
   morrisBlackRemoved: [],
   board,
-  moves: [],
+  history: [],
   positions: [boardHash(board)],
 };

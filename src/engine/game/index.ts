@@ -27,6 +27,11 @@ export type MorrisGameConfig<N extends number> = {
   readonly phases: ReadonlyArray<MorrisPhase>; // 3MM: [PLACING, MOVING], L: [LASKER, MOVING]
 };
 
+export type MorrisGameHistoryItem<D extends number> = {
+  readonly move: MorrisMoveS<D>;
+  readonly moveFacts: MorrisFactsMove;
+};
+
 export type MorrisGame<P extends number, D extends number, N extends number> = {
   readonly config: MorrisGameConfig<N>;
   readonly startColor: MorrisColor;
@@ -37,7 +42,7 @@ export type MorrisGame<P extends number, D extends number, N extends number> = {
   readonly morrisBlack: ReadonlyArray<MorrisBlack<N>>;
   readonly morrisBlackRemoved: ReadonlyArray<MorrisBlack<N>>;
   readonly board: MorrisBoard<P, D, N>;
-  readonly moves: ReadonlyArray<MorrisMoveS<D>>;
+  readonly history: ReadonlyArray<MorrisGameHistoryItem<D>>;
   readonly positions: ReadonlyArray<MorrisBoardPositionString<P>>;
 };
 

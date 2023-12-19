@@ -46,16 +46,15 @@ export function tickTurn<P extends number, D extends number, N extends number>(
 }
 
 // --------------------------------------------------------------------------
-// TODO: comment: assumes that move is valid
 export const execMove =
-  <P extends number, D extends number, N extends number>(moveFacts: MorrisFactsMove, move: MorrisMoveS<D>) =>
+  <P extends number, D extends number, N extends number>(move: MorrisMoveS<D>, moveFacts: MorrisFactsMove) =>
   (oldGame: MorrisGame<P, D, N>): P.Effect.Effect<never, MorrisEngineError, MorrisGame<P, D, N>> => {
     return P.pipe(
       applyMoveToGameBoard(oldGame, move),
       P.Effect.map((newGame) => ({
         ...newGame,
         lastMillCounter: R.val(moveFacts.moveMakesMill) ? 0 : oldGame.lastMillCounter + 1,
-        moves: [...oldGame.moves, move],
+        history: [...oldGame.history, { move, moveFacts }],
         positions: [...oldGame.positions, boardHash(newGame.board)],
       }))
     );
@@ -90,8 +89,8 @@ export const tick =
           ? P.Effect.succeed(binding)
           : P.Effect.fail(toMorrisEngineError(deriveInvalidMoveErrorMessage(move, oldGame, binding.moveFacts)))
       ),
-      // Execute the valid move based on the move facts
-      P.Effect.bind('newGame', ({ moveFacts }) => P.pipe(oldGame, execMove(moveFacts, move))),
+      // Execute the valid move
+      P.Effect.bind('newGame', ({ moveFacts }) => P.pipe(oldGame, execMove(move, moveFacts))),
       // Run the game rules to derive the new facts for the new game
       P.Effect.bind('newGameFacts', ({ moveFacts, newGame }) =>
         P.pipe(
@@ -122,5 +121,6 @@ export const tickAutoPlayer =
   (gameTick: MorrisGameTick<P, D, N>): P.Effect.Effect<RulesImpl, MorrisEngineError, MorrisGameTick<P, D, N>> =>
     P.pipe(
       autoPlayer(gameTick),
+      P.Effect.tap((x) => P.Console.log(x)),
       P.Effect.flatMap((move) => P.pipe(gameTick, tick(move)))
     );

@@ -21,13 +21,13 @@ export const RulesGame = <P extends number, D extends number, N extends number>(
       R.addRuleFunc(
         'isFirstMove',
         (c: MorrisRulesContextGame<P, D, N>, _f: MorrisFactsGame) => {
-          return c.game.moves.length === 0;
+          return c.game.history.length === 0;
         },
         'Is first move'
       ),
       R.addRuleFunc(
         'isSecondMove',
-        (c: MorrisRulesContextGame<P, D, N>, _f: MorrisFactsGame) => c.game.moves.length === 1,
+        (c: MorrisRulesContextGame<P, D, N>, _f: MorrisFactsGame) => c.game.history.length === 1,
         'Is second move'
       ),
       R.addRuleFunc(
@@ -76,6 +76,22 @@ export const RulesGame = <P extends number, D extends number, N extends number>(
         'Is in remove mode for current player: last move was a mill'
       ),
       R.addRuleFunc(
+        'isMillMadeWhite',
+        (c: MorrisRulesContextGame<P, D, N>, _f: MorrisFactsGame) => R.val(c.moveFacts.moveMakesMillWhite),
+        'The last move was a mill for white'
+      ),
+      R.addRuleFunc(
+        'isMillMadeBlack',
+        (c: MorrisRulesContextGame<P, D, N>, _f: MorrisFactsGame) => R.val(c.moveFacts.moveMakesMillBlack),
+        'The last move was a mill for black'
+      ),
+      R.addRuleFunc(
+        'isMillMade',
+        (_c: MorrisRulesContextGame<P, D, N>, f: MorrisFactsGame) =>
+          R.val(f.isMillMadeWhite) || R.val(f.isMillMadeBlack),
+        'The last move was a mill'
+      ),
+      R.addRuleFunc(
         'isDrawPositionRepeatLimit',
         (c: MorrisRulesContextGame<P, D, N>, _f: MorrisFactsGame) =>
           countPositionRepeats(c.game, boardHash(c.game.board)) >= c.game.config.numPositionRepeatsForDraw,
@@ -118,8 +134,8 @@ export const RulesGame = <P extends number, D extends number, N extends number>(
       ),
       R.addRuleFunc(
         'isWinWhiteMillsMade',
-        (c: MorrisRulesContextGame<P, D, N>, _f: MorrisFactsGame) =>
-          R.val(c.moveFacts.moveMakesMillWhite) && c.game.config.numMillsToWinThreshold === 1,
+        (c: MorrisRulesContextGame<P, D, N>, f: MorrisFactsGame) =>
+          R.val(f.isMillMadeWhite) && c.game.config.numMillsToWinThreshold === 1,
         'The result is a win for white due to mills made'
       ),
       R.addRuleFunc(
@@ -144,8 +160,8 @@ export const RulesGame = <P extends number, D extends number, N extends number>(
       ),
       R.addRuleFunc(
         'isWinBlackMillsMade',
-        (c: MorrisRulesContextGame<P, D, N>, _f: MorrisFactsGame) =>
-          R.val(c.moveFacts.moveMakesMillBlack) && c.game.config.numMillsToWinThreshold === 1,
+        (c: MorrisRulesContextGame<P, D, N>, f: MorrisFactsGame) =>
+          R.val(f.isMillMadeBlack) && c.game.config.numMillsToWinThreshold === 1,
         'The result is a win for black due to mills made'
       ),
       R.addRuleFunc(
