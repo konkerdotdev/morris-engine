@@ -5,6 +5,7 @@ import { toMorrisEngineError } from '../../lib/error';
 import * as R from '../../lib/tiny-rules-fp';
 import type { MorrisBoard, MorrisBoardPositionString } from '../board';
 import { getPoint, getPointMorris, getPointsOccupied, setPointEmpty, setPointOccupant } from '../board/points';
+import { boardHash } from '../board/query';
 import type { MorrisBoardCoordS } from '../board/schemas';
 import type { MorrisPhase } from '../consts';
 import { MorrisColor, MorrisGameResult, MorrisMoveType } from '../consts';
@@ -27,23 +28,39 @@ export type MorrisGameConfig<N extends number> = {
   readonly phases: ReadonlyArray<MorrisPhase>; // 3MM: [PLACING, MOVING], L: [LASKER, MOVING]
 };
 
-export type MorrisGameHistoryItem<D extends number> = {
-  readonly move: MorrisMoveS<D>;
-  readonly moveFacts: MorrisFactsMove;
-};
-
 export type MorrisGame<P extends number, D extends number, N extends number> = {
   readonly config: MorrisGameConfig<N>;
+  readonly board: MorrisBoard<P, D, N>;
+
   readonly startColor: MorrisColor;
   readonly result: MorrisGameResult;
   readonly lastMillCounter: number;
-  readonly morrisWhite: ReadonlyArray<MorrisWhite<N>>;
   readonly morrisWhiteRemoved: ReadonlyArray<MorrisWhite<N>>;
-  readonly morrisBlack: ReadonlyArray<MorrisBlack<N>>;
   readonly morrisBlackRemoved: ReadonlyArray<MorrisBlack<N>>;
-  readonly board: MorrisBoard<P, D, N>;
-  readonly history: ReadonlyArray<MorrisGameHistoryItem<D>>;
+  readonly history: {
+    readonly moves: ReadonlyArray<MorrisMoveS<D>>;
+    readonly moveFacts: ReadonlyArray<MorrisFactsMove>;
+  };
+
+  readonly morrisWhite: ReadonlyArray<MorrisWhite<N>>;
+  readonly morrisBlack: ReadonlyArray<MorrisBlack<N>>;
   readonly positions: ReadonlyArray<MorrisBoardPositionString<P>>;
+
+  readonly initMorrisBoard: () => MorrisBoard<P, D, N>;
+  readonly initMorrisWhite: () => ReadonlyArray<MorrisWhite<N>>;
+  readonly initMorrisBlack: () => ReadonlyArray<MorrisBlack<N>>;
+};
+
+// --------------------------------------------------------------------------
+export const MorrisGameBoilerplate = {
+  result: MorrisGameResult.IN_PROGRESS,
+  lastMillCounter: 0,
+  morrisWhiteRemoved: [],
+  morrisBlackRemoved: [],
+  history: {
+    moves: [],
+    moveFacts: [],
+  },
 };
 
 // --------------------------------------------------------------------------
@@ -58,6 +75,28 @@ export function gameSetStartColorRandom<P extends number, D extends number, N ex
   game: MorrisGame<P, D, N>
 ): MorrisGame<P, D, N> {
   return gameSetStartColor(game, Math.random() <= 0.5 ? MorrisColor.WHITE : MorrisColor.BLACK);
+}
+
+// --------------------------------------------------------------------------
+export function gameHistoryLen<P extends number, D extends number, N extends number>(
+  game: MorrisGame<P, D, N>
+): number {
+  return game.history.moves.length;
+}
+
+// --------------------------------------------------------------------------
+export function gameReset<P extends number, D extends number, N extends number>(
+  game: MorrisGame<P, D, N>
+): MorrisGame<P, D, N> {
+  return {
+    ...game,
+    ...MorrisGameBoilerplate,
+
+    board: game.initMorrisBoard(),
+    morrisWhite: game.initMorrisWhite(),
+    morrisBlack: game.initMorrisBlack(),
+    positions: [boardHash(game.initMorrisBoard())],
+  };
 }
 
 // --------------------------------------------------------------------------
@@ -114,20 +153,93 @@ export function useMorris<P extends number, D extends number, N extends number>(
   });
 }
 
+export function unUseMorris<P extends number, D extends number, N extends number>(
+  game: MorrisGame<P, D, N>,
+  morris: Morris<N>
+): P.Effect.Effect<never, MorrisEngineError, MorrisGame<P, D, N>> {
+  const morrisWhiteWith = morris.color === MorrisColor.WHITE ? [morris, ...game.morrisWhite] : game.morrisWhite;
+  const morrisBlackWith = morris.color === MorrisColor.BLACK ? [morris, ...game.morrisBlack] : game.morrisBlack;
+
+  return P.Effect.succeed({
+    ...game,
+    morrisWhite: morrisWhiteWith,
+    morrisBlack: morrisBlackWith,
+  });
+}
+
 export function discardMorris<P extends number, D extends number, N extends number>(
   game: MorrisGame<P, D, N>,
   morris: Morris<N>
 ): P.Effect.Effect<never, MorrisEngineError, MorrisGame<P, D, N>> {
   const morrisWhiteRemovedWith =
-    morris.color === MorrisColor.WHITE ? [...game.morrisWhiteRemoved, morris] : game.morrisWhiteRemoved;
+    morris.color === MorrisColor.WHITE ? [morris, ...game.morrisWhiteRemoved] : game.morrisWhiteRemoved;
   const morrisBlackRemovedWith =
-    morris.color === MorrisColor.BLACK ? [...game.morrisBlackRemoved, morris] : game.morrisBlackRemoved;
+    morris.color === MorrisColor.BLACK ? [morris, ...game.morrisBlackRemoved] : game.morrisBlackRemoved;
 
   return P.Effect.succeed({
     ...game,
     morrisWhiteRemoved: morrisWhiteRemovedWith,
     morrisBlackRemoved: morrisBlackRemovedWith,
   });
+}
+
+export function unDiscardMorris<P extends number, D extends number, N extends number>(
+  game: MorrisGame<P, D, N>,
+  color: MorrisColor
+): P.Effect.Effect<never, MorrisEngineError, [MorrisGame<P, D, N>, Morris<N>]> {
+  const morris = color === MorrisColor.WHITE ? game.morrisWhiteRemoved[0] : game.morrisBlackRemoved[0];
+  if (!morris) {
+    return P.Effect.fail(toMorrisEngineError(`No Morris to un-discard for ${color}`));
+  }
+
+  const morrisWhiteRemovedWithout =
+    morris.color === MorrisColor.WHITE ? [...game.morrisWhiteRemoved] : game.morrisWhiteRemoved;
+  const morrisBlackRemovedWithout =
+    morris.color === MorrisColor.BLACK ? [...game.morrisBlackRemoved] : game.morrisBlackRemoved;
+
+  return P.Effect.succeed([
+    {
+      ...game,
+      morrisWhiteRemoved: morrisWhiteRemovedWithout,
+      morrisBlackRemoved: morrisBlackRemovedWithout,
+    },
+    morris,
+  ]);
+}
+
+// --------------------------------------------------------------------------
+// eslint-disable-next-line fp/no-nil
+export function unApplyMoveToGameBoard<P extends number, D extends number, N extends number>(
+  game: MorrisGame<P, D, N>,
+  move: MorrisMoveS<D>
+): P.Effect.Effect<never, MorrisEngineError, MorrisGame<P, D, N>> {
+  switch (move.type) {
+    case MorrisMoveType.PLACE:
+      return P.pipe(
+        getPointMorris(game.board, move.to),
+        P.Effect.flatMap((morris) =>
+          P.pipe(
+            unUseMorris(game, morris),
+            P.Effect.flatMap((game) => setPointEmpty(game, move.to))
+          )
+        )
+      );
+
+    case MorrisMoveType.MOVE:
+      return P.pipe(
+        P.Effect.Do,
+        P.Effect.bind('point', () => getPoint(game.board, move.to)),
+        P.Effect.bind('newGame', () => setPointEmpty(game, move.to)),
+        P.Effect.flatMap(({ newGame, point }) => setPointOccupant(newGame, move.from, point.occupant))
+      );
+
+    case MorrisMoveType.REMOVE:
+      // FIXME: NOT IMPLEMENTED
+      return P.Effect.fail(toMorrisEngineError('FIXME: NOT IMPLEMENTED'));
+
+    case MorrisMoveType.ROOT:
+      return P.Effect.fail(toMorrisEngineError('Logic error: cannot apply the root move'));
+  }
 }
 
 // --------------------------------------------------------------------------
@@ -190,7 +302,6 @@ export function deriveStartMessage<P extends number, D extends number, N extends
 
 // eslint-disable-next-line fp/no-nil
 export function deriveResultMessage<P extends number, D extends number, N extends number>(
-  _move: MorrisMoveS<D>,
   _newGame: MorrisGame<P, D, N>,
   newFacts: MorrisFactsGame
 ): string {
@@ -224,14 +335,13 @@ export function deriveInvalidMoveErrorMessage<P extends number, D extends number
 }
 
 export function deriveMessage<P extends number, D extends number, N extends number>(
-  _move: MorrisMoveS<D>,
   _newGame: MorrisGame<P, D, N>,
   gameFacts: MorrisFactsGame
 ): P.Effect.Effect<never, MorrisEngineError, string> {
   const message = () => {
     // if (!R.val(gameFacts.moveIsValid)) return deriveInvalidMoveError(_move, _newGame, gameFacts);
 
-    if (R.val(gameFacts.isGameOver)) return deriveResultMessage(_move, _newGame, gameFacts);
+    if (R.val(gameFacts.isGameOver)) return deriveResultMessage(_newGame, gameFacts);
 
     if (R.val(gameFacts.isLaskerPhase)) {
       if (R.val(gameFacts.isTurnWhite)) return 'Place or move White';

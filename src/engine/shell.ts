@@ -10,7 +10,7 @@ import { RulesImpl } from './rules';
 import { RulesGame } from './rules/rulesGame';
 import { RulesMove } from './rules/rulesMove';
 import type { MorrisGameTick } from './tick';
-import { startMorrisGame, tick, tickAutoPlayer } from './tick';
+import { startMorrisGame, tick, tickAutoPlayer, untick } from './tick';
 
 export function shellStartMorrisGame<P extends number, D extends number, N extends number>(
   game: MorrisGame<P, D, N>
@@ -28,6 +28,26 @@ export function shellTick<P extends number, D extends number, N extends number>(
       P.Schema.decode(String_MorrisMove(gameTick.game.board.dimension)),
       P.Effect.mapError((_e) => 'Invalid input'),
       P.Effect.flatMap((move) => P.pipe(gameTick, tick(move))),
+      P.Effect.mapError(toMorrisEngineError),
+      P.Effect.tapError((e) => P.Console.error(chalk.redBright.bold(e.message))),
+      P.Effect.orElse(() => P.pipe(P.Effect.succeed(gameTick))),
+      P.Effect.provideService(
+        RulesImpl,
+        RulesImpl.of({
+          rulesetGame: RulesGame,
+          rulesetMove: RulesMove,
+        })
+      )
+    )
+  );
+}
+
+export function shellUntick<P extends number, D extends number, N extends number>(
+  gameTick: MorrisGameTick<P, D, N>
+): MorrisGameTick<P, D, N> {
+  return P.Effect.runSync(
+    P.pipe(
+      untick(gameTick),
       P.Effect.mapError(toMorrisEngineError),
       P.Effect.tapError((e) => P.Console.error(chalk.redBright.bold(e.message))),
       P.Effect.orElse(() => P.pipe(P.Effect.succeed(gameTick))),

@@ -9,7 +9,7 @@ import console from 'console';
 
 import { gameSetStartColorRandom } from '../engine/game';
 import { renderString } from '../engine/render/text';
-import { shellStartMorrisGame, shellTick, shellWrapRenderString } from '../engine/shell';
+import { shellStartMorrisGame, shellTick, shellUntick, shellWrapRenderString } from '../engine/shell';
 import type { MorrisGameTick } from '../engine/tick';
 import type { params } from '../games/3mm';
 import { game } from '../games/3mm';
@@ -28,6 +28,11 @@ export async function execLoop(
   const move = await rl.question(`${gt.message} (Q to quit): `);
   if (move.toUpperCase() === 'Q') {
     return undefined;
+  } else if (move.toUpperCase() === 'U') {
+    const ret = shellUntick(gt);
+    console.log('\n' + shellRenderString(ret));
+
+    return ret;
   }
 
   const ret = shellTick(gt, move);
@@ -47,7 +52,7 @@ export async function execLoop(
   try {
     while (gt) {
       gt = await execLoop(gt);
-      if (R.val(gt?.facts?.isGameOver)) {
+      if (gt && R.val(gt.facts.isGameOver)) {
         console.log(`\n${chalk.green.bold(gt?.message)}`);
         break;
       }

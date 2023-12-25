@@ -7,7 +7,7 @@ import * as readline from 'node:readline/promises';
 import chalk from 'chalk';
 import console from 'console';
 
-import { autoPlayerRandomValid } from '../engine/autoplayer';
+import { autoPlayerMiniMax } from '../engine/autoplayer/minimax';
 import { MorrisColor } from '../engine/consts';
 import { gameSetStartColor } from '../engine/game';
 import { renderString } from '../engine/render/text';
@@ -39,9 +39,10 @@ export async function execLoop(
 
     return ret;
   } else {
-    const ret = shellTickAutoPlayer(autoPlayerRandomValid, gt);
+    const ret = shellTickAutoPlayer(autoPlayerMiniMax, gt);
     console.log('\n' + shellRenderString(ret));
 
+    // await rl.question(`${gt.message} continue?: `);
     return ret;
   }
 }
@@ -57,8 +58,8 @@ export async function execLoop(
   try {
     while (gt) {
       gt = await execLoop(gt);
-      if (R.val(gt?.facts?.isGameOver)) {
-        console.log(`\n${chalk.green.bold(gt?.message)}`);
+      if (gt && R.val(gt.facts.isGameOver)) {
+        console.log(`\n${chalk.green.bold(gt.message)}`);
         break;
       }
     }

@@ -5,6 +5,7 @@ import * as R from '../../lib/tiny-rules-fp';
 import { countMorris } from '../board/points';
 import { boardHash, countPositionRepeats } from '../board/query';
 import { MorrisColor, MorrisPhase } from '../consts';
+import { gameHistoryLen } from '../game';
 import { countValidMovesForColor } from '../moves/query';
 import type { MorrisFactsGame } from './factsGame';
 import { INITIAL_MORRIS_FACTS_GAME } from './factsGame';
@@ -21,13 +22,13 @@ export const RulesGame = <P extends number, D extends number, N extends number>(
       R.addRuleFunc(
         'isFirstMove',
         (c: MorrisRulesContextGame<P, D, N>, _f: MorrisFactsGame) => {
-          return c.game.history.length === 0;
+          return gameHistoryLen(c.game) === 0;
         },
         'Is first move'
       ),
       R.addRuleFunc(
         'isSecondMove',
-        (c: MorrisRulesContextGame<P, D, N>, _f: MorrisFactsGame) => c.game.history.length === 1,
+        (c: MorrisRulesContextGame<P, D, N>, _f: MorrisFactsGame) => gameHistoryLen(c.game) === 1,
         'Is second move'
       ),
       R.addRuleFunc(

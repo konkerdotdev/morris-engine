@@ -7,7 +7,15 @@ import type { AutoPlayer } from '../autoplayer';
 import { boardHash } from '../board/query';
 import { MorrisColor } from '../consts';
 import type { MorrisGame } from '../game';
-import { applyMoveToGameBoard, deriveInvalidMoveErrorMessage, deriveMessage, deriveStartMessage } from '../game';
+import {
+  applyMoveToGameBoard,
+  deriveInvalidMoveErrorMessage,
+  deriveMessage,
+  deriveStartMessage,
+  gameHistoryLen,
+  gameReset,
+  unApplyMoveToGameBoard,
+} from '../game';
 import type { MorrisMoveS } from '../moves/schemas';
 import { RulesImpl } from '../rules';
 import type { MorrisFactsGame } from '../rules/factsGame';
@@ -54,8 +62,32 @@ export const execMove =
       P.Effect.map((newGame) => ({
         ...newGame,
         lastMillCounter: R.val(moveFacts.moveMakesMill) ? 0 : oldGame.lastMillCounter + 1,
-        history: [...oldGame.history, { move, moveFacts }],
-        positions: [...oldGame.positions, boardHash(newGame.board)],
+        history: {
+          moves: [move, ...oldGame.history.moves],
+          moveFacts: [moveFacts, ...oldGame.history.moveFacts],
+        },
+        positions: [boardHash(newGame.board), ...oldGame.positions],
+      }))
+    );
+  };
+
+// --------------------------------------------------------------------------
+export const unExecMove =
+  <P extends number, D extends number, N extends number>(oldMove: MorrisMoveS<D>, oldMoveFacts: MorrisFactsMove) =>
+  (newGame: MorrisGame<P, D, N>): P.Effect.Effect<never, MorrisEngineError, MorrisGame<P, D, N>> => {
+    return P.pipe(
+      unApplyMoveToGameBoard(newGame, oldMove),
+      (x) => x,
+      P.Effect.map((oldGame) => ({
+        ...oldGame,
+
+        // TODO: fix these
+        lastMillCounter: R.val(oldMoveFacts.moveMakesMill) ? 0 : oldGame.lastMillCounter + 1,
+        history: {
+          moves: oldGame.history.moves.slice(1),
+          moveFacts: oldGame.history.moveFacts.slice(1),
+        },
+        positions: oldGame.positions.slice(1),
       }))
     );
   };
@@ -107,13 +139,53 @@ export const tick =
         )
       ),
       // Get a message prompt for the new game state
-      P.Effect.bind('message', ({ newGame, newGameFacts }) => deriveMessage(move, newGame, newGameFacts)),
+      P.Effect.bind('message', ({ newGame, newGameFacts }) => deriveMessage(newGame, newGameFacts)),
       // Create a new game tick with the new game state and the new game facts
       P.Effect.flatMap(({ message, newGame, newGameFacts }) =>
         makeMorrisGameTick(newGame, newGameFacts, gameTick.tickN + 1, message)
       )
     );
   };
+
+// --------------------------------------------------------------------------
+export const untick = <P extends number, D extends number, N extends number>(
+  gameTick: MorrisGameTick<P, D, N>
+): P.Effect.Effect<RulesImpl, MorrisEngineError, MorrisGameTick<P, D, N>> => {
+  if (gameHistoryLen(gameTick.game) < 2) {
+    const game = gameReset(gameTick.game);
+    return makeMorrisGameTick(game, BOOTSTRAP_INITIAL_MORRIS_FACTS_GAME(game), 0, deriveStartMessage(game));
+  }
+
+  const lastMove = gameTick.game.history.moves[0];
+  const lastMoveFacts = gameTick.game.history.moveFacts[1];
+  if (!lastMove || !lastMoveFacts) {
+    // TODO: Warning? Error?
+    return P.Effect.succeed(gameTick);
+  }
+
+  return P.pipe(
+    P.Effect.Do,
+    P.Effect.bind('oldGame', () => P.pipe(gameTick.game, unExecMove(lastMove, lastMoveFacts))),
+    P.Effect.bind('oldGameFacts', ({ oldGame }) =>
+      P.pipe(
+        RulesImpl,
+        P.Effect.flatMap((ruleImpl) =>
+          P.pipe(
+            ruleImpl.rulesetGame<P, D, N>(),
+            R.decide({
+              game: oldGame,
+              moveFacts: lastMoveFacts,
+            })
+          )
+        )
+      )
+    ),
+    P.Effect.bind('oldMessage', ({ oldGame, oldGameFacts }) => deriveMessage(oldGame, oldGameFacts)),
+    P.Effect.flatMap(({ oldGame, oldGameFacts, oldMessage }) =>
+      makeMorrisGameTick(oldGame, oldGameFacts, gameTick.tickN - 1, oldMessage)
+    )
+  );
+};
 
 // --------------------------------------------------------------------------
 export const tickAutoPlayer =
