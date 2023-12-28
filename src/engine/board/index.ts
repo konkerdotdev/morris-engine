@@ -1,6 +1,8 @@
 import type { RepeatString, Tuple } from '../../lib/type-utils';
 import type { MorrisLinkType, THREE } from '../consts';
+import { EMPTY } from '../consts';
 import type { Morris } from '../morris';
+import { isOccupied } from './points';
 import type { EmptyOccupant, MorrisBoardCoordS } from './schemas';
 
 // --------------------------------------------------------------------------
@@ -30,8 +32,17 @@ export type MorrisBoard<P extends number, D extends number, N extends number> = 
   readonly millCandidates: ReadonlyArray<MillCandidate<D>>;
 };
 
-// Having B|W|EMPTY is too complex for the type system to handle.
 export type MorrisBoardPositionString<P extends number> = RepeatString<
+  // Having B|W|EMPTY is too complex for the type system to handle.
   string, //MorrisColor.BLACK | MorrisColor.WHITE | EMPTY,
   P
 >;
+
+export function boardHash<P extends number, D extends number, N extends number>(
+  board: MorrisBoard<P, D, N>
+): MorrisBoardPositionString<P> {
+  return board.points.reduce(
+    (acc, val) => `${acc}${isOccupied(val) ? val.occupant.color : EMPTY}`,
+    ''
+  ) as MorrisBoardPositionString<P>;
+}

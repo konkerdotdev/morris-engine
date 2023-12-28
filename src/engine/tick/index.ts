@@ -11,9 +11,11 @@ import {
   applyMoveToGameBoard,
   deriveInvalidMoveErrorMessage,
   deriveMessage,
+  deriveResult,
   deriveStartMessage,
   gameHistoryLen,
   gameReset,
+  gameSetResult,
   unApplyMoveToGameBoard,
 } from '../game';
 import { historyPeek, historyPop, historyPush } from '../game/history';
@@ -134,7 +136,12 @@ export const tick =
       P.Effect.bind('message', ({ newGame, newGameFacts }) => deriveMessage(newGame, newGameFacts)),
       // Create a new game tick with the new game state and the new game facts
       P.Effect.flatMap(({ message, newGame, newGameFacts }) =>
-        makeMorrisGameTick(newGame, newGameFacts, gameTick.tickN + 1, message)
+        makeMorrisGameTick(
+          gameSetResult(newGame, deriveResult(newGameFacts)),
+          newGameFacts,
+          gameTick.tickN + 1,
+          message
+        )
       )
     );
   };
@@ -173,7 +180,12 @@ export const unTick = <P extends number, D extends number, N extends number>(
     ),
     P.Effect.bind('oldMessage', ({ oldGame, oldGameFacts }) => deriveMessage(oldGame, oldGameFacts)),
     P.Effect.flatMap(({ oldGame, oldGameFacts, oldMessage }) =>
-      makeMorrisGameTick(oldGame, oldGameFacts, gameTick.tickN - 1, oldMessage)
+      makeMorrisGameTick(
+        gameSetResult(oldGame, deriveResult(oldGameFacts)),
+        oldGameFacts,
+        gameTick.tickN - 1,
+        oldMessage
+      )
     )
   );
 };

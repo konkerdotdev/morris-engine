@@ -2,8 +2,9 @@ import * as P from '@konker.dev/effect-ts-prelude';
 
 import type { MorrisEngineError } from '../../lib/error';
 import * as R from '../../lib/tiny-rules-fp';
+import { boardHash } from '../board';
 import { countMorris } from '../board/points';
-import { boardHash, countPositionRepeats } from '../board/query';
+import { countPositionRepeats } from '../board/query';
 import { MorrisColor, MorrisPhase } from '../consts';
 import { gameHistoryLen } from '../game';
 import { countValidMovesForColor } from '../moves/query';

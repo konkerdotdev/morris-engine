@@ -3,8 +3,8 @@ import _maxBy from 'lodash/maxBy';
 import _minBy from 'lodash/minBy';
 
 import type { MorrisEngineError } from '../../../lib/error';
-import * as R from '../../../lib/tiny-rules-fp';
 import type { MorrisColor } from '../../consts';
+import { MorrisGameResult } from '../../consts';
 import { createMoveRoot } from '../../moves';
 import { getValidMovesForColor } from '../../moves/query';
 import type { MorrisMoveS } from '../../moves/schemas';
@@ -173,7 +173,9 @@ export function gameTreeCreateChild<P extends number, D extends number, N extend
           getValidMovesForColor(newGameTick.game, newGameTick.facts, tickTurn(newGameTick))
         ),
         P.Effect.bind('nodeType', ({ newGameTick }) =>
-          R.val(newGameTick.facts.isGameOver) ? P.Effect.succeed(NodeType.LEAF) : P.Effect.succeed(NodeType.NODE)
+          newGameTick.game.result === MorrisGameResult.IN_PROGRESS
+            ? P.Effect.succeed(NodeType.NODE)
+            : P.Effect.succeed(NodeType.LEAF)
         ),
         P.Effect.bind('children', ({ newGameTick, nodeType, validMoves }) =>
           nodeType === NodeType.NODE

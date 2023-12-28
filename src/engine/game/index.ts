@@ -208,6 +208,7 @@ export function unDiscardMorris<P extends number, D extends number, N extends nu
 }
 
 // --------------------------------------------------------------------------
+// FIXME: move to board?
 // eslint-disable-next-line fp/no-nil
 export function unApplyMoveToGameBoard<P extends number, D extends number, N extends number>(
   game: MorrisGame<P, D, N>,
@@ -247,6 +248,7 @@ export function unApplyMoveToGameBoard<P extends number, D extends number, N ext
 }
 
 // --------------------------------------------------------------------------
+// FIXME: move to board?
 // eslint-disable-next-line fp/no-nil
 export function applyMoveToGameBoard<P extends number, D extends number, N extends number>(
   game: MorrisGame<P, D, N>,
@@ -288,7 +290,14 @@ export function applyMoveToGameBoard<P extends number, D extends number, N exten
 }
 
 // --------------------------------------------------------------------------
-export function resolveResult(newFacts: MorrisFactsGame): MorrisGameResult {
+export function gameSetResult<P extends number, D extends number, N extends number>(
+  game: MorrisGame<P, D, N>,
+  result: MorrisGameResult
+): MorrisGame<P, D, N> {
+  return { ...game, result };
+}
+
+export function deriveResult(newFacts: MorrisFactsGame): MorrisGameResult {
   return R.val(newFacts.isWinWhite)
     ? MorrisGameResult.WIN_WHITE
     : R.val(newFacts.isWinBlack)

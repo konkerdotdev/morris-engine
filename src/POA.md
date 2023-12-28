@@ -2,16 +2,10 @@
 
 ---
 
-- Minimax algo for computer player:
-  - https://en.wikipedia.org/wiki/Minimax
-  - Fitness func:
-    - num players
-    - num mills
-    - num 2-adjacent
-    - num possible mills for opponent on next move [?]
-    - num of pieces with available move
-    - how "spread out" the pieces are [?]
 - Unit tests!!
+- Rationalize:
+  - Naming conventions for functions
+  - Module/sub-module organization
 - Integration tests
   - Run a game with a list of moves, check expected "snapshot" output (of some kind)
   - Have a bunch of these to test edge cases, error cases, long cases (e.g. draw after x repeats)
@@ -24,6 +18,19 @@
 - Rename schemas types to remove S postfix?
   - No "non-S" duplicates/shadows
 - Remove state machine [?]
+- Improve Minimax algo for computer player:
+
+  - https://en.wikipedia.org/wiki/Minimax
+  - alpha/beta pruning
+  - Better fitness func:
+    - num players
+    - num mills
+    - num 2-adjacent
+    - num possible mills for opponent on next move [?]
+    - num of pieces with available move
+    - how "spread out" the pieces are [?]
+  - Parametrized fitness func coefficients depending on the game?
+
 - OTHER
   - Clock?
   - Move counts?

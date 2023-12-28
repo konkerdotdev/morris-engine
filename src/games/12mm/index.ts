@@ -1,5 +1,5 @@
 import type { MorrisBoard } from '../../engine/board';
-import { boardHash } from '../../engine/board/query';
+import { boardHash } from '../../engine/board';
 import { EmptyOccupant } from '../../engine/board/schemas';
 import { MorrisColor, MorrisLinkType, MorrisPhase } from '../../engine/consts';
 import type { MorrisGame, MorrisGameConfig } from '../../engine/game';
