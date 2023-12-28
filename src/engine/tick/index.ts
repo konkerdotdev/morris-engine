@@ -4,7 +4,7 @@ import type { MorrisEngineError } from '../../lib/error';
 import { toMorrisEngineError } from '../../lib/error';
 import * as R from '../../lib/tiny-rules-fp';
 import type { AutoPlayer } from '../autoplayer';
-import { boardHash } from '../board/query';
+import { boardHash } from '../board';
 import { MorrisColor } from '../consts';
 import type { MorrisGame } from '../game';
 import {
@@ -64,10 +64,6 @@ export const execMove =
         ...newGame,
         lastMillCounter: R.val(moveFacts.moveMakesMill) ? 0 : oldGame.lastMillCounter + 1,
         history: historyPush(oldGame.history, move, moveFacts),
-        //   {
-        //   moves: [move, ...oldGame.history.moves],
-        //   moveFacts: [moveFacts, ...oldGame.history.moveFacts],
-        // },
         positions: [boardHash(newGame.board), ...oldGame.positions],
       }))
     );
@@ -78,18 +74,12 @@ export const unExecMove =
   <P extends number, D extends number, N extends number>(oldMove: MorrisMoveS<D>, oldMoveFacts: MorrisFactsMove) =>
   (newGame: MorrisGame<P, D, N>): P.Effect.Effect<never, MorrisEngineError, MorrisGame<P, D, N>> => {
     return P.pipe(
-      unApplyMoveToGameBoard(newGame, oldMove),
-      (x) => x,
+      unApplyMoveToGameBoard(newGame, oldMove, oldMoveFacts),
       P.Effect.map((oldGame) => ({
         ...oldGame,
-
         lastMillCounter: R.val(oldMoveFacts.moveMakesMill) ? 0 : oldGame.lastMillCounter + 1,
         history: historyPop(oldGame.history),
-        // {
-        //       moves: oldGame.history.moves.slice(1),
-        //       moveFacts: oldGame.history.moveFacts.slice(1),
-        //     },
-        //     positions: oldGame.positions.slice(1),
+        positions: oldGame.positions.slice(1),
       }))
     );
   };

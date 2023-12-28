@@ -4,8 +4,8 @@ import type { MorrisEngineError } from '../../lib/error';
 import { toMorrisEngineError } from '../../lib/error';
 import * as R from '../../lib/tiny-rules-fp';
 import type { MorrisBoard, MorrisBoardPositionString } from '../board';
+import { boardHash } from '../board';
 import { getPoint, getPointMorris, getPointsOccupied, setPointEmpty, setPointOccupant } from '../board/points';
-import { boardHash } from '../board/query';
 import type { MorrisBoardCoordS } from '../board/schemas';
 import type { MorrisPhase } from '../consts';
 import { MorrisColor, MorrisGameResult, MorrisMoveType } from '../consts';
@@ -211,7 +211,8 @@ export function unDiscardMorris<P extends number, D extends number, N extends nu
 // eslint-disable-next-line fp/no-nil
 export function unApplyMoveToGameBoard<P extends number, D extends number, N extends number>(
   game: MorrisGame<P, D, N>,
-  move: MorrisMoveS<D>
+  move: MorrisMoveS<D>,
+  oldMoveFacts: MorrisFactsMove
 ): P.Effect.Effect<never, MorrisEngineError, MorrisGame<P, D, N>> {
   switch (move.type) {
     case MorrisMoveType.PLACE:
@@ -234,11 +235,14 @@ export function unApplyMoveToGameBoard<P extends number, D extends number, N ext
       );
 
     case MorrisMoveType.REMOVE:
-      // FIXME: NOT IMPLEMENTED
-      return P.Effect.fail(toMorrisEngineError('FIXME: NOT IMPLEMENTED'));
+      const colorToReplace = R.val(oldMoveFacts.moveMakesNextTurnWhite) ? MorrisColor.WHITE : MorrisColor.BLACK;
+      return P.pipe(
+        unDiscardMorris(game, colorToReplace),
+        P.Effect.flatMap(([game, morris]) => P.pipe(setPointOccupant(game, move.from, morris)))
+      );
 
     case MorrisMoveType.ROOT:
-      return P.Effect.fail(toMorrisEngineError('Logic error: cannot apply the root move'));
+      return P.Effect.fail(toMorrisEngineError('Logic error: cannot un-apply the root move'));
   }
 }
 
@@ -327,7 +331,6 @@ export function deriveInvalidMoveErrorMessage<P extends number, D extends number
   _oldGame: MorrisGame<P, D, N>,
   moveFacts: MorrisFactsMove
 ): string {
-  // TODO: more comprehensive]
   if (!R.val(moveFacts.moveIsCorrectColor)) return 'Invalid move: wrong color';
   if (!R.val(moveFacts.moveIsCorrectType)) return 'Invalid move: wrong move type';
   if (!R.val(moveFacts.moveIsPossible)) return 'Invalid move: move is not possible';
@@ -339,8 +342,6 @@ export function deriveMessage<P extends number, D extends number, N extends numb
   gameFacts: MorrisFactsGame
 ): P.Effect.Effect<never, MorrisEngineError, string> {
   const message = () => {
-    // if (!R.val(gameFacts.moveIsValid)) return deriveInvalidMoveError(_move, _newGame, gameFacts);
-
     if (R.val(gameFacts.isGameOver)) return deriveResultMessage(_newGame, gameFacts);
 
     if (R.val(gameFacts.isLaskerPhase)) {
