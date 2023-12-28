@@ -158,8 +158,6 @@ export const unTick = <P extends number, D extends number, N extends number>(
     return makeMorrisGameTick(game, BOOTSTRAP_INITIAL_MORRIS_FACTS_GAME(game), 0, deriveStartMessage(game));
   }
 
-  // const lastMove = gameTick.game.history.moves[0];
-  // const lastMoveFacts = gameTick.game.history.moveFacts[1];
   const { lastMove, lastMoveFacts } = historyPeek(gameTick.game.history);
   if (!lastMove || !lastMoveFacts) {
     // TODO: Warning? Error?

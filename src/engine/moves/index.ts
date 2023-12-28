@@ -47,7 +47,6 @@ export function moveColor<P extends number, D extends number, N extends number>(
   game: MorrisGame<P, D, N>,
   move: MorrisMoveS<D>
 ): P.Effect.Effect<never, MorrisEngineError, MorrisColor> {
-  // eslint-disable-next-line fp/no-unused-expression
   switch (move.type) {
     case MorrisMoveType.PLACE:
       return P.Effect.succeed(move.color);
@@ -63,5 +62,20 @@ export function moveColor<P extends number, D extends number, N extends number>(
       );
     case MorrisMoveType.ROOT:
       return P.Effect.succeed(game.startColor);
+  }
+}
+
+// --------------------------------------------------------------------------
+// eslint-disable-next-line fp/no-nil
+export function moveEqual<D extends number>(m1: MorrisMoveS<D>, m2: MorrisMoveS<D>): boolean {
+  switch (m1.type) {
+    case MorrisMoveType.PLACE:
+      return m2.type === MorrisMoveType.PLACE && m1.color === m2.color && m1.to === m2.to;
+    case MorrisMoveType.MOVE:
+      return m2.type === MorrisMoveType.MOVE && m1.from === m2.from && m1.to === m2.to;
+    case MorrisMoveType.REMOVE:
+      return m2.type === MorrisMoveType.REMOVE && m1.from === m2.from;
+    case MorrisMoveType.ROOT:
+      return m2.type === MorrisMoveType.ROOT;
   }
 }

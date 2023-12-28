@@ -1,3 +1,4 @@
+import { moveEqual } from '../moves';
 import type { MorrisMoveS } from '../moves/schemas';
 import type { MorrisFactsMove } from '../rules/factsMove';
 
@@ -23,7 +24,7 @@ export function makeGameHistory<D extends number>(): MorrisGameHistory<D> {
 
 // --------------------------------------------------------------------------
 export function historyLen<D extends number>(gameHistory: MorrisGameHistory<D>): number {
-  return gameHistory.moves.length;
+  return gameHistory.moves.length - gameHistory.historyPtr;
 }
 
 // --------------------------------------------------------------------------
@@ -32,15 +33,27 @@ export function historyPush<D extends number>(
   move: MorrisMoveS<D>,
   moveFacts: MorrisFactsMove
 ): MorrisGameHistory<D> {
+  if (gameHistory.historyPtr > 0) {
+    if (moveEqual(gameHistory.moves[gameHistory.historyPtr - 1]!, move)) {
+      return {
+        ...gameHistory,
+        historyPtr: gameHistory.historyPtr - 1,
+      };
+    }
+  }
   return {
     ...gameHistory,
-    moves: [move, ...gameHistory.moves],
-    moveFacts: [moveFacts, ...gameHistory.moveFacts],
+    moves: [move, ...gameHistory.moves.slice(gameHistory.historyPtr)],
+    moveFacts: [moveFacts, ...gameHistory.moveFacts.slice(gameHistory.historyPtr)],
     historyPtr: 0,
   };
 }
 
 export function historyPop<D extends number>(gameHistory: MorrisGameHistory<D>): MorrisGameHistory<D> {
+  if (gameHistory.historyPtr === gameHistory.moves.length) {
+    return gameHistory;
+  }
+
   return {
     ...gameHistory,
     historyPtr: gameHistory.historyPtr + 1,
