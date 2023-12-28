@@ -7,28 +7,24 @@ import { RulesGame } from '../../rules/rulesGame';
 import { RulesMove } from '../../rules/rulesMove';
 import type { MorrisGameTick } from '../../tick';
 import { tickTurn } from '../../tick';
-import {
-  morrisCreateGameTree,
-  morrisEvaluateGameTreeNode,
-  morrisScoreGameTreeNode,
-  strEvaluatedGameTreeNode,
-} from './minimax';
+import { gameTreeCreate } from './minimax';
+import { gameTreeNodeScore } from './score';
+import { dotEvaluatedGameTreeNode } from './str';
 
-export const SEARCH_DEPTH = 2;
+export const SEARCH_DEPTH = 3;
 
 export function autoPlayerMiniMax<P extends number, D extends number, N extends number>(
   gameTick: MorrisGameTick<P, D, N>
 ): P.Effect.Effect<never, MorrisEngineError, MorrisMoveS<D>> {
   return P.pipe(
-    morrisCreateGameTree(
-      gameTick,
-      morrisScoreGameTreeNode,
-      morrisEvaluateGameTreeNode,
-      tickTurn(gameTick),
-      SEARCH_DEPTH
-    ),
-    // eslint-disable-next-line fp/no-nil
-    P.Effect.tap((x) => P.Console.log(strEvaluatedGameTreeNode(x))),
+    gameTreeCreate(gameTick, gameTreeNodeScore, tickTurn(gameTick), SEARCH_DEPTH),
+    P.Effect.tap((x) => {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const fs = require('node:fs');
+      // eslint-disable-next-line fp/no-unused-expression
+      fs.writeFileSync('/tmp/gameTree.dot', dotEvaluatedGameTreeNode(x));
+      return P.Effect.unit;
+    }),
     P.Effect.map((gameTreeNode) => gameTreeNode.bestChildMove),
     P.Effect.provideService(
       RulesImpl,

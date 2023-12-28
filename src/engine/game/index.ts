@@ -13,6 +13,8 @@ import type { Morris, MorrisBlack, MorrisWhite } from '../morris';
 import type { MorrisMoveS } from '../moves/schemas';
 import type { MorrisFactsGame } from '../rules/factsGame';
 import type { MorrisFactsMove } from '../rules/factsMove';
+import type { MorrisGameHistory } from './history';
+import { historyLen } from './history';
 
 export type MorrisGameConfig<N extends number> = {
   readonly name: string;
@@ -37,10 +39,7 @@ export type MorrisGame<P extends number, D extends number, N extends number> = {
   readonly lastMillCounter: number;
   readonly morrisWhiteRemoved: ReadonlyArray<MorrisWhite<N>>;
   readonly morrisBlackRemoved: ReadonlyArray<MorrisBlack<N>>;
-  readonly history: {
-    readonly moves: ReadonlyArray<MorrisMoveS<D>>;
-    readonly moveFacts: ReadonlyArray<MorrisFactsMove>;
-  };
+  readonly history: MorrisGameHistory<D>;
 
   readonly morrisWhite: ReadonlyArray<MorrisWhite<N>>;
   readonly morrisBlack: ReadonlyArray<MorrisBlack<N>>;
@@ -60,6 +59,7 @@ export const MorrisGameBoilerplate = {
   history: {
     moves: [],
     moveFacts: [],
+    historyPtr: -1,
   },
 };
 
@@ -81,7 +81,7 @@ export function gameSetStartColorRandom<P extends number, D extends number, N ex
 export function gameHistoryLen<P extends number, D extends number, N extends number>(
   game: MorrisGame<P, D, N>
 ): number {
-  return game.history.moves.length;
+  return historyLen(game.history);
 }
 
 // --------------------------------------------------------------------------

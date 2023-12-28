@@ -53,7 +53,7 @@ export async function execLoop(
     while (gt) {
       gt = await execLoop(gt);
       if (gt && R.val(gt.facts.isGameOver)) {
-        console.log(`\n${chalk.green.bold(gt?.message)}`);
+        console.log(`\n${chalk.green.bold(gt.message)}`);
         break;
       }
     }

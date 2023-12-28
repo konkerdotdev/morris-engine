@@ -16,6 +16,7 @@ import {
   gameReset,
   unApplyMoveToGameBoard,
 } from '../game';
+import { historyPeek, historyPop, historyPush } from '../game/history';
 import type { MorrisMoveS } from '../moves/schemas';
 import { RulesImpl } from '../rules';
 import type { MorrisFactsGame } from '../rules/factsGame';
@@ -62,10 +63,11 @@ export const execMove =
       P.Effect.map((newGame) => ({
         ...newGame,
         lastMillCounter: R.val(moveFacts.moveMakesMill) ? 0 : oldGame.lastMillCounter + 1,
-        history: {
-          moves: [move, ...oldGame.history.moves],
-          moveFacts: [moveFacts, ...oldGame.history.moveFacts],
-        },
+        history: historyPush(oldGame.history, move, moveFacts),
+        //   {
+        //   moves: [move, ...oldGame.history.moves],
+        //   moveFacts: [moveFacts, ...oldGame.history.moveFacts],
+        // },
         positions: [boardHash(newGame.board), ...oldGame.positions],
       }))
     );
@@ -81,13 +83,13 @@ export const unExecMove =
       P.Effect.map((oldGame) => ({
         ...oldGame,
 
-        // TODO: fix these
         lastMillCounter: R.val(oldMoveFacts.moveMakesMill) ? 0 : oldGame.lastMillCounter + 1,
-        history: {
-          moves: oldGame.history.moves.slice(1),
-          moveFacts: oldGame.history.moveFacts.slice(1),
-        },
-        positions: oldGame.positions.slice(1),
+        history: historyPop(oldGame.history),
+        // {
+        //       moves: oldGame.history.moves.slice(1),
+        //       moveFacts: oldGame.history.moveFacts.slice(1),
+        //     },
+        //     positions: oldGame.positions.slice(1),
       }))
     );
   };
@@ -148,7 +150,7 @@ export const tick =
   };
 
 // --------------------------------------------------------------------------
-export const untick = <P extends number, D extends number, N extends number>(
+export const unTick = <P extends number, D extends number, N extends number>(
   gameTick: MorrisGameTick<P, D, N>
 ): P.Effect.Effect<RulesImpl, MorrisEngineError, MorrisGameTick<P, D, N>> => {
   if (gameHistoryLen(gameTick.game) < 2) {
@@ -156,8 +158,9 @@ export const untick = <P extends number, D extends number, N extends number>(
     return makeMorrisGameTick(game, BOOTSTRAP_INITIAL_MORRIS_FACTS_GAME(game), 0, deriveStartMessage(game));
   }
 
-  const lastMove = gameTick.game.history.moves[0];
-  const lastMoveFacts = gameTick.game.history.moveFacts[1];
+  // const lastMove = gameTick.game.history.moves[0];
+  // const lastMoveFacts = gameTick.game.history.moveFacts[1];
+  const { lastMove, lastMoveFacts } = historyPeek(gameTick.game.history);
   if (!lastMove || !lastMoveFacts) {
     // TODO: Warning? Error?
     return P.Effect.succeed(gameTick);
