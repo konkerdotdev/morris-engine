@@ -4,7 +4,7 @@ import chalk from 'chalk';
 
 import type { MorrisEngineError } from '../../../lib/error';
 import type { MorrisBoard, MorrisBoardPoint } from '../../board';
-import { isOccupied } from '../../board/points';
+import { isOccupiedBoardPoint } from '../../board';
 import type { COORD_CHAR } from '../../consts';
 import { MorrisColor, MorrisLinkType, PT, X, Y } from '../../consts';
 import type { MorrisGameTick } from '../../tick';
@@ -130,7 +130,7 @@ export function renderOccupant<D extends number, N extends number>(
   context: MorrisBoardRenderContext,
   p: MorrisBoardPoint<D, N>
 ): string {
-  return isOccupied(p)
+  return isOccupiedBoardPoint(p)
     ? p.occupant.color === MorrisColor.WHITE
       ? chalk.bgHex(context.config.colorBoardBg).hex(context.config.colorWhite).bold(context.config.avatarWhite)
       : chalk.bgHex(context.config.colorBoardBg).hex(context.config.colorBlack).bold(context.config.avatarBlack)

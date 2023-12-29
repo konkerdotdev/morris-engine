@@ -2,7 +2,7 @@
 import * as P from '@konker.dev/effect-ts-prelude';
 
 import { MorrisBoardCoordS, MorrisColorS } from '../board/schemas';
-import { createMoveMove, createMovePlace, createMoveRemove, createMoveRoot, ROOT_MOVE_STR } from './index';
+import { moveCreateMove, moveCreatePlace, moveCreateRemove, moveCreateRoot, ROOT_MOVE_STR } from './index';
 import { MorrisMoveMoveS, MorrisMovePlaceS, MorrisMoveRemoveS, MorrisMoveRootS } from './schemas';
 
 // --------------------------------------------------------------------------
@@ -22,7 +22,7 @@ export const String_MorrisMoveRoot = P.Schema.transformOrFail(
         ])
       );
     }
-    return P.pipe(createMoveRoot(), P.Effect.succeed);
+    return P.pipe(moveCreateRoot(), P.Effect.succeed);
   },
   (_m: MorrisMoveRootS) => P.ParseResult.success(ROOT_MOVE_STR)
 );
@@ -42,7 +42,7 @@ export function String_MorrisMovePlace<D extends number>(d: D) {
         P.Effect.Do,
         P.Effect.bind('color', () => P.pipe(parts[1]!, P.Schema.decode(MorrisColorS))),
         P.Effect.bind('toCoord', () => P.pipe(parts[2]!, P.Schema.decode(MorrisBoardCoordS(d)))),
-        P.Effect.map(({ color, toCoord }) => createMovePlace<D>(color, toCoord))
+        P.Effect.map(({ color, toCoord }) => moveCreatePlace<D>(color, toCoord))
       );
     },
     (m: MorrisMovePlaceS<D>) => P.ParseResult.success(`P ${m.color} ${m.to}`)
@@ -64,7 +64,7 @@ export function String_MorrisMoveMove<D extends number>(d: D) {
         P.Effect.Do,
         P.Effect.bind('fromCoord', () => P.pipe(parts[1]!, P.Schema.decode(MorrisBoardCoordS(d)))),
         P.Effect.bind('toCoord', () => P.pipe(parts[2]!, P.Schema.decode(MorrisBoardCoordS(d)))),
-        P.Effect.map(({ fromCoord, toCoord }) => createMoveMove<D>(fromCoord, toCoord))
+        P.Effect.map(({ fromCoord, toCoord }) => moveCreateMove<D>(fromCoord, toCoord))
       );
     },
     (m: MorrisMoveMoveS<D>) => P.ParseResult.success(`M ${m.from} ${m.to}`)
@@ -85,7 +85,7 @@ export function String_MorrisMoveRemove<D extends number>(d: D) {
       return P.pipe(
         P.Effect.Do,
         P.Effect.bind('fromCoord', () => P.pipe(parts[1]!, P.Schema.decode(MorrisBoardCoordS(d)))),
-        P.Effect.map(({ fromCoord }) => createMoveRemove<D>(fromCoord))
+        P.Effect.map(({ fromCoord }) => moveCreateRemove<D>(fromCoord))
       );
     },
     (m: MorrisMoveRemoveS<D>) => P.ParseResult.success(`R ${m.from}`)

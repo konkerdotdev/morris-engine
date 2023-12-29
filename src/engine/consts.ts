@@ -45,6 +45,10 @@ export enum MorrisColor {
   WHITE = 'W',
 }
 
+export function flipColor(c: MorrisColor): MorrisColor {
+  return c === MorrisColor.WHITE ? MorrisColor.BLACK : MorrisColor.WHITE;
+}
+
 export enum MorrisLinkType {
   HORIZONTAL = 'HORIZONTAL',
   VERTICAL = 'VERTICAL',

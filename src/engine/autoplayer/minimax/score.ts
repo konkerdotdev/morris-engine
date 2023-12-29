@@ -2,10 +2,9 @@ import * as P from '@konker.dev/effect-ts-prelude';
 
 import type { MorrisEngineError } from '../../../lib/error';
 import * as R from '../../../lib/tiny-rules-fp';
-import { MorrisColor } from '../../consts';
-import { flipColor } from '../../moves';
-import { countValidMovesForColor } from '../../moves/query';
-import type { GameTreeNode } from './minimax';
+import { flipColor, MorrisColor } from '../../consts';
+import { moveCountValidMovesForColor } from '../../moves/query';
+import type { GameTreeNode } from './gameTree';
 
 export function gameTreeNodeScore<P extends number, D extends number, N extends number>(
   gameTreeNode: GameTreeNode<P, D, N>,
@@ -14,10 +13,10 @@ export function gameTreeNodeScore<P extends number, D extends number, N extends 
   return P.pipe(
     P.Effect.Do,
     P.Effect.bind('numValidMovesForMaxColor', () =>
-      countValidMovesForColor(gameTreeNode.gameTick.game, gameTreeNode.gameTick.facts, maxColor)
+      moveCountValidMovesForColor(gameTreeNode.gameTick.game, gameTreeNode.gameTick.facts, maxColor)
     ),
     P.Effect.bind('numValidMovesForMinColor', () =>
-      countValidMovesForColor(gameTreeNode.gameTick.game, gameTreeNode.gameTick.facts, flipColor(maxColor))
+      moveCountValidMovesForColor(gameTreeNode.gameTick.game, gameTreeNode.gameTick.facts, flipColor(maxColor))
     ),
     P.Effect.map(({ numValidMovesForMaxColor, numValidMovesForMinColor }) => {
       const winForMaxColor =

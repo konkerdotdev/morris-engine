@@ -48,3 +48,7 @@ export type MorrisBoardCoordS<D extends number> = P.Schema.Schema.To<ReturnType<
 export const EmptyOccupantS = P.Schema.struct({ _tag: P.Schema.literal(EMPTY) }).pipe(P.Schema.brand('EmptyPoint'));
 export type EmptyOccupant = P.Schema.Schema.To<typeof EmptyOccupantS>;
 export const EmptyOccupant = P.pipe({ _tag: EMPTY }, P.Schema.decodeSync(EmptyOccupantS));
+
+export function isEmptyOccupant(x: unknown): x is EmptyOccupant {
+  return P.pipe(x, P.Schema.is(EmptyOccupantS));
+}

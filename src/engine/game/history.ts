@@ -14,21 +14,11 @@ export type MorrisGameHistoryEntry<D extends number> = {
 };
 
 // --------------------------------------------------------------------------
-export function makeGameHistory<D extends number>(): MorrisGameHistory<D> {
-  return {
-    moves: [],
-    moveFacts: [],
-    historyPtr: -1,
-  };
-}
-
-// --------------------------------------------------------------------------
-export function historyLen<D extends number>(gameHistory: MorrisGameHistory<D>): number {
+export function gameHistoryLen<D extends number>(gameHistory: MorrisGameHistory<D>): number {
   return gameHistory.moves.length - gameHistory.historyPtr;
 }
 
-// --------------------------------------------------------------------------
-export function historyPush<D extends number>(
+export function gameHistoryPush<D extends number>(
   gameHistory: MorrisGameHistory<D>,
   move: MorrisMoveS<D>,
   moveFacts: MorrisFactsMove
@@ -49,7 +39,7 @@ export function historyPush<D extends number>(
   };
 }
 
-export function historyPop<D extends number>(gameHistory: MorrisGameHistory<D>): MorrisGameHistory<D> {
+export function gameHistoryPop<D extends number>(gameHistory: MorrisGameHistory<D>): MorrisGameHistory<D> {
   if (gameHistory.historyPtr === gameHistory.moves.length) {
     return gameHistory;
   }
@@ -60,7 +50,18 @@ export function historyPop<D extends number>(gameHistory: MorrisGameHistory<D>):
   };
 }
 
-export function historyPeek<D extends number>(gameHistory: MorrisGameHistory<D>): MorrisGameHistoryEntry<D> {
+export function gameHistoryUnPop<D extends number>(gameHistory: MorrisGameHistory<D>): MorrisGameHistory<D> {
+  if (gameHistory.historyPtr === 0) {
+    return gameHistory;
+  }
+
+  return {
+    ...gameHistory,
+    historyPtr: gameHistory.historyPtr - 1,
+  };
+}
+
+export function gameHistoryPeek<D extends number>(gameHistory: MorrisGameHistory<D>): MorrisGameHistoryEntry<D> {
   if (gameHistory.historyPtr < 0) {
     // eslint-disable-next-line fp/no-nil
     return { lastMove: undefined, lastMoveFacts: undefined };

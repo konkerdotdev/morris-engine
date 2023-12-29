@@ -6,10 +6,10 @@ import { RulesImpl } from '../../rules';
 import { RulesGame } from '../../rules/rulesGame';
 import { RulesMove } from '../../rules/rulesMove';
 import type { MorrisGameTick } from '../../tick';
-import { tickTurn } from '../../tick';
-import { gameTreeCreate } from './minimax';
+import { tickGetTurnColor } from '../../tick';
+import { gameTreeCreate } from './gameTree';
 import { gameTreeNodeScore } from './score';
-import { dotEvaluatedGameTreeNode } from './str';
+import { gameTreeNodeDot } from './str';
 
 export const SEARCH_DEPTH = 3;
 
@@ -17,12 +17,12 @@ export function autoPlayerMiniMax<P extends number, D extends number, N extends 
   gameTick: MorrisGameTick<P, D, N>
 ): P.Effect.Effect<never, MorrisEngineError, MorrisMoveS<D>> {
   return P.pipe(
-    gameTreeCreate(gameTick, gameTreeNodeScore, tickTurn(gameTick), SEARCH_DEPTH),
+    gameTreeCreate(gameTick, gameTreeNodeScore, tickGetTurnColor(gameTick), SEARCH_DEPTH),
     P.Effect.tap((x) => {
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       const fs = require('node:fs');
       // eslint-disable-next-line fp/no-unused-expression
-      fs.writeFileSync('/tmp/gameTree.dot', dotEvaluatedGameTreeNode(x));
+      fs.writeFileSync('/tmp/gameTree.dot', gameTreeNodeDot(x));
       return P.Effect.unit;
     }),
     P.Effect.map((gameTreeNode) => gameTreeNode.bestChildMove),

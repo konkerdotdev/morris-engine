@@ -2,10 +2,13 @@
 
 ---
 
+- Refactor MorrisGame
+  - Separate state from functions
+    - Could we even use OOP here?!?
+  - Schemas/etc to be able to serialize/deserialize state(to/from JSON initially)
+  - Create game files which can be used as test fixtures
+
 - Unit tests!!
-- Rationalize:
-  - Naming conventions for functions
-  - Module/sub-module organization
 - Integration tests
   - Run a game with a list of moves, check expected "snapshot" output (of some kind)
   - Have a bunch of these to test edge cases, error cases, long cases (e.g. draw after x repeats)
@@ -34,6 +37,9 @@
 - OTHER
   - Clock?
   - Move counts?
+- ~~Rationalize:~~
+  - ~~Naming conventions for functions~~
+  - ~~Module/sub-module organization~~
 - ~~Refactor text render for common/repeated code~~
 - ~~Functions for varying config, as possible~~
   - ~~e.g. start color~~

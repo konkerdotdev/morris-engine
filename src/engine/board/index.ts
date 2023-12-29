@@ -1,8 +1,7 @@
 import type { RepeatString, Tuple } from '../../lib/type-utils';
 import type { MorrisLinkType, THREE } from '../consts';
-import { EMPTY } from '../consts';
+import { EMPTY, MORRIS } from '../consts';
 import type { Morris } from '../morris';
-import { isOccupied } from './points';
 import type { EmptyOccupant, MorrisBoardCoordS } from './schemas';
 
 // --------------------------------------------------------------------------
@@ -23,6 +22,12 @@ export type OccupiedBoardPoint<D extends number, N extends number> = Omit<Morris
   readonly occupant: Morris<N>;
 };
 
+export function isOccupiedBoardPoint<D extends number, N extends number>(
+  x: MorrisBoardPoint<D, N>
+): x is OccupiedBoardPoint<D, N> {
+  return x.occupant._tag === MORRIS;
+}
+
 export type MillCandidate<D extends number> = Tuple<MorrisBoardCoordS<D>, THREE>;
 
 export type MorrisBoard<P extends number, D extends number, N extends number> = {
@@ -42,7 +47,7 @@ export function boardHash<P extends number, D extends number, N extends number>(
   board: MorrisBoard<P, D, N>
 ): MorrisBoardPositionString<P> {
   return board.points.reduce(
-    (acc, val) => `${acc}${isOccupied(val) ? val.occupant.color : EMPTY}`,
+    (acc, val) => `${acc}${isOccupiedBoardPoint(val) ? val.occupant.color : EMPTY}`,
     ''
   ) as MorrisBoardPositionString<P>;
 }

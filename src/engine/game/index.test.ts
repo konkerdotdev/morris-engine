@@ -5,17 +5,17 @@ describe('game', () => {
   describe('resolveResult', () => {
     it('should resolve a win for white', () => {
       expect(
-        unit.deriveResult({ isWinWhite: [true, 's'], isWinBlack: [false, 's'], isDraw: [false, 's'] } as any)
+        unit.gameDeriveResult({ isWinWhite: [true, 's'], isWinBlack: [false, 's'], isDraw: [false, 's'] } as any)
       ).toEqual(MorrisGameResult.WIN_WHITE);
     });
     it('should resolve a win for black', () => {
       expect(
-        unit.deriveResult({ isWinWhite: [false, 's'], isWinBlack: [true, 's'], isDraw: [false, 's'] } as any)
+        unit.gameDeriveResult({ isWinWhite: [false, 's'], isWinBlack: [true, 's'], isDraw: [false, 's'] } as any)
       ).toEqual(MorrisGameResult.WIN_BLACK);
     });
     it('should resolve a draw', () => {
       expect(
-        unit.deriveResult({ isWinWhite: [false, 's'], isWinBlack: [false, 's'], isDraw: [true, 's'] } as any)
+        unit.gameDeriveResult({ isWinWhite: [false, 's'], isWinBlack: [false, 's'], isDraw: [true, 's'] } as any)
       ).toEqual(MorrisGameResult.DRAW);
     });
   });

@@ -5,12 +5,12 @@ import _minBy from 'lodash/minBy';
 import type { MorrisEngineError } from '../../../lib/error';
 import type { MorrisColor } from '../../consts';
 import { MorrisGameResult } from '../../consts';
-import { createMoveRoot } from '../../moves';
-import { getValidMovesForColor } from '../../moves/query';
+import { moveCreateRoot } from '../../moves';
+import { moveListValidMovesForColor } from '../../moves/query';
 import type { MorrisMoveS } from '../../moves/schemas';
 import type { RulesImpl } from '../../rules';
 import type { MorrisGameTick } from '../../tick';
-import { tick, tickTurn } from '../../tick';
+import { tick, tickGetTurnColor } from '../../tick';
 
 // --------------------------------------------------------------------------
 export enum NodeType {
@@ -48,7 +48,7 @@ export type scoreGameTreeNode<P extends number, D extends number, N extends numb
 ) => P.Effect.Effect<never, MorrisEngineError, number>;
 
 // --------------------------------------------------------------------------
-export function createGameTreeNode<P extends number, D extends number, N extends number>(
+export function gameTreeNodeCreate<P extends number, D extends number, N extends number>(
   type: NodeType,
   aim: NodeAim,
   depth: number,
@@ -66,7 +66,6 @@ export function createGameTreeNode<P extends number, D extends number, N extends
   };
 }
 
-// --------------------------------------------------------------------------
 export function gameTreeNodeSetEvalResult<P extends number, D extends number, N extends number>(
   gameTreeNode: GameTreeNode<P, D, N>,
   evalResult: EvalResult<D>
@@ -111,7 +110,9 @@ export function gameTreeCreate<P extends number, D extends number, N extends num
 ): P.Effect.Effect<RulesImpl, MorrisEngineError, EvaluatedGameTreeNode<P, D, N>> {
   return P.pipe(
     P.Effect.Do,
-    P.Effect.bind('validMoves', () => getValidMovesForColor(gameTick.game, gameTick.facts, tickTurn(gameTick))),
+    P.Effect.bind('validMoves', () =>
+      moveListValidMovesForColor(gameTick.game, gameTick.facts, tickGetTurnColor(gameTick))
+    ),
     P.Effect.bind('children', ({ validMoves }) =>
       P.pipe(
         validMoves.map((move) => gameTreeCreateChild(gameTick, move, _scoreF, maxColor, depth)),
@@ -119,12 +120,12 @@ export function gameTreeCreate<P extends number, D extends number, N extends num
       )
     ),
     P.Effect.map(({ children }) =>
-      createGameTreeNode(
+      gameTreeNodeCreate(
         NodeType.NODE,
-        tickTurn(gameTick) === maxColor ? NodeAim.MAX : NodeAim.MIN,
+        tickGetTurnColor(gameTick) === maxColor ? NodeAim.MAX : NodeAim.MIN,
         depth,
         gameTick,
-        createMoveRoot(),
+        moveCreateRoot(),
         children
       )
     ),
@@ -150,9 +151,9 @@ export function gameTreeCreateChild<P extends number, D extends number, N extend
         gameTick,
         tick(move),
         P.Effect.map((newGameTick) =>
-          createGameTreeNode(
+          gameTreeNodeCreate(
             NodeType.LEAF,
-            tickTurn(newGameTick) === maxColor ? NodeAim.MAX : NodeAim.MIN,
+            tickGetTurnColor(newGameTick) === maxColor ? NodeAim.MAX : NodeAim.MIN,
             depth,
             newGameTick,
             move,
@@ -170,7 +171,7 @@ export function gameTreeCreateChild<P extends number, D extends number, N extend
         P.Effect.Do,
         P.Effect.bind('newGameTick', () => P.pipe(gameTick, tick(move))),
         P.Effect.bind('validMoves', ({ newGameTick }) =>
-          getValidMovesForColor(newGameTick.game, newGameTick.facts, tickTurn(newGameTick))
+          moveListValidMovesForColor(newGameTick.game, newGameTick.facts, tickGetTurnColor(newGameTick))
         ),
         P.Effect.bind('nodeType', ({ newGameTick }) =>
           newGameTick.game.result === MorrisGameResult.IN_PROGRESS
@@ -186,9 +187,9 @@ export function gameTreeCreateChild<P extends number, D extends number, N extend
             : P.Effect.succeed([])
         ),
         P.Effect.map(({ children, newGameTick, nodeType }) =>
-          createGameTreeNode(
+          gameTreeNodeCreate(
             nodeType,
-            tickTurn(newGameTick) === maxColor ? NodeAim.MAX : NodeAim.MIN,
+            tickGetTurnColor(newGameTick) === maxColor ? NodeAim.MAX : NodeAim.MIN,
             depth,
             newGameTick,
             move,

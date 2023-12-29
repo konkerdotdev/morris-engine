@@ -3,7 +3,8 @@ import * as P from '@konker.dev/effect-ts-prelude';
 import type { MorrisEngineError } from '../../lib/error';
 import { toMorrisEngineError } from '../../lib/error';
 import * as R from '../../lib/tiny-rules-fp';
-import { countMorris, isPointAdjacent, isPointEmpty } from '../board/points';
+import { boardIsPointAdjacent, boardIsPointEmpty } from '../board/points';
+import { boardCountMorrisByColor } from '../board/query';
 import { MorrisColor, MorrisMoveType, MorrisPhase } from '../consts';
 import { moveColor } from '../moves';
 import { moveMakesMill } from '../moves/query';
@@ -81,7 +82,7 @@ export const RulesMove = <P extends number, D extends number, N extends number>(
             P.Effect.Do,
             P.Effect.bind('isPointEmptyTo', () =>
               c.move.type === MorrisMoveType.PLACE
-                ? isPointEmpty(c.gameTick.game.board, c.move.to)
+                ? boardIsPointEmpty(c.gameTick.game.board, c.move.to)
                 : P.Effect.succeed(false)
             ),
             P.Effect.map(({ isPointEmptyTo }) => c.move.type === MorrisMoveType.PLACE && isPointEmptyTo)
@@ -95,17 +96,17 @@ export const RulesMove = <P extends number, D extends number, N extends number>(
             P.Effect.Do,
             P.Effect.bind('isPointEmptyFrom', () =>
               c.move.type === MorrisMoveType.MOVE
-                ? isPointEmpty(c.gameTick.game.board, c.move.from)
+                ? boardIsPointEmpty(c.gameTick.game.board, c.move.from)
                 : P.Effect.succeed(false)
             ),
             P.Effect.bind('isPointEmptyTo', () =>
               c.move.type === MorrisMoveType.MOVE
-                ? isPointEmpty(c.gameTick.game.board, c.move.to)
+                ? boardIsPointEmpty(c.gameTick.game.board, c.move.to)
                 : P.Effect.succeed(false)
             ),
             P.Effect.bind('isPointAdjacentFromTo', () =>
               c.move.type === MorrisMoveType.MOVE
-                ? isPointAdjacent(c.gameTick.game.board, c.move.from, c.move.to)
+                ? boardIsPointAdjacent(c.gameTick.game.board, c.move.from, c.move.to)
                 : P.Effect.succeed(false)
             ),
             P.Effect.map(
@@ -122,7 +123,7 @@ export const RulesMove = <P extends number, D extends number, N extends number>(
             P.Effect.Do,
             P.Effect.bind('isPointEmptyFrom', () =>
               c.move.type === MorrisMoveType.REMOVE
-                ? isPointEmpty(c.gameTick.game.board, c.move.from)
+                ? boardIsPointEmpty(c.gameTick.game.board, c.move.from)
                 : P.Effect.succeed(false)
             ),
             P.Effect.map(
@@ -145,7 +146,7 @@ export const RulesMove = <P extends number, D extends number, N extends number>(
             P.Effect.Do,
             P.Effect.bind('isPointEmptyTo', () =>
               c.move.type === MorrisMoveType.MOVE
-                ? isPointEmpty(c.gameTick.game.board, c.move.to)
+                ? boardIsPointEmpty(c.gameTick.game.board, c.move.to)
                 : P.Effect.succeed(false)
             ),
             P.Effect.map(
@@ -238,17 +239,17 @@ export const RulesMove = <P extends number, D extends number, N extends number>(
         (c: MorrisRulesContextMove<P, D, N>, _f: MorrisFactsMove) =>
           (R.val(c.gameTick.facts.isRemoveMode) &&
             ((R.val(c.gameTick.facts.isTurnWhite) &&
-              countMorris(c.gameTick.game.board, MorrisColor.BLACK) ===
+              boardCountMorrisByColor(c.gameTick.game.board, MorrisColor.BLACK) ===
                 c.gameTick.game.config.numMorrisForFlyingThreshold + 1) ||
               (R.val(c.gameTick.facts.isTurnBlack) &&
-                countMorris(c.gameTick.game.board, MorrisColor.WHITE) ===
+                boardCountMorrisByColor(c.gameTick.game.board, MorrisColor.WHITE) ===
                   c.gameTick.game.config.numMorrisForFlyingThreshold + 1))) ||
           (!R.val(c.gameTick.facts.isRemoveMode) &&
             ((R.val(c.gameTick.facts.isTurnWhite) &&
-              countMorris(c.gameTick.game.board, MorrisColor.BLACK) <=
+              boardCountMorrisByColor(c.gameTick.game.board, MorrisColor.BLACK) <=
                 c.gameTick.game.config.numMorrisForFlyingThreshold) ||
               (R.val(c.gameTick.facts.isTurnBlack) &&
-                countMorris(c.gameTick.game.board, MorrisColor.WHITE) <=
+                boardCountMorrisByColor(c.gameTick.game.board, MorrisColor.WHITE) <=
                   c.gameTick.game.config.numMorrisForFlyingThreshold))),
         'Next turn is flying phase'
       ),

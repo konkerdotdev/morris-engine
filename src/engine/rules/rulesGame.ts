@@ -3,11 +3,10 @@ import * as P from '@konker.dev/effect-ts-prelude';
 import type { MorrisEngineError } from '../../lib/error';
 import * as R from '../../lib/tiny-rules-fp';
 import { boardHash } from '../board';
-import { countMorris } from '../board/points';
-import { countPositionRepeats } from '../board/query';
+import { boardCountMorrisByColor, boardCountPositionRepeats } from '../board/query';
 import { MorrisColor, MorrisPhase } from '../consts';
-import { gameHistoryLen } from '../game';
-import { countValidMovesForColor } from '../moves/query';
+import { gameHistoryLen } from '../game/history';
+import { moveCountValidMovesForColor } from '../moves/query';
 import type { MorrisFactsGame } from './factsGame';
 import { INITIAL_MORRIS_FACTS_GAME } from './factsGame';
 import type { MorrisRulesContextGame } from './index';
@@ -23,13 +22,13 @@ export const RulesGame = <P extends number, D extends number, N extends number>(
       R.addRuleFunc(
         'isFirstMove',
         (c: MorrisRulesContextGame<P, D, N>, _f: MorrisFactsGame) => {
-          return gameHistoryLen(c.game) === 0;
+          return gameHistoryLen(c.game.history) === 0;
         },
         'Is first move'
       ),
       R.addRuleFunc(
         'isSecondMove',
-        (c: MorrisRulesContextGame<P, D, N>, _f: MorrisFactsGame) => gameHistoryLen(c.game) === 1,
+        (c: MorrisRulesContextGame<P, D, N>, _f: MorrisFactsGame) => gameHistoryLen(c.game.history) === 1,
         'Is second move'
       ),
       R.addRuleFunc(
@@ -67,9 +66,9 @@ export const RulesGame = <P extends number, D extends number, N extends number>(
         'isFlyingPhase',
         (c: MorrisRulesContextGame<P, D, N>, f: MorrisFactsGame) =>
           (R.val(f.isTurnWhite) &&
-            countMorris(c.game.board, MorrisColor.WHITE) <= c.game.config.numMorrisForFlyingThreshold) ||
+            boardCountMorrisByColor(c.game.board, MorrisColor.WHITE) <= c.game.config.numMorrisForFlyingThreshold) ||
           (R.val(f.isTurnBlack) &&
-            countMorris(c.game.board, MorrisColor.BLACK) <= c.game.config.numMorrisForFlyingThreshold),
+            boardCountMorrisByColor(c.game.board, MorrisColor.BLACK) <= c.game.config.numMorrisForFlyingThreshold),
         `Is in flying phase for current player`
       ),
       R.addRuleFunc(
@@ -96,7 +95,7 @@ export const RulesGame = <P extends number, D extends number, N extends number>(
       R.addRuleFunc(
         'isDrawPositionRepeatLimit',
         (c: MorrisRulesContextGame<P, D, N>, _f: MorrisFactsGame) =>
-          countPositionRepeats(c.game, boardHash(c.game.board)) >= c.game.config.numPositionRepeatsForDraw,
+          boardCountPositionRepeats(c.game, boardHash(c.game.board)) >= c.game.config.numPositionRepeatsForDraw,
         'The result is a draw due to the move cycle limit'
       ),
       R.addRuleFunc(
@@ -116,7 +115,7 @@ export const RulesGame = <P extends number, D extends number, N extends number>(
         (c: MorrisRulesContextGame<P, D, N>, f: MorrisFactsGame) =>
           R.val(f.isTurnWhite)
             ? P.pipe(
-                countValidMovesForColor(c.game, f, MorrisColor.WHITE),
+                moveCountValidMovesForColor(c.game, f, MorrisColor.WHITE),
                 P.Effect.map((validMovesCount) => validMovesCount === 0)
               )
             : // If it is not white turn, then valid moves is irrelevant
@@ -128,7 +127,7 @@ export const RulesGame = <P extends number, D extends number, N extends number>(
         (c: MorrisRulesContextGame<P, D, N>, f: MorrisFactsGame) =>
           R.val(f.isTurnBlack)
             ? P.pipe(
-                countValidMovesForColor(c.game, f, MorrisColor.BLACK),
+                moveCountValidMovesForColor(c.game, f, MorrisColor.BLACK),
                 P.Effect.map((validMovesCount) => validMovesCount === 0)
               ) // If it is not black turn, then valid moves is irrelevant
             : P.Effect.succeed(false),
@@ -145,7 +144,7 @@ export const RulesGame = <P extends number, D extends number, N extends number>(
         (c: MorrisRulesContextGame<P, D, N>, f: MorrisFactsGame) =>
           R.val(f.isTurnWhite) &&
           c.game.morrisBlack.length === 0 &&
-          countMorris(c.game.board, MorrisColor.BLACK) < c.game.config.numMorrisToLoseThreshold + 1,
+          boardCountMorrisByColor(c.game.board, MorrisColor.BLACK) < c.game.config.numMorrisToLoseThreshold + 1,
         'The result is a win for white due to too few black pieces'
       ),
       R.addRuleFunc(
@@ -171,7 +170,7 @@ export const RulesGame = <P extends number, D extends number, N extends number>(
         (c: MorrisRulesContextGame<P, D, N>, f: MorrisFactsGame) =>
           R.val(f.isTurnBlack) &&
           c.game.morrisBlack.length === 0 &&
-          countMorris(c.game.board, MorrisColor.WHITE) < c.game.config.numMorrisToLoseThreshold + 1,
+          boardCountMorrisByColor(c.game.board, MorrisColor.WHITE) < c.game.config.numMorrisToLoseThreshold + 1,
         'The result is a win for black due to too few black pieces'
       ),
       R.addRuleFunc(

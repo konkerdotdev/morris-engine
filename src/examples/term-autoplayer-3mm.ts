@@ -13,7 +13,7 @@ import { gameSetStartColor } from '../engine/game';
 import { renderString } from '../engine/render/text';
 import { shellStartMorrisGame, shellTick, shellTickAutoPlayer, shellWrapRenderString } from '../engine/shell';
 import type { MorrisGameTick } from '../engine/tick';
-import { tickTurn } from '../engine/tick';
+import { tickGetTurnColor } from '../engine/tick';
 import type { params } from '../games/3mm';
 import { game } from '../games/3mm';
 import * as R from '../lib/tiny-rules-fp';
@@ -28,7 +28,7 @@ const shellRenderString = shellWrapRenderString<typeof params.P, typeof params.D
 export async function execLoop(
   gt: MorrisGameTick<typeof params.P, typeof params.D, typeof params.N>
 ): Promise<MorrisGameTick<typeof params.P, typeof params.D, typeof params.N> | undefined> {
-  if (tickTurn(gt) === gt.game.startColor) {
+  if (tickGetTurnColor(gt) === gt.game.startColor) {
     const move = await rl.question(`${gt.message} (Q to quit): `);
     if (move.toUpperCase() === 'Q') {
       return undefined;
