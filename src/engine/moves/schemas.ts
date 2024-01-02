@@ -1,40 +1,40 @@
 import * as P from '@konker.dev/effect-ts-prelude';
 
-import { MorrisBoardCoordS } from '../board/schemas';
+import { MorrisBoardCoord } from '../board/schemas';
 import { MorrisColor, MorrisMoveType } from '../consts';
 
-export const MorrisMoveRootS = P.Schema.struct({
+export const MorrisMoveRoot = P.Schema.struct({
   type: P.Schema.literal(MorrisMoveType.ROOT),
 });
-export type MorrisMoveRootS = P.Schema.Schema.To<typeof MorrisMoveRootS>;
+export type MorrisMoveRoot = P.Schema.Schema.To<typeof MorrisMoveRoot>;
 
-export function MorrisMovePlaceS<D extends number>(d: D) {
+export function MorrisMovePlace<D extends number>(d: D) {
   return P.Schema.struct({
     type: P.Schema.literal(MorrisMoveType.PLACE),
     color: P.Schema.literal(MorrisColor.WHITE, MorrisColor.BLACK),
-    to: MorrisBoardCoordS(d),
+    to: MorrisBoardCoord(d),
   });
 }
-export type MorrisMovePlaceS<D extends number> = P.Schema.Schema.To<ReturnType<typeof MorrisMovePlaceS<D>>>;
+export type MorrisMovePlace<D extends number> = P.Schema.Schema.To<ReturnType<typeof MorrisMovePlace<D>>>;
 
-export function MorrisMoveMoveS<D extends number>(d: D) {
+export function MorrisMoveMove<D extends number>(d: D) {
   return P.Schema.struct({
     type: P.Schema.literal(MorrisMoveType.MOVE),
-    from: MorrisBoardCoordS(d),
-    to: MorrisBoardCoordS(d),
+    from: MorrisBoardCoord(d),
+    to: MorrisBoardCoord(d),
   });
 }
-export type MorrisMoveMoveS<D extends number> = P.Schema.Schema.To<ReturnType<typeof MorrisMoveMoveS<D>>>;
+export type MorrisMoveMove<D extends number> = P.Schema.Schema.To<ReturnType<typeof MorrisMoveMove<D>>>;
 
-export function MorrisMoveRemoveS<D extends number>(d: D) {
+export function MorrisMoveRemove<D extends number>(d: D) {
   return P.Schema.struct({
     type: P.Schema.literal(MorrisMoveType.REMOVE),
-    from: MorrisBoardCoordS(d),
+    from: MorrisBoardCoord(d),
   });
 }
-export type MorrisMoveRemoveS<D extends number> = P.Schema.Schema.To<ReturnType<typeof MorrisMoveRemoveS<D>>>;
+export type MorrisMoveRemove<D extends number> = P.Schema.Schema.To<ReturnType<typeof MorrisMoveRemove<D>>>;
 
-export function MorrisMoveS<D extends number>(d: D) {
-  return P.Schema.union(MorrisMovePlaceS(d), MorrisMoveMoveS(d), MorrisMoveRemoveS(d), MorrisMoveRootS);
+export function MorrisMove<D extends number>(d: D) {
+  return P.Schema.union(MorrisMovePlace(d), MorrisMoveMove(d), MorrisMoveRemove(d), MorrisMoveRoot);
 }
-export type MorrisMoveS<D extends number> = P.Schema.Schema.To<ReturnType<typeof MorrisMoveS<D>>>;
+export type MorrisMove<D extends number> = P.Schema.Schema.To<ReturnType<typeof MorrisMove<D>>>;

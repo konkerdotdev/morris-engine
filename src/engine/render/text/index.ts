@@ -3,8 +3,8 @@ import * as P from '@konker.dev/effect-ts-prelude';
 import chalk from 'chalk';
 
 import type { MorrisEngineError } from '../../../lib/error';
-import type { MorrisBoard, MorrisBoardPoint } from '../../board';
-import { isOccupiedBoardPoint } from '../../board';
+import type { MorrisBoard, MorrisBoardPoint } from '../../board/schemas';
+import { isOccupiedBoardPoint } from '../../board/schemas';
 import type { COORD_CHAR } from '../../consts';
 import { MorrisColor, MorrisLinkType, PT, X, Y } from '../../consts';
 import type { MorrisGameTick } from '../../tick';

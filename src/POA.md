@@ -3,6 +3,7 @@
 ---
 
 - Refactor MorrisGame
+
   - Separate state from functions
     - Could we even use OOP here?!?
   - Schemas/etc to be able to serialize/deserialize state(to/from JSON initially)

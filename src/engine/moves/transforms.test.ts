@@ -1,18 +1,18 @@
 import * as P from '@konker.dev/effect-ts-prelude';
 
 import { MorrisColor, MorrisMoveType } from '../consts';
-import type { MorrisMoveMoveS, MorrisMovePlaceS, MorrisMoveRemoveS } from './schemas';
+import type { MorrisMoveMove, MorrisMovePlace, MorrisMoveRemove } from './schemas';
 import * as unit from './transforms';
 
 describe('moves/transforms', () => {
   const TEST_PLACE_S = 'P B a2';
-  const TEST_PLACE_O: MorrisMovePlaceS<3> = { type: MorrisMoveType.PLACE, color: MorrisColor.BLACK, to: 'a2' };
+  const TEST_PLACE_O: MorrisMovePlace<3> = { type: MorrisMoveType.PLACE, color: MorrisColor.BLACK, to: 'a2' };
 
   const TEST_MOVE_S = 'M a1 a2';
-  const TEST_MOVE_O: MorrisMoveMoveS<3> = { type: MorrisMoveType.MOVE, from: 'a1', to: 'a2' };
+  const TEST_MOVE_O: MorrisMoveMove<3> = { type: MorrisMoveType.MOVE, from: 'a1', to: 'a2' };
 
   const TEST_REMOVE_S = 'R c3';
-  const TEST_REMOVE_O: MorrisMoveRemoveS<3> = { type: MorrisMoveType.REMOVE, from: 'c3' };
+  const TEST_REMOVE_O: MorrisMoveRemove<3> = { type: MorrisMoveType.REMOVE, from: 'c3' };
 
   describe('String_MorrisMovePlace', () => {
     it('should work as expected', () => {

@@ -1,6 +1,6 @@
 import * as P from '@konker.dev/effect-ts-prelude';
 
-export type Fact = [boolean, string];
+export type Fact = readonly [boolean, string];
 export type Facts = Record<string, Fact>;
 
 export const UNSET_FACT = 'unset';

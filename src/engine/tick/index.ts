@@ -9,7 +9,7 @@ import type { MorrisGame } from '../game';
 import { gameDeriveResult, gameReset, gameSetResult } from '../game';
 import { gameHistoryLen, gameHistoryPeek } from '../game/history';
 import { gameDeriveInvalidMoveErrorMessage, gameDeriveMessage, gameDeriveStartMessage } from '../game/message';
-import type { MorrisMoveS } from '../moves/schemas';
+import type { MorrisMove } from '../moves/schemas';
 import { RulesImpl } from '../rules';
 import type { MorrisFactsGame } from '../rules/factsGame';
 import { BOOTSTRAP_INITIAL_MORRIS_FACTS_GAME } from '../rules/factsGame';
@@ -40,7 +40,7 @@ export function tickGetTurnColor<P extends number, D extends number, N extends n
 
 // --------------------------------------------------------------------------
 export const tick =
-  <P extends number, D extends number, N extends number>(move: MorrisMoveS<D>) =>
+  <P extends number, D extends number, N extends number>(move: MorrisMove<D>) =>
   (gameTick: MorrisGameTick<P, D, N>): P.Effect.Effect<RulesImpl, MorrisEngineError, MorrisGameTick<P, D, N>> => {
     const oldGame = gameTick.game;
 
@@ -65,7 +65,7 @@ export const tick =
       P.Effect.flatMap((binding) =>
         R.val(binding.moveFacts.moveIsValid)
           ? P.Effect.succeed(binding)
-          : P.Effect.fail(toMorrisEngineError(gameDeriveInvalidMoveErrorMessage(move, oldGame, binding.moveFacts)))
+          : P.Effect.fail(toMorrisEngineError(gameDeriveInvalidMoveErrorMessage(binding.moveFacts)))
       ),
       // Execute the valid move
       P.Effect.bind('newGame', ({ moveFacts }) => P.pipe(oldGame, tickApplyMove(move, moveFacts))),
@@ -85,7 +85,7 @@ export const tick =
         )
       ),
       // Get a message prompt for the new game state
-      P.Effect.bind('message', ({ newGame, newGameFacts }) => gameDeriveMessage(newGame, newGameFacts)),
+      P.Effect.bind('message', ({ newGameFacts }) => gameDeriveMessage(newGameFacts)),
       // Create a new game tick with the new game state and the new game facts
       P.Effect.flatMap(({ message, newGame, newGameFacts }) =>
         tickCreate(gameSetResult(newGame, gameDeriveResult(newGameFacts)), newGameFacts, gameTick.tickN + 1, message)
@@ -125,7 +125,7 @@ export const tickUndo = <P extends number, D extends number, N extends number>(
         )
       )
     ),
-    P.Effect.bind('oldMessage', ({ oldGame, oldGameFacts }) => gameDeriveMessage(oldGame, oldGameFacts)),
+    P.Effect.bind('oldMessage', ({ oldGameFacts }) => gameDeriveMessage(oldGameFacts)),
     P.Effect.flatMap(({ oldGame, oldGameFacts, oldMessage }) =>
       tickCreate(gameSetResult(oldGame, gameDeriveResult(oldGameFacts)), oldGameFacts, gameTick.tickN - 1, oldMessage)
     )

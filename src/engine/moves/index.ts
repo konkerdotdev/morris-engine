@@ -2,38 +2,35 @@ import * as P from '@konker.dev/effect-ts-prelude';
 
 import type { MorrisEngineError } from '../../lib/error';
 import { boardGetMorrisAtCoord } from '../board/points';
-import type { MorrisBoardCoordS } from '../board/schemas';
+import type { MorrisBoardCoord } from '../board/schemas';
 import type { MorrisColor } from '../consts';
 import { flipColor, MorrisMoveType } from '../consts';
 import type { MorrisGame } from '../game';
-import type { MorrisMoveMoveS, MorrisMovePlaceS, MorrisMoveRemoveS, MorrisMoveRootS, MorrisMoveS } from './schemas';
+import type { MorrisMove, MorrisMoveMove, MorrisMovePlace, MorrisMoveRemove, MorrisMoveRoot } from './schemas';
 
 // --------------------------------------------------------------------------
 export const ROOT_MOVE_STR = '-';
 
-export const moveCreateRoot = (): MorrisMoveRootS => ({
+export const moveCreateRoot = (): MorrisMoveRoot => ({
   type: MorrisMoveType.ROOT,
 });
 
-export const moveCreatePlace = <D extends number>(
-  color: MorrisColor,
-  to: MorrisBoardCoordS<D>
-): MorrisMovePlaceS<D> => ({
+export const moveCreatePlace = <D extends number>(color: MorrisColor, to: MorrisBoardCoord<D>): MorrisMovePlace<D> => ({
   type: MorrisMoveType.PLACE,
   color,
   to,
 });
 
 export const moveCreateMove = <D extends number>(
-  from: MorrisBoardCoordS<D>,
-  to: MorrisBoardCoordS<D>
-): MorrisMoveMoveS<D> => ({
+  from: MorrisBoardCoord<D>,
+  to: MorrisBoardCoord<D>
+): MorrisMoveMove<D> => ({
   type: MorrisMoveType.MOVE,
   from,
   to,
 });
 
-export const moveCreateRemove = <D extends number>(from: MorrisBoardCoordS<D>): MorrisMoveRemoveS<D> => ({
+export const moveCreateRemove = <D extends number>(from: MorrisBoardCoord<D>): MorrisMoveRemove<D> => ({
   type: MorrisMoveType.REMOVE,
   from,
 });
@@ -43,7 +40,7 @@ export const moveCreateRemove = <D extends number>(from: MorrisBoardCoordS<D>): 
 // eslint-disable-next-line fp/no-nil
 export function moveColor<P extends number, D extends number, N extends number>(
   game: MorrisGame<P, D, N>,
-  move: MorrisMoveS<D>
+  move: MorrisMove<D>
 ): P.Effect.Effect<never, MorrisEngineError, MorrisColor> {
   switch (move.type) {
     case MorrisMoveType.PLACE:
@@ -65,7 +62,7 @@ export function moveColor<P extends number, D extends number, N extends number>(
 
 // --------------------------------------------------------------------------
 // eslint-disable-next-line fp/no-nil
-export function moveEqual<D extends number>(m1: MorrisMoveS<D>, m2: MorrisMoveS<D>): boolean {
+export function moveEqual<D extends number>(m1: MorrisMove<D>, m2: MorrisMove<D>): boolean {
   switch (m1.type) {
     case MorrisMoveType.PLACE:
       return m2.type === MorrisMoveType.PLACE && m1.color === m2.color && m1.to === m2.to;

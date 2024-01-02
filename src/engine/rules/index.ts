@@ -3,7 +3,7 @@ import * as P from '@konker.dev/effect-ts-prelude';
 import type { MorrisEngineError } from '../../lib/error';
 import type * as R from '../../lib/tiny-rules-fp';
 import type { MorrisGame } from '../game';
-import type { MorrisMoveS } from '../moves/schemas';
+import type { MorrisMove } from '../moves/schemas';
 import type { MorrisGameTick } from '../tick';
 import type { MorrisFactsGame } from './factsGame';
 import type { MorrisFactsMove } from './factsMove';
@@ -24,7 +24,7 @@ export type MorrisRulesetGame<P extends number, D extends number, N extends numb
 // --------------------------------------------------------------------------
 export type MorrisRulesContextMove<P extends number, D extends number, N extends number> = {
   readonly gameTick: MorrisGameTick<P, D, N>;
-  readonly move: MorrisMoveS<D>;
+  readonly move: MorrisMove<D>;
 };
 
 export type MorrisRulesetMove<P extends number, D extends number, N extends number> = R.RuleSet<

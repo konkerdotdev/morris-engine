@@ -2,14 +2,13 @@ import * as P from '@konker.dev/effect-ts-prelude';
 
 import type { MorrisEngineError } from '../../../lib/error';
 import { toMorrisEngineError } from '../../../lib/error';
-import type { MorrisBoardPoint } from '../../board';
-import type { MorrisBoardCoordS } from '../../board/schemas';
+import type { MorrisBoardCoord, MorrisBoardPoint } from '../../board/schemas';
 import type { COORD_CHAR } from '../../consts';
 import { COORD_CHARS } from '../../consts';
 import type { CoordTuple, MorrisBoardRenderParamsText } from './index';
 
 export function getBoardCoordParts<D extends number>(
-  coord: MorrisBoardCoordS<D>
+  coord: MorrisBoardCoord<D>
 ): P.Effect.Effect<never, MorrisEngineError, [COORD_CHAR, number]> {
   return P.Effect.try({
     try: () => {
@@ -25,7 +24,7 @@ export function getBoardCoordParts<D extends number>(
 
 export function getRenderCoord<D extends number>(
   params: MorrisBoardRenderParamsText,
-  coord: MorrisBoardCoordS<D>
+  coord: MorrisBoardCoord<D>
 ): P.Effect.Effect<never, MorrisEngineError, CoordTuple> {
   return P.pipe(
     getBoardCoordParts(coord),
@@ -60,7 +59,7 @@ export function boardPointToCoord<D extends number, N extends number>(
 
 export function boardPointsToCoords<D extends number, N extends number>(
   params: MorrisBoardRenderParamsText,
-  points: Array<MorrisBoardPoint<D, N>>
+  points: ReadonlyArray<MorrisBoardPoint<D, N>>
 ): P.Effect.Effect<never, MorrisEngineError, Array<[COORD_CHAR, number, CoordTuple]>> {
   return P.pipe(
     points.map((p) => boardPointToCoord(params, p)),

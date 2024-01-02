@@ -4,16 +4,12 @@ import type { MorrisEngineError } from '../../lib/error';
 import { toMorrisEngineError } from '../../lib/error';
 import type { Tuple } from '../../lib/type-utils';
 import type { MorrisGame } from '../game';
-import type { Morris } from '../morris';
-import type { MorrisBoard, MorrisBoardPoint, MorrisBoardPointOccupant, OccupiedBoardPoint } from './index';
-import { isOccupiedBoardPoint } from './index';
-import { boardListOccupiedPointsByColor } from './query';
-import type { MorrisBoardCoordS } from './schemas';
-import { EmptyOccupant, isEmptyOccupant } from './schemas';
+import type { Morris, MorrisBoard, MorrisBoardCoord, MorrisBoardPoint, MorrisBoardPointOccupant } from './schemas';
+import { EmptyOccupant, isEmptyOccupant, isOccupiedBoardPoint } from './schemas';
 
 export function boardGetPointByCoord<P extends number, D extends number, N extends number>(
   board: MorrisBoard<P, D, N>,
-  coord: MorrisBoardCoordS<D>
+  coord: MorrisBoardCoord<D>
 ): P.Effect.Effect<never, MorrisEngineError, MorrisBoardPoint<D, N>> {
   const i = board.points.findIndex((p) => p.coord === coord);
   const p = board.points[i];
@@ -22,7 +18,7 @@ export function boardGetPointByCoord<P extends number, D extends number, N exten
 
 export function boardGetMorrisAtCoord<P extends number, D extends number, N extends number>(
   board: MorrisBoard<P, D, N>,
-  coord: MorrisBoardCoordS<D>
+  coord: MorrisBoardCoord<D>
 ): P.Effect.Effect<never, MorrisEngineError, Morris<N>> {
   return P.pipe(
     boardGetPointByCoord(board, coord),
@@ -34,19 +30,9 @@ export function boardGetMorrisAtCoord<P extends number, D extends number, N exte
   );
 }
 
-export function boardGetOccupiedPointForMorris<P extends number, D extends number, N extends number>(
-  board: MorrisBoard<P, D, N>,
-  morris: Morris<N>
-): P.Effect.Effect<never, MorrisEngineError, OccupiedBoardPoint<D, N>> {
-  const occupiedPoints = boardListOccupiedPointsByColor(board, morris.color);
-  const point = occupiedPoints.find((p) => p.occupant.n === morris.n && p.occupant.color === morris.color);
-
-  return point ? P.Effect.succeed(point) : P.Effect.fail(toMorrisEngineError('Point not found for morris'));
-}
-
 export function boardIsPointEmpty<P extends number, D extends number, N extends number>(
   board: MorrisBoard<P, D, N>,
-  coord: MorrisBoardCoordS<D>
+  coord: MorrisBoardCoord<D>
 ): P.Effect.Effect<never, MorrisEngineError, boolean> {
   return P.pipe(
     boardGetPointByCoord(board, coord),
@@ -56,8 +42,8 @@ export function boardIsPointEmpty<P extends number, D extends number, N extends 
 
 export function boardIsPointAdjacent<P extends number, D extends number, N extends number>(
   board: MorrisBoard<P, D, N>,
-  from: MorrisBoardCoordS<D>,
-  to: MorrisBoardCoordS<D>
+  from: MorrisBoardCoord<D>,
+  to: MorrisBoardCoord<D>
 ): P.Effect.Effect<never, MorrisEngineError, boolean> {
   return P.pipe(
     boardGetPointByCoord(board, from),
@@ -67,10 +53,10 @@ export function boardIsPointAdjacent<P extends number, D extends number, N exten
 
 export function boardSetPointOccupant<P extends number, D extends number, N extends number>(
   game: MorrisGame<P, D, N>,
-  coord: MorrisBoardCoordS<D>,
+  coord: MorrisBoardCoord<D>,
   occupant: MorrisBoardPointOccupant<N>
 ): P.Effect.Effect<never, MorrisEngineError, MorrisGame<P, D, N>> {
-  const i = game.board.points.findIndex((p) => p.coord === coord);
+  const i = game.board.points.findIndex((p: MorrisBoardPoint<D, N>) => p.coord === coord);
   const p = game.board.points[i];
 
   return p
@@ -78,10 +64,9 @@ export function boardSetPointOccupant<P extends number, D extends number, N exte
         ...game,
         board: {
           ...game.board,
-          points: game.board.points.map((p) => (p.coord === coord ? { ...p, occupant } : p)) as Tuple<
-            MorrisBoardPoint<D, N>,
-            P
-          >,
+          points: game.board.points.map((p: MorrisBoardPoint<D, N>) =>
+            p.coord === coord ? { ...p, occupant } : p
+          ) as Tuple<MorrisBoardPoint<D, N>, P>,
         },
       })
     : P.Effect.fail(toMorrisEngineError(`Invalid point: ${coord}`));
@@ -89,7 +74,7 @@ export function boardSetPointOccupant<P extends number, D extends number, N exte
 
 export function boardSetPointEmpty<P extends number, D extends number, N extends number>(
   board: MorrisGame<P, D, N>,
-  coord: MorrisBoardCoordS<D>
+  coord: MorrisBoardCoord<D>
 ): P.Effect.Effect<never, MorrisEngineError, MorrisGame<P, D, N>> {
   return boardSetPointOccupant(board, coord, EmptyOccupant);
 }

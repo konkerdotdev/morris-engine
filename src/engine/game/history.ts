@@ -1,17 +1,7 @@
 import { moveEqual } from '../moves';
-import type { MorrisMoveS } from '../moves/schemas';
+import type { MorrisMove } from '../moves/schemas';
 import type { MorrisFactsMove } from '../rules/factsMove';
-
-export type MorrisGameHistory<D extends number> = {
-  readonly moves: ReadonlyArray<MorrisMoveS<D>>;
-  readonly moveFacts: ReadonlyArray<MorrisFactsMove>;
-  readonly historyPtr: number;
-};
-
-export type MorrisGameHistoryEntry<D extends number> = {
-  readonly lastMove: MorrisMoveS<D> | undefined;
-  readonly lastMoveFacts: MorrisFactsMove | undefined;
-};
+import type { MorrisGameHistory, MorrisGameHistoryEntry } from './schemas';
 
 // --------------------------------------------------------------------------
 export function gameHistoryLen<D extends number>(gameHistory: MorrisGameHistory<D>): number {
@@ -20,7 +10,7 @@ export function gameHistoryLen<D extends number>(gameHistory: MorrisGameHistory<
 
 export function gameHistoryPush<D extends number>(
   gameHistory: MorrisGameHistory<D>,
-  move: MorrisMoveS<D>,
+  move: MorrisMove<D>,
   moveFacts: MorrisFactsMove
 ): MorrisGameHistory<D> {
   if (gameHistory.historyPtr > 0) {
@@ -64,7 +54,7 @@ export function gameHistoryUnPop<D extends number>(gameHistory: MorrisGameHistor
 export function gameHistoryPeek<D extends number>(gameHistory: MorrisGameHistory<D>): MorrisGameHistoryEntry<D> {
   if (gameHistory.historyPtr < 0) {
     // eslint-disable-next-line fp/no-nil
-    return { lastMove: undefined, lastMoveFacts: undefined };
+    return { lastMove: undefined, lastMoveFacts: undefined } as MorrisGameHistoryEntry<D>;
   }
 
   const lastMove = gameHistory.moves[gameHistory.historyPtr];

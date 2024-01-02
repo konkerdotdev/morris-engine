@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import * as P from '@konker.dev/effect-ts-prelude';
 
-import { MorrisBoardCoordS, MorrisColorS } from '../board/schemas';
+import { MorrisBoardCoord, MorrisColorS } from '../board/schemas';
 import { moveCreateMove, moveCreatePlace, moveCreateRemove, moveCreateRoot, ROOT_MOVE_STR } from './index';
-import { MorrisMoveMoveS, MorrisMovePlaceS, MorrisMoveRemoveS, MorrisMoveRootS } from './schemas';
+import { MorrisMoveMove, MorrisMovePlace, MorrisMoveRemove, MorrisMoveRoot } from './schemas';
 
 // --------------------------------------------------------------------------
 // Schema transforms for string representations of moves
@@ -13,7 +13,7 @@ import { MorrisMoveMoveS, MorrisMovePlaceS, MorrisMoveRemoveS, MorrisMoveRootS }
 // R <coord1>           -- Remove piece on coord1
 export const String_MorrisMoveRoot = P.Schema.transformOrFail(
   P.Schema.string,
-  MorrisMoveRootS,
+  MorrisMoveRoot,
   (s: string) => {
     if (s !== ROOT_MOVE_STR) {
       return P.ParseResult.fail(
@@ -24,13 +24,13 @@ export const String_MorrisMoveRoot = P.Schema.transformOrFail(
     }
     return P.pipe(moveCreateRoot(), P.Effect.succeed);
   },
-  (_m: MorrisMoveRootS) => P.ParseResult.success(ROOT_MOVE_STR)
+  (_m: MorrisMoveRoot) => P.ParseResult.success(ROOT_MOVE_STR)
 );
 
 export function String_MorrisMovePlace<D extends number>(d: D) {
   return P.Schema.transformOrFail(
     P.Schema.string,
-    MorrisMovePlaceS(d),
+    MorrisMovePlace(d),
     (s: string) => {
       const parts = s.match(/^P ([BW])\s+([a-zA-Z]\d+)$/i);
       if (!parts || parts.length < 3) {
@@ -41,18 +41,18 @@ export function String_MorrisMovePlace<D extends number>(d: D) {
       return P.pipe(
         P.Effect.Do,
         P.Effect.bind('color', () => P.pipe(parts[1]!, P.Schema.decode(MorrisColorS))),
-        P.Effect.bind('toCoord', () => P.pipe(parts[2]!, P.Schema.decode(MorrisBoardCoordS(d)))),
+        P.Effect.bind('toCoord', () => P.pipe(parts[2]!, P.Schema.decode(MorrisBoardCoord(d)))),
         P.Effect.map(({ color, toCoord }) => moveCreatePlace<D>(color, toCoord))
       );
     },
-    (m: MorrisMovePlaceS<D>) => P.ParseResult.success(`P ${m.color} ${m.to}`)
+    (m: MorrisMovePlace<D>) => P.ParseResult.success(`P ${m.color} ${m.to}`)
   );
 }
 
 export function String_MorrisMoveMove<D extends number>(d: D) {
   return P.Schema.transformOrFail(
     P.Schema.string,
-    MorrisMoveMoveS(d),
+    MorrisMoveMove(d),
     (s: string) => {
       const parts = s.match(/^M ([a-zA-Z]\d+)\s+([a-zA-Z]\d+)$/i);
       if (!parts || parts.length < 3) {
@@ -62,19 +62,19 @@ export function String_MorrisMoveMove<D extends number>(d: D) {
       }
       return P.pipe(
         P.Effect.Do,
-        P.Effect.bind('fromCoord', () => P.pipe(parts[1]!, P.Schema.decode(MorrisBoardCoordS(d)))),
-        P.Effect.bind('toCoord', () => P.pipe(parts[2]!, P.Schema.decode(MorrisBoardCoordS(d)))),
+        P.Effect.bind('fromCoord', () => P.pipe(parts[1]!, P.Schema.decode(MorrisBoardCoord(d)))),
+        P.Effect.bind('toCoord', () => P.pipe(parts[2]!, P.Schema.decode(MorrisBoardCoord(d)))),
         P.Effect.map(({ fromCoord, toCoord }) => moveCreateMove<D>(fromCoord, toCoord))
       );
     },
-    (m: MorrisMoveMoveS<D>) => P.ParseResult.success(`M ${m.from} ${m.to}`)
+    (m: MorrisMoveMove<D>) => P.ParseResult.success(`M ${m.from} ${m.to}`)
   );
 }
 
 export function String_MorrisMoveRemove<D extends number>(d: D) {
   return P.Schema.transformOrFail(
     P.Schema.string,
-    MorrisMoveRemoveS(d),
+    MorrisMoveRemove(d),
     (s: string) => {
       const parts = s.match(/^R ([a-zA-Z]\d+)$/i);
       if (!parts || parts.length < 2) {
@@ -84,11 +84,11 @@ export function String_MorrisMoveRemove<D extends number>(d: D) {
       }
       return P.pipe(
         P.Effect.Do,
-        P.Effect.bind('fromCoord', () => P.pipe(parts[1]!, P.Schema.decode(MorrisBoardCoordS(d)))),
+        P.Effect.bind('fromCoord', () => P.pipe(parts[1]!, P.Schema.decode(MorrisBoardCoord(d)))),
         P.Effect.map(({ fromCoord }) => moveCreateRemove<D>(fromCoord))
       );
     },
-    (m: MorrisMoveRemoveS<D>) => P.ParseResult.success(`R ${m.from}`)
+    (m: MorrisMoveRemove<D>) => P.ParseResult.success(`R ${m.from}`)
   );
 }
 

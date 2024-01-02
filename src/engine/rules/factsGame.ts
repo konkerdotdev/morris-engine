@@ -1,4 +1,5 @@
-import type { Fact } from '../../lib/tiny-rules-fp';
+import * as P from '@konker.dev/effect-ts-prelude';
+
 import { UNSET_FACT } from '../../lib/tiny-rules-fp';
 import { MorrisColor, MorrisPhase } from '../consts';
 import type { MorrisGame } from '../game';
@@ -34,9 +35,12 @@ export const MorrisFactKeysGame = [
   'isWin',
   'isGameOver',
 ] as const;
-export type MorrisGameFactKeys = typeof MorrisFactKeysGame;
 
-export type MorrisFactsGame = Record<MorrisGameFactKeys[number], Fact>;
+export const MorrisFactsGame = P.Schema.record(
+  P.Schema.literal(...MorrisFactKeysGame),
+  P.Schema.tuple(P.Schema.boolean, P.Schema.string)
+);
+export type MorrisFactsGame = P.Schema.Schema.To<typeof MorrisFactsGame>;
 
 export const INITIAL_MORRIS_FACTS_GAME: MorrisFactsGame = {
   // is

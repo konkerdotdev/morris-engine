@@ -1,10 +1,13 @@
-import type { MorrisBoard } from '../../engine/board';
 import { boardHash } from '../../engine/board';
+import type { MorrisBlack, MorrisBoard, MorrisWhite } from '../../engine/board/schemas';
 import { EmptyOccupant } from '../../engine/board/schemas';
 import { MorrisColor, MorrisLinkType, MorrisPhase } from '../../engine/consts';
-import type { MorrisGame, MorrisGameConfig } from '../../engine/game';
+import type { MorrisGame } from '../../engine/game';
 import { MorrisGameBoilerplate } from '../../engine/game';
-import { MorrisBlack, MorrisWhite } from '../../engine/morris';
+import type { MorrisGameConfig } from '../../engine/game/schemas';
+import { createMorrisBlack, createMorrisWhite } from '../../engine/morris';
+
+export const TAG = '6mm';
 
 // Not exported
 const P = 16;
@@ -195,15 +198,29 @@ export function initMorrisBoard(): MorrisBoard<P, D, N> {
 }
 
 function initMorrisWhite(): ReadonlyArray<MorrisWhite<N>> {
-  return [MorrisWhite(1), MorrisWhite(2), MorrisWhite(3), MorrisWhite(4), MorrisWhite(5), MorrisWhite(6)];
+  return [
+    createMorrisWhite<N>(1),
+    createMorrisWhite<N>(2),
+    createMorrisWhite<N>(3),
+    createMorrisWhite<N>(4),
+    createMorrisWhite<N>(5),
+    createMorrisWhite<N>(6),
+  ];
 }
 
 function initMorrisBlack(): ReadonlyArray<MorrisBlack<N>> {
-  return [MorrisBlack(1), MorrisBlack(2), MorrisBlack(3), MorrisBlack(4), MorrisBlack(5), MorrisBlack(6)];
+  return [
+    createMorrisBlack<N>(1),
+    createMorrisBlack<N>(2),
+    createMorrisBlack<N>(3),
+    createMorrisBlack<N>(4),
+    createMorrisBlack<N>(5),
+    createMorrisBlack<N>(6),
+  ];
 }
 
 // --------------------------------------------------------------------------
-export const config: MorrisGameConfig<N> = {
+export const config: MorrisGameConfig<D, N> = {
   name: "6 Men's Morris",
   numMorrisPerPlayer: 6,
   numMillsToWinThreshold: 0,
@@ -218,6 +235,7 @@ export const config: MorrisGameConfig<N> = {
 };
 
 export const game: MorrisGame<P, D, N> = {
+  _tag: TAG,
   ...MorrisGameBoilerplate,
   config,
   startColor: MorrisColor.WHITE,

@@ -6,11 +6,11 @@ import { boardHash } from '../board';
 import type { MorrisGame } from '../game';
 import { gameApplyMoveToGameBoard, gameUnApplyMoveToGameBoard } from '../game';
 import { gameHistoryPop, gameHistoryPush } from '../game/history';
-import type { MorrisMoveS } from '../moves/schemas';
+import type { MorrisMove } from '../moves/schemas';
 import type { MorrisFactsMove } from '../rules/factsMove';
 
 export const tickApplyMove =
-  <P extends number, D extends number, N extends number>(move: MorrisMoveS<D>, moveFacts: MorrisFactsMove) =>
+  <P extends number, D extends number, N extends number>(move: MorrisMove<D>, moveFacts: MorrisFactsMove) =>
   (oldGame: MorrisGame<P, D, N>): P.Effect.Effect<never, MorrisEngineError, MorrisGame<P, D, N>> => {
     return P.pipe(
       gameApplyMoveToGameBoard(oldGame, move),
@@ -24,7 +24,7 @@ export const tickApplyMove =
   };
 
 export const tickUndoApplyMove =
-  <P extends number, D extends number, N extends number>(oldMove: MorrisMoveS<D>, oldMoveFacts: MorrisFactsMove) =>
+  <P extends number, D extends number, N extends number>(oldMove: MorrisMove<D>, oldMoveFacts: MorrisFactsMove) =>
   (newGame: MorrisGame<P, D, N>): P.Effect.Effect<never, MorrisEngineError, MorrisGame<P, D, N>> => {
     return P.pipe(
       gameUnApplyMoveToGameBoard(newGame, oldMove, oldMoveFacts),

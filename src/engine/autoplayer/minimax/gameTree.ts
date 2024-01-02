@@ -7,7 +7,7 @@ import type { MorrisColor } from '../../consts';
 import { MorrisGameResult } from '../../consts';
 import { moveCreateRoot } from '../../moves';
 import { moveListValidMovesForColor } from '../../moves/query';
-import type { MorrisMoveS } from '../../moves/schemas';
+import type { MorrisMove } from '../../moves/schemas';
 import type { RulesImpl } from '../../rules';
 import type { MorrisGameTick } from '../../tick';
 import { tick, tickGetTurnColor } from '../../tick';
@@ -28,18 +28,18 @@ export type GameTreeNode<P extends number, D extends number, N extends number> =
   readonly aim: NodeAim;
   readonly depth: number;
   readonly gameTick: MorrisGameTick<P, D, N>;
-  readonly move: MorrisMoveS<D>;
+  readonly move: MorrisMove<D>;
   readonly children: ReadonlyArray<EvaluatedGameTreeNode<P, D, N>>;
 };
 
 export type EvaluatedGameTreeNode<P extends number, D extends number, N extends number> = GameTreeNode<P, D, N> & {
-  readonly bestChildMove: MorrisMoveS<D>;
+  readonly bestChildMove: MorrisMove<D>;
   readonly score: number;
 };
 
 export type EvalResult<D extends number> = {
   readonly score: number;
-  readonly bestChildMove: MorrisMoveS<D>;
+  readonly bestChildMove: MorrisMove<D>;
 };
 
 export type scoreGameTreeNode<P extends number, D extends number, N extends number> = (
@@ -53,7 +53,7 @@ export function gameTreeNodeCreate<P extends number, D extends number, N extends
   aim: NodeAim,
   depth: number,
   gameTick: MorrisGameTick<P, D, N>,
-  move: MorrisMoveS<D>,
+  move: MorrisMove<D>,
   children: ReadonlyArray<EvaluatedGameTreeNode<P, D, N>>
 ): GameTreeNode<P, D, N> {
   return {
@@ -140,7 +140,7 @@ export function gameTreeCreate<P extends number, D extends number, N extends num
 
 export function gameTreeCreateChild<P extends number, D extends number, N extends number>(
   gameTick: MorrisGameTick<P, D, N>,
-  move: MorrisMoveS<D>,
+  move: MorrisMove<D>,
   _scoreF: scoreGameTreeNode<P, D, N>,
   maxColor: MorrisColor,
   depth: number

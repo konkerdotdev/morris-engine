@@ -4,7 +4,6 @@ import type { MorrisEngineError } from '../../lib/error';
 import { toMorrisEngineError } from '../../lib/error';
 import * as R from '../../lib/tiny-rules-fp';
 import { MorrisColor } from '../consts';
-import type { MorrisMoveS } from '../moves/schemas';
 import type { MorrisFactsGame } from '../rules/factsGame';
 import type { MorrisFactsMove } from '../rules/factsMove';
 import type { MorrisGame } from './index';
@@ -21,12 +20,8 @@ export function gameDeriveStartMessage<P extends number, D extends number, N ext
 /**
  * Derive the message for the end of the game
  */
-// FIXME: unused arg
 // eslint-disable-next-line fp/no-nil
-export function gameDeriveResultMessage<P extends number, D extends number, N extends number>(
-  _newGame: MorrisGame<P, D, N>,
-  newFacts: MorrisFactsGame
-): string {
+export function gameDeriveResultMessage(newFacts: MorrisFactsGame): string {
   if (R.val(newFacts.isWinWhite)) {
     if (R.val(newFacts.isWinWhiteMillsMade)) return 'White wins! (number of mills made)';
     else if (R.val(newFacts.isWinWhiteOpponentCount)) return 'White wins! (too few black pieces left)';
@@ -47,12 +42,7 @@ export function gameDeriveResultMessage<P extends number, D extends number, N ex
 /**
  * Derive an error message when given an invalid move
  */
-// FIXME: unused arg
-export function gameDeriveInvalidMoveErrorMessage<P extends number, D extends number, N extends number>(
-  _move: MorrisMoveS<D>,
-  _oldGame: MorrisGame<P, D, N>,
-  moveFacts: MorrisFactsMove
-): string {
+export function gameDeriveInvalidMoveErrorMessage(moveFacts: MorrisFactsMove): string {
   if (!R.val(moveFacts.moveIsCorrectColor)) return 'Invalid move: wrong color';
   if (!R.val(moveFacts.moveIsCorrectType)) return 'Invalid move: wrong move type';
   if (!R.val(moveFacts.moveIsPossible)) return 'Invalid move: move is not possible';
@@ -62,13 +52,9 @@ export function gameDeriveInvalidMoveErrorMessage<P extends number, D extends nu
 /**
  * Derive a message foe the current game state
  */
-// FIXME: unused arg
-export function gameDeriveMessage<P extends number, D extends number, N extends number>(
-  _newGame: MorrisGame<P, D, N>,
-  gameFacts: MorrisFactsGame
-): P.Effect.Effect<never, MorrisEngineError, string> {
+export function gameDeriveMessage(gameFacts: MorrisFactsGame): P.Effect.Effect<never, MorrisEngineError, string> {
   const message = () => {
-    if (R.val(gameFacts.isGameOver)) return gameDeriveResultMessage(_newGame, gameFacts);
+    if (R.val(gameFacts.isGameOver)) return gameDeriveResultMessage(gameFacts);
 
     if (R.val(gameFacts.isLaskerPhase)) {
       if (R.val(gameFacts.isTurnWhite)) return 'Place or move White';

@@ -3,7 +3,7 @@ import * as P from '@konker.dev/effect-ts-prelude';
 import _uniqWith from 'lodash/uniqWith';
 
 import type { MorrisEngineError } from '../../../lib/error';
-import type { MorrisBoardLink, MorrisBoardPoint } from '../../board';
+import type { MorrisBoardLink, MorrisBoardPoint } from '../../board/schemas';
 import type { MorrisLinkType } from '../../consts';
 import { A, B, X, Y } from '../../consts';
 import type { CoordTuple, LineFunc, MorrisBoardRenderParamsText } from './index';
@@ -32,7 +32,7 @@ export function linkToCoords<D extends number, N extends number>(
 
 export function links<D extends number, N extends number>(
   params: MorrisBoardRenderParamsText,
-  points: Array<MorrisBoardPoint<D, N>>,
+  points: ReadonlyArray<MorrisBoardPoint<D, N>>,
   linkType: MorrisLinkType,
   sortAxisL: typeof X | typeof Y,
   sortAxisC: typeof X | typeof Y
@@ -51,7 +51,7 @@ export function links<D extends number, N extends number>(
 
 export function linksD<D extends number, N extends number>(
   params: MorrisBoardRenderParamsText,
-  points: Array<MorrisBoardPoint<D, N>>,
+  points: ReadonlyArray<MorrisBoardPoint<D, N>>,
   linkType: MorrisLinkType,
   sortAxisL: typeof X | typeof Y,
   sortAxisC: typeof X | typeof Y

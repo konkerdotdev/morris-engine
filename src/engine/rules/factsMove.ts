@@ -1,4 +1,5 @@
-import type { Fact } from '../../lib/tiny-rules-fp';
+import * as P from '@konker.dev/effect-ts-prelude';
+
 import { UNSET_FACT } from '../../lib/tiny-rules-fp';
 
 export const MorrisFactKeysMove = [
@@ -29,9 +30,11 @@ export const MorrisFactKeysMove = [
   'moveMakesNextTurnBlack',
 ] as const;
 
-export type MorrisFactKeysMove = typeof MorrisFactKeysMove;
-
-export type MorrisFactsMove = Record<MorrisFactKeysMove[number], Fact>;
+export const MorrisFactsMove = P.Schema.record(
+  P.Schema.literal(...MorrisFactKeysMove),
+  P.Schema.tuple(P.Schema.boolean, P.Schema.string)
+);
+export type MorrisFactsMove = P.Schema.Schema.To<typeof MorrisFactsMove>;
 
 export const INITIAL_MORRIS_FACTS_MOVE: MorrisFactsMove = {
   // move is

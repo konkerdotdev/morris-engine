@@ -3,7 +3,6 @@ import * as P from '@konker.dev/effect-ts-prelude';
 import type { MorrisEngineError } from '../../lib/error';
 import { toMorrisEngineError } from '../../lib/error';
 import * as R from '../../lib/tiny-rules-fp';
-import type { MorrisBoard, MorrisBoardPositionString } from '../board';
 import { boardHash } from '../board';
 import {
   boardGetMorrisAtCoord,
@@ -11,48 +10,19 @@ import {
   boardSetPointEmpty,
   boardSetPointOccupant,
 } from '../board/points';
-import { boardListOccupiedPointsByColor } from '../board/query';
-import type { MorrisBoardCoordS } from '../board/schemas';
-import type { MorrisPhase } from '../consts';
+import type { Morris, MorrisBlack, MorrisBoard, MorrisWhite } from '../board/schemas';
 import { MorrisColor, MorrisGameResult, MorrisMoveType } from '../consts';
-import type { Morris, MorrisBlack, MorrisWhite } from '../morris';
-import type { MorrisMoveS } from '../moves/schemas';
+import type { MorrisMove } from '../moves/schemas';
 import type { MorrisFactsGame } from '../rules/factsGame';
 import { BOOTSTRAP_INITIAL_MORRIS_FACTS_GAME } from '../rules/factsGame';
 import type { MorrisFactsMove } from '../rules/factsMove';
 import type { MorrisGameTick } from '../tick';
 import { tickCreate } from '../tick';
-import type { MorrisGameHistory } from './history';
 import { gameDeriveStartMessage } from './message';
+import type { MorrisGameState } from './schemas';
 
-export type MorrisGameConfig<N extends number> = {
-  readonly name: string;
-  readonly numMorrisPerPlayer: N;
-  readonly forbiddenPointsFirstMove: Array<MorrisBoardCoordS<any>>;
-  readonly forbiddenPointsSecondMove: Array<MorrisBoardCoordS<any>>;
-  readonly forbiddenPointsPlacingPhase: Array<MorrisBoardCoordS<any>>;
-  readonly numMillsToWinThreshold: number; // 1 for 3MM
-  readonly numMorrisForFlyingThreshold: number;
-  readonly numMorrisToLoseThreshold: number; // 2 for 9MM
-  readonly numMovesWithoutMillForDraw: number;
-  readonly numPositionRepeatsForDraw: number;
-  readonly phases: ReadonlyArray<MorrisPhase>; // 3MM: [PLACING, MOVING], L: [LASKER, MOVING]
-};
-
-export type MorrisGame<P extends number, D extends number, N extends number> = {
-  readonly config: MorrisGameConfig<N>;
-  readonly board: MorrisBoard<P, D, N>;
-
-  readonly startColor: MorrisColor;
-  readonly result: MorrisGameResult;
-  readonly lastMillCounter: number;
-  readonly morrisWhiteRemoved: ReadonlyArray<MorrisWhite<N>>;
-  readonly morrisBlackRemoved: ReadonlyArray<MorrisBlack<N>>;
-  readonly history: MorrisGameHistory<D>;
-
-  readonly morrisWhite: ReadonlyArray<MorrisWhite<N>>;
-  readonly morrisBlack: ReadonlyArray<MorrisBlack<N>>;
-  readonly positions: ReadonlyArray<MorrisBoardPositionString<P>>;
+export type MorrisGame<P extends number, D extends number, N extends number> = MorrisGameState<P, D, N> & {
+  readonly _tag: string;
 
   readonly initMorrisBoard: () => MorrisBoard<P, D, N>;
   readonly initMorrisWhite: () => ReadonlyArray<MorrisWhite<N>>;
@@ -147,19 +117,6 @@ export function gameGetPossibleNextPlaceMorris<P extends number, D extends numbe
 }
 
 /**
- * Get every morris on the board of a given color
- */
-// FIXME: move to board
-export function gameListMorrisOnBoardForColor<P extends number, D extends number, N extends number>(
-  game: MorrisGame<P, D, N>,
-  color: MorrisColor
-): ReadonlyArray<Morris<N>> {
-  return boardListOccupiedPointsByColor(game.board, color)
-    .filter((p) => p.occupant.color === color)
-    .map((p) => p.occupant);
-}
-
-/**
  * Helper function to remove a morris, of a given color, from the unused morris pool
  */
 export function gameUseMorris<P extends number, D extends number, N extends number>(
@@ -167,9 +124,13 @@ export function gameUseMorris<P extends number, D extends number, N extends numb
   morris: Morris<N>
 ): P.Effect.Effect<never, MorrisEngineError, MorrisGame<P, D, N>> {
   const morrisWhiteWithout =
-    morris.color === MorrisColor.WHITE ? game.morrisWhite.filter((i) => i.n !== morris.n) : game.morrisWhite;
+    morris.color === MorrisColor.WHITE
+      ? game.morrisWhite.filter((i: MorrisWhite<N>) => i.n !== morris.n)
+      : game.morrisWhite;
   const morrisBlackWithout =
-    morris.color === MorrisColor.BLACK ? game.morrisBlack.filter((i) => i.n !== morris.n) : game.morrisBlack;
+    morris.color === MorrisColor.BLACK
+      ? game.morrisBlack.filter((i: MorrisBlack<N>) => i.n !== morris.n)
+      : game.morrisBlack;
 
   return P.Effect.succeed({
     ...game,
@@ -248,7 +209,7 @@ export function gameUnDiscardMorris<P extends number, D extends number, N extend
 // eslint-disable-next-line fp/no-nil
 export function gameApplyMoveToGameBoard<P extends number, D extends number, N extends number>(
   game: MorrisGame<P, D, N>,
-  move: MorrisMoveS<D>
+  move: MorrisMove<D>
 ): P.Effect.Effect<never, MorrisEngineError, MorrisGame<P, D, N>> {
   switch (move.type) {
     case MorrisMoveType.PLACE:
@@ -291,7 +252,7 @@ export function gameApplyMoveToGameBoard<P extends number, D extends number, N e
 // eslint-disable-next-line fp/no-nil
 export function gameUnApplyMoveToGameBoard<P extends number, D extends number, N extends number>(
   game: MorrisGame<P, D, N>,
-  move: MorrisMoveS<D>,
+  move: MorrisMove<D>,
   oldMoveFacts: MorrisFactsMove
 ): P.Effect.Effect<never, MorrisEngineError, MorrisGame<P, D, N>> {
   switch (move.type) {
