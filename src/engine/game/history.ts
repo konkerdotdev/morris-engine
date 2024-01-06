@@ -14,7 +14,8 @@ export function gameHistoryPush<D extends number>(
   moveFacts: MorrisFactsMove
 ): MorrisGameHistory<D> {
   if (gameHistory.historyPtr > 0) {
-    if (moveEqual(gameHistory.moves[gameHistory.historyPtr - 1]!, move)) {
+    const lastMove = gameHistory.moves[gameHistory.historyPtr - 1];
+    if (lastMove && moveEqual(lastMove, move)) {
       return {
         ...gameHistory,
         historyPtr: gameHistory.historyPtr - 1,

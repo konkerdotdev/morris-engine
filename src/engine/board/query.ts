@@ -27,9 +27,8 @@ export function boardListOccupiedPointsByColor<P extends number, D extends numbe
   board: MorrisBoard<P, D, N>,
   color: MorrisColor
 ): ReadonlyArray<OccupiedBoardPoint<D, N>> {
-  return board.points.filter((p) => isOccupiedBoardPoint(p) && p.occupant.color === color) as ReadonlyArray<
-    OccupiedBoardPoint<D, N>
-  >;
+  // return board.points.filter((p) => isOccupiedBoardPoint(p) && p.occupant.color === color);
+  return board.points.filter(isOccupiedBoardPoint).filter((p) => p.occupant.color === color);
 }
 
 export function boardGetOccupiedPointForMorris<P extends number, D extends number, N extends number>(

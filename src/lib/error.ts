@@ -9,7 +9,7 @@ export type MorrisEngineError = {
 export function toMorrisEngineError(x: unknown): MorrisEngineError {
   return {
     _tag: TAG,
-    message: typeof x === 'object' && x && 'message' in x ? (x as any).message : String(x),
+    message: typeof x === 'object' && x && 'message' in x && typeof x.message === 'string' ? x.message : String(x),
     cause: x,
   };
 }

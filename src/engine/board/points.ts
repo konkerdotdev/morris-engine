@@ -2,7 +2,6 @@ import * as P from '@konker.dev/effect-ts-prelude';
 
 import type { MorrisEngineError } from '../../lib/error';
 import { toMorrisEngineError } from '../../lib/error';
-import type { Tuple } from '../../lib/type-utils';
 import type { MorrisGame } from '../game';
 import type { Morris, MorrisBoard, MorrisBoardCoord, MorrisBoardPoint, MorrisBoardPointOccupant } from './schemas';
 import { EmptyOccupant, isEmptyOccupant, isOccupiedBoardPoint } from './schemas';
@@ -68,7 +67,7 @@ export function boardSetPointOccupant<P extends number, D extends number, N exte
             ...game.gameState.board,
             points: game.gameState.board.points.map((p: MorrisBoardPoint<D, N>) =>
               p.coord === coord ? { ...p, occupant } : p
-            ) as Tuple<MorrisBoardPoint<D, N>, P>,
+            ),
           },
         },
       })

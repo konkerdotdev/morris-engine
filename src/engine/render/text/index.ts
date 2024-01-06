@@ -121,7 +121,7 @@ export function initMorrisBoardRenderContext<P extends number, D extends number,
 
       renderPoints: Array(params.h)
         .fill('_')
-        .map((_) => Array(params.w).fill('?')),
+        .map((_: string) => Array(params.w).fill('?')),
     }))
   );
 }

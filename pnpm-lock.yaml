@@ -115,6 +115,9 @@ devDependencies:
   ts-toolbelt:
     specifier: ^9.6.0
     version: 9.6.0
+  type-coverage:
+    specifier: ^2.27.1
+    version: 2.27.1(typescript@5.3.3)
   typescript:
     specifier: ^5.3.3
     version: 5.3.3
@@ -6659,6 +6662,29 @@ packages:
     engines: {node: '>= 0.8.0'}
     dependencies:
       prelude-ls: 1.2.1
+    dev: true
+
+  /type-coverage-core@2.27.1(typescript@5.3.3):
+    resolution: {integrity: sha512-W+PMYbhUsq+UWkrb7UkmyO7zF3zt4qZuQukyDM6eaiCIkMJclcVmR3O02clDk4FKpKPbzHictOmoIu3fYp+53g==}
+    peerDependencies:
+      typescript: 2 || 3 || 4 || 5
+    dependencies:
+      fast-glob: 3.3.2
+      minimatch: 9.0.3
+      normalize-path: 3.0.0
+      tslib: 2.6.2
+      tsutils: 3.21.0(typescript@5.3.3)
+      typescript: 5.3.3
+    dev: true
+
+  /type-coverage@2.27.1(typescript@5.3.3):
+    resolution: {integrity: sha512-KAL2BRRvEACnyh830WoazZ5YJTmFBHEk/mCrJlVxNqjbAPrusJN0c4u3IzRrFMq/yRKsVEvwMp/awQDF4RgLSQ==}
+    hasBin: true
+    dependencies:
+      minimist: 1.2.8
+      type-coverage-core: 2.27.1(typescript@5.3.3)
+    transitivePeerDependencies:
+      - typescript
     dev: true
 
   /type-detect@4.0.8:

@@ -40,6 +40,10 @@ export const COORD_CHARS = [
 export type COORD_CHARS = typeof COORD_CHARS;
 export type COORD_CHAR = COORD_CHARS[number];
 
+export function isCoordChar(x: unknown): x is COORD_CHAR {
+  return !!x && typeof x === 'string' && COORD_CHARS.includes(x as never);
+}
+
 export enum MorrisColor {
   BLACK = 'B',
   WHITE = 'W',

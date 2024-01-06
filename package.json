@@ -22,8 +22,8 @@
   ],
   "packageManager": "pnpm@8.0.0",
   "dependencies": {
-    "@effect/io": "^0.41.2",
     "@effect/data": "^0.18.7",
+    "@effect/io": "^0.41.2",
     "@effect/platform-node": "^0.40.1",
     "@effect/schema": "^0.36.5",
     "@konker.dev/effect-ts-prelude": "0.0.5",
@@ -60,6 +60,7 @@
     "ts-jest": "^29.1.1",
     "ts-node": "^10.9.2",
     "ts-toolbelt": "^9.6.0",
+    "type-coverage": "^2.27.1",
     "typescript": "^5.3.3"
   },
   "staticFiles": [],
@@ -69,6 +70,7 @@
     "clean": "rm -rf dist && rm -rf coverage && rm -f tsconfig.tsbuildinfo",
     "typecheck": "tsc --noEmit",
     "build": "pnpm run clean && tsc && gulp copy-static",
+    "type-coverage-check": "type-coverage --detail --at-least 100",
     "circular-check": "madge --extensions ts --circular --no-color --no-spinner --warning src",
     "eslint-check": "eslint --max-warnings=0 '**/*.{ts,js,json}'",
     "fixme-check": "leasot --exit-nicely --skip-unsupported src",
@@ -78,7 +80,7 @@
     "lint-check": "pnpm run eslint-check && pnpm run prettier-check && pnpm run circular-check && pnpm run fixme-check",
     "lint-fix": "pnpm run eslint-fix && pnpm run prettier-fix",
     "pre-push": "pnpm run lint-check && pnpm run typecheck",
-    "ci": "pnpm run lint-check && pnpm run typecheck && pnpm run test && pnpm run build && pnpm run fixme-check",
+    "ci": "pnpm run lint-check && pnpm run typecheck && pnpm run type-coverage-check && pnpm run test && pnpm run build && pnpm run fixme-check",
     "cd": "pnpm run build && pnpm publish --access public"
   }
 }

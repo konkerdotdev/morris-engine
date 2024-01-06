@@ -13,8 +13,16 @@ export function getBoardCoordParts<D extends number>(
   return P.Effect.try({
     try: () => {
       const parts = coord.split('', 2);
-      const bx = COORD_CHARS.find((c) => c === parts[0]!) as COORD_CHAR;
-      const by = parseInt(parts[1]!, 10);
+      // eslint-disable-next-line fp/no-throw
+      if (!parts[0] || !parts[1]) throw new Error(`Invalid board coord: ${coord}`);
+
+      const bx = COORD_CHARS.find((c) => c === parts[0]);
+      // eslint-disable-next-line fp/no-throw
+      if (!bx) throw new Error(`Invalid board coord: ${coord}`);
+
+      const by = parseInt(parts[1], 10);
+      // eslint-disable-next-line fp/no-throw
+      if (!by || Number.isNaN(by)) throw new Error(`Invalid board coord: ${coord}`);
 
       return [bx, by];
     },

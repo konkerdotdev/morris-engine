@@ -1,6 +1,6 @@
 import * as P from '@konker.dev/effect-ts-prelude';
 
-import { COORD_CHARS, EMPTY, MORRIS, MorrisColor, MorrisLinkType, THREE } from '../consts';
+import { COORD_CHARS, EMPTY, isCoordChar, MORRIS, MorrisColor, MorrisLinkType, THREE } from '../consts';
 
 export const MorrisColorS = P.Schema.transformOrFail(
   P.Schema.string,
@@ -46,10 +46,10 @@ export const isBoardCoord =
   <D extends number>(d: D) =>
   (s: string): boolean => {
     const parts = s.split('', 2).map((c) => c?.toLowerCase());
-    if (parts.length !== 2) return false;
-    const y = parseInt(parts[1]!, 10);
+    if (!parts[0] || !parts[1]) return false;
+    const y = parseInt(parts[1], 10);
 
-    return COORD_CHARS.slice(0, d).includes(parts[0]! as any) && y >= 1 && y <= d;
+    return isCoordChar(parts[0]) && COORD_CHARS.slice(0, d).includes(parts[0]) && y >= 1 && y <= d;
   };
 
 export function MorrisBoardCoord<D extends number>(d: D) {
