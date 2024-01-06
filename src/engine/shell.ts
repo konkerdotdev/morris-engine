@@ -5,7 +5,8 @@ import { toMorrisEngineError } from '../lib/error';
 import type { AutoPlayer } from './autoplayer';
 import type { MorrisGame } from './game';
 import { gameStart } from './game';
-import { String_MorrisMove } from './moves/transforms';
+import { MorrisGameState } from './game/schemas';
+import { MorrisMove } from './moves/schemas';
 import { RenderImpl } from './render';
 import { RulesImpl } from './rules';
 import { RulesGame } from './rules/rulesGame';
@@ -26,7 +27,7 @@ export function shellTick<P extends number, D extends number, N extends number>(
   return P.Effect.runSync(
     P.pipe(
       moveStr,
-      P.Schema.decode(String_MorrisMove(gameTick.game.board.dimension)),
+      P.Schema.decode(MorrisMove(gameTick.game.gameState.board.dimension)),
       P.Effect.mapError((_e) => 'Invalid input'),
       P.Effect.flatMap((move) => P.pipe(gameTick, tick(move))),
       P.Effect.mapError(toMorrisEngineError),
@@ -95,3 +96,19 @@ export const shellWrapRenderString =
         P.Effect.provideService(RenderImpl, RenderImpl.of({ renderString }))
       )
     );
+
+export const shellSerializeGameState = <P extends number, D extends number, N extends number>(
+  gameTick: MorrisGameTick<P, D, N>
+): string =>
+  P.Effect.runSync(
+    P.pipe(
+      gameTick.game.gameState,
+      P.Schema.encode(
+        MorrisGameState(
+          gameTick.game.gameState.config.params.P,
+          gameTick.game.gameState.config.params.D,
+          gameTick.game.gameState.config.params.N
+        )
+      )
+    )
+  );

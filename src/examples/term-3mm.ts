@@ -46,12 +46,12 @@ export async function execLoop(
 
 (async () => {
   const game = gamesInstantiate(TAG, initialGameState);
-  if (!game || game._tag !== TAG) {
+  if (!game || game.gameState._tag !== TAG) {
     // eslint-disable-next-line fp/no-throw
     throw new Error(`Could not instantiate game ${TAG}`);
   }
 
-  console.log(chalk.cyan.bold(game.config.name));
+  console.log(chalk.cyan.bold(game.gameState.config.name));
 
   let gt: MorrisGameTick<typeof config.params.P, typeof config.params.D, typeof config.params.N> | undefined =
     shellStartMorrisGame(gameSetStartColorRandom(game));

@@ -27,7 +27,7 @@ export function moveListUnusedMorrisForColor<P extends number, D extends number,
   game: MorrisGame<P, D, N>,
   color: MorrisColor
 ): ReadonlyArray<Morris<N>> {
-  return color === MorrisColor.WHITE ? game.morrisWhite : game.morrisBlack;
+  return color === MorrisColor.WHITE ? game.gameState.morrisWhite : game.gameState.morrisBlack;
 }
 
 export function moveHasUnusedMorrisForColor<P extends number, D extends number, N extends number>(
@@ -41,7 +41,7 @@ export function moveListValidPlaceMovesForMorris<P extends number, D extends num
   game: MorrisGame<P, D, N>,
   morris: Morris<N>
 ): P.Effect.Effect<never, MorrisEngineError, ReadonlyArray<MorrisMove<D>>> {
-  const emptyPoints = boardListEmptyPoints(game.board);
+  const emptyPoints = boardListEmptyPoints(game.gameState.board);
   return P.Effect.succeed(emptyPoints.map((p) => moveCreatePlace<D>(morris.color, p.coord)));
 }
 
@@ -50,10 +50,10 @@ export function moveListValidMoveMovesForMorris<P extends number, D extends numb
   morris: Morris<N>
 ): P.Effect.Effect<never, MorrisEngineError, ReadonlyArray<MorrisMove<D>>> {
   return P.pipe(
-    boardGetOccupiedPointForMorris(game.board, morris),
+    boardGetOccupiedPointForMorris(game.gameState.board, morris),
     P.Effect.flatMap((point) =>
       P.pipe(
-        boardListAdjacentPointsEmpty(game.board, point),
+        boardListAdjacentPointsEmpty(game.gameState.board, point),
         P.Effect.map((emptyPoints) => emptyPoints.map((ep) => moveCreateMove(point.coord, ep.coord)))
       )
     )
@@ -64,7 +64,7 @@ export function moveListValidRemoveMovesForMorris<P extends number, D extends nu
   game: MorrisGame<P, D, N>,
   morris: Morris<N>
 ): P.Effect.Effect<never, MorrisEngineError, ReadonlyArray<MorrisMove<D>>> {
-  const oppositeMorrisPoints = boardListOccupiedPointsByColor(game.board, flipColor(morris.color));
+  const oppositeMorrisPoints = boardListOccupiedPointsByColor(game.gameState.board, flipColor(morris.color));
   return P.Effect.succeed(oppositeMorrisPoints.map((p) => moveCreateRemove(p.coord)));
 }
 
@@ -73,7 +73,7 @@ export function moveListValidMovesForMorris<P extends number, D extends number, 
   facts: MorrisFactsGame,
   morris: Morris<N>
 ): P.Effect.Effect<never, MorrisEngineError, ReadonlyArray<MorrisMove<D>>> {
-  if (boardHasMorrisBeenPlaced(game.board, morris)) {
+  if (boardHasMorrisBeenPlaced(game.gameState.board, morris)) {
     if (!R.val(facts.isMovingPhase) && !R.val(facts.isLaskerPhase)) {
       return P.Effect.succeed([]);
     }
@@ -103,7 +103,7 @@ export function moveListValidMovesForColor<P extends number, D extends number, N
   color: MorrisColor
 ): P.Effect.Effect<never, MorrisEngineError, ReadonlyArray<MorrisMove<D>>> {
   // eslint-disable-next-line fp/no-nil
-  const placedMorris = boardListMorrisOnBoardForColor(game.board, color);
+  const placedMorris = boardListMorrisOnBoardForColor(game.gameState.board, color);
 
   return P.pipe(
     gameGetPossibleNextPlaceMorris(game, color),
@@ -157,11 +157,11 @@ export function moveMakesMill<P extends number, D extends number, N extends numb
     P.Effect.bind('newGame', () => gameApplyMoveToGameBoard(game, move)),
     P.Effect.flatMap(({ moveColor, newGame }) =>
       P.pipe(
-        boardListMillCandidatesForMove(newGame.board, move),
+        boardListMillCandidatesForMove(newGame.gameState.board, move),
         someE<never, MorrisEngineError, ReadonlyArray<MorrisBoardCoord<D>>>((candidate) =>
           P.pipe(
             candidate,
-            P.ReadonlyArray.map((coord) => boardGetPointByCoord(newGame.board, coord)),
+            P.ReadonlyArray.map((coord) => boardGetPointByCoord(newGame.gameState.board, coord)),
             P.Effect.all,
             P.Effect.map((points) => points.every((p) => isOccupiedBoardPoint(p) && p.occupant.color === moveColor))
           )

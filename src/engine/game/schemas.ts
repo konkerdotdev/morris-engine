@@ -77,7 +77,7 @@ export function MorrisGameStateStructFields<P extends number, D extends number, 
 }
 
 export function MorrisGameState<P extends number, D extends number, N extends number>(p: P, d: D, n: N) {
-  return P.Schema.struct(MorrisGameStateStructFields(p, d, n));
+  return P.Schema.ParseJson.pipe(P.Schema.compose(P.Schema.struct(MorrisGameStateStructFields(p, d, n))));
 }
 export type MorrisGameState<P extends number, D extends number, N extends number> = P.Schema.Schema.To<
   ReturnType<typeof MorrisGameState<P, D, N>>

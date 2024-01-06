@@ -16,9 +16,12 @@ export const tickApplyMove =
       gameApplyMoveToGameBoard(oldGame, move),
       P.Effect.map((newGame) => ({
         ...newGame,
-        lastMillCounter: R.val(moveFacts.moveMakesMill) ? 0 : oldGame.lastMillCounter + 1,
-        history: gameHistoryPush(oldGame.history, move, moveFacts),
-        positions: [boardHash(newGame.board), ...oldGame.positions],
+        gameState: {
+          ...newGame.gameState,
+          lastMillCounter: R.val(moveFacts.moveMakesMill) ? 0 : oldGame.gameState.lastMillCounter + 1,
+          history: gameHistoryPush(oldGame.gameState.history, move, moveFacts),
+          positions: [boardHash(newGame.gameState.board), ...oldGame.gameState.positions],
+        },
       }))
     );
   };
@@ -30,9 +33,12 @@ export const tickUndoApplyMove =
       gameUnApplyMoveToGameBoard(newGame, oldMove, oldMoveFacts),
       P.Effect.map((oldGame) => ({
         ...oldGame,
-        lastMillCounter: R.val(oldMoveFacts.moveMakesMill) ? 0 : oldGame.lastMillCounter + 1,
-        history: gameHistoryPop(oldGame.history),
-        positions: oldGame.positions.slice(1),
+        gameState: {
+          ...oldGame.gameState,
+          lastMillCounter: R.val(oldMoveFacts.moveMakesMill) ? 0 : oldGame.gameState.lastMillCounter + 1,
+          history: gameHistoryPop(oldGame.gameState.history),
+          positions: oldGame.gameState.positions.slice(1),
+        },
       }))
     );
   };

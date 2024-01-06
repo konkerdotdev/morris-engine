@@ -1,6 +1,6 @@
 import * as P from '@konker.dev/effect-ts-prelude';
 
-import { String_MorrisMove } from '../../moves/transforms';
+import { MorrisMove } from '../../moves/schemas';
 import type { EvaluatedGameTreeNode } from './gameTree';
 
 /**
@@ -16,10 +16,10 @@ export function gameTreeNodeDot<P extends number, D extends number, N extends nu
 
   const body = gameTreeNode.children.map(
     (child, childIndex) => `
-    "${gameTreeNode.aim}.${P.Schema.encodeSync(String_MorrisMove(gameTreeNode.gameTick.game.board.dimension))(
+    "${gameTreeNode.aim}.${P.Schema.encodeSync(MorrisMove(gameTreeNode.gameTick.game.gameState.board.dimension))(
       gameTreeNode.move
     )}.${depth}${index}.${gameTreeNode.score}" -> "${child.aim}.${P.Schema.encodeSync(
-      String_MorrisMove(gameTreeNode.gameTick.game.board.dimension)
+      MorrisMove(gameTreeNode.gameTick.game.gameState.board.dimension)
     )(child.move)}.${depth + 1}${childIndex}.${child.score}";
   `
   );

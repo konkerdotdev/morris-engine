@@ -341,7 +341,7 @@ export const initialGameState: MorrisGameState<P, D, N> = {
 
 export function Game9mm(gameState: MorrisGameState<P, D, N> = initialGameState): MorrisGame<P, D, N> {
   return {
-    ...gameState,
+    gameState,
     initMorrisBoard,
     initMorrisWhite,
     initMorrisBlack,

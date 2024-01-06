@@ -47,16 +47,16 @@ export function moveColor<P extends number, D extends number, N extends number>(
       return P.Effect.succeed(move.color);
     case MorrisMoveType.MOVE:
       return P.pipe(
-        boardGetMorrisAtCoord(game.board, move.from),
+        boardGetMorrisAtCoord(game.gameState.board, move.from),
         P.Effect.map((morris) => morris.color)
       );
     case MorrisMoveType.REMOVE:
       return P.pipe(
-        boardGetMorrisAtCoord(game.board, move.from),
+        boardGetMorrisAtCoord(game.gameState.board, move.from),
         P.Effect.map((morris) => flipColor(morris.color))
       );
     case MorrisMoveType.ROOT:
-      return P.Effect.succeed(game.startColor);
+      return P.Effect.succeed(game.gameState.startColor);
   }
 }
 

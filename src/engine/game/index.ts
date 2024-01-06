@@ -22,10 +22,11 @@ import { gameDeriveStartMessage } from './message';
 import type { MorrisGameState } from './schemas';
 
 export type MorrisGame<P extends number, D extends number, N extends number> = {
+  readonly gameState: MorrisGameState<P, D, N>;
   readonly initMorrisBoard: () => MorrisBoard<P, D, N>;
   readonly initMorrisWhite: () => ReadonlyArray<MorrisWhite<N>>;
   readonly initMorrisBlack: () => ReadonlyArray<MorrisBlack<N>>;
-} & MorrisGameState<P, D, N>;
+};
 
 // --------------------------------------------------------------------------
 export const MorrisGameStateBoilerplate = {
@@ -45,7 +46,13 @@ export function gameSetStartColor<P extends number, D extends number, N extends 
   game: MorrisGame<P, D, N>,
   color: MorrisColor
 ): MorrisGame<P, D, N> {
-  return { ...game, startColor: color };
+  return {
+    ...game,
+    gameState: {
+      ...game.gameState,
+      startColor: color,
+    },
+  };
 }
 
 export function gameSetStartColorRandom<P extends number, D extends number, N extends number>(
@@ -67,7 +74,7 @@ export function gameSetResult<P extends number, D extends number, N extends numb
   game: MorrisGame<P, D, N>,
   result: MorrisGameResult
 ): MorrisGame<P, D, N> {
-  return { ...game, result };
+  return { ...game, gameState: { ...game.gameState, result } };
 }
 
 // --------------------------------------------------------------------------
@@ -76,12 +83,15 @@ export function gameReset<P extends number, D extends number, N extends number>(
 ): MorrisGame<P, D, N> {
   return {
     ...game,
-    ...MorrisGameStateBoilerplate,
+    gameState: {
+      ...game.gameState,
+      ...MorrisGameStateBoilerplate,
 
-    board: game.initMorrisBoard(),
-    morrisWhite: game.initMorrisWhite(),
-    morrisBlack: game.initMorrisBlack(),
-    positions: [boardHash(game.initMorrisBoard())],
+      board: game.initMorrisBoard(),
+      morrisWhite: game.initMorrisWhite(),
+      morrisBlack: game.initMorrisBlack(),
+      positions: [boardHash(game.initMorrisBoard())],
+    },
   };
 }
 
@@ -90,7 +100,7 @@ export function gameGetNextPlaceMorris<P extends number, D extends number, N ext
   game: MorrisGame<P, D, N>,
   color: MorrisColor
 ): P.Effect.Effect<never, MorrisEngineError, Morris<N>> {
-  const nextMorris = color === MorrisColor.WHITE ? game.morrisWhite[0] : game.morrisBlack[0];
+  const nextMorris = color === MorrisColor.WHITE ? game.gameState.morrisWhite[0] : game.gameState.morrisBlack[0];
   return nextMorris
     ? P.Effect.succeed(nextMorris)
     : P.Effect.fail(toMorrisEngineError(`No available Morris to place for ${color}`));
@@ -100,7 +110,7 @@ export function gameHasUnplacedMorris<P extends number, D extends number, N exte
   game: MorrisGame<P, D, N>,
   color: MorrisColor
 ): boolean {
-  return color === MorrisColor.WHITE ? game.morrisWhite.length > 0 : game.morrisBlack.length > 0;
+  return color === MorrisColor.WHITE ? game.gameState.morrisWhite.length > 0 : game.gameState.morrisBlack.length > 0;
 }
 
 export function gameGetPossibleNextPlaceMorris<P extends number, D extends number, N extends number>(
@@ -123,17 +133,20 @@ export function gameUseMorris<P extends number, D extends number, N extends numb
 ): P.Effect.Effect<never, MorrisEngineError, MorrisGame<P, D, N>> {
   const morrisWhiteWithout =
     morris.color === MorrisColor.WHITE
-      ? game.morrisWhite.filter((i: MorrisWhite<N>) => i.n !== morris.n)
-      : game.morrisWhite;
+      ? game.gameState.morrisWhite.filter((i: MorrisWhite<N>) => i.n !== morris.n)
+      : game.gameState.morrisWhite;
   const morrisBlackWithout =
     morris.color === MorrisColor.BLACK
-      ? game.morrisBlack.filter((i: MorrisBlack<N>) => i.n !== morris.n)
-      : game.morrisBlack;
+      ? game.gameState.morrisBlack.filter((i: MorrisBlack<N>) => i.n !== morris.n)
+      : game.gameState.morrisBlack;
 
   return P.Effect.succeed({
     ...game,
-    morrisWhite: morrisWhiteWithout,
-    morrisBlack: morrisBlackWithout,
+    gameState: {
+      ...game.gameState,
+      morrisWhite: morrisWhiteWithout,
+      morrisBlack: morrisBlackWithout,
+    },
   });
 }
 
@@ -144,13 +157,18 @@ export function gameUnUseMorris<P extends number, D extends number, N extends nu
   game: MorrisGame<P, D, N>,
   morris: Morris<N>
 ): P.Effect.Effect<never, MorrisEngineError, MorrisGame<P, D, N>> {
-  const morrisWhiteWith = morris.color === MorrisColor.WHITE ? [morris, ...game.morrisWhite] : game.morrisWhite;
-  const morrisBlackWith = morris.color === MorrisColor.BLACK ? [morris, ...game.morrisBlack] : game.morrisBlack;
+  const morrisWhiteWith =
+    morris.color === MorrisColor.WHITE ? [morris, ...game.gameState.morrisWhite] : game.gameState.morrisWhite;
+  const morrisBlackWith =
+    morris.color === MorrisColor.BLACK ? [morris, ...game.gameState.morrisBlack] : game.gameState.morrisBlack;
 
   return P.Effect.succeed({
     ...game,
-    morrisWhite: morrisWhiteWith,
-    morrisBlack: morrisBlackWith,
+    gameState: {
+      ...game.gameState,
+      morrisWhite: morrisWhiteWith,
+      morrisBlack: morrisBlackWith,
+    },
   });
 }
 
@@ -162,14 +180,21 @@ export function gameDiscardMorris<P extends number, D extends number, N extends 
   morris: Morris<N>
 ): P.Effect.Effect<never, MorrisEngineError, MorrisGame<P, D, N>> {
   const morrisWhiteRemovedWith =
-    morris.color === MorrisColor.WHITE ? [morris, ...game.morrisWhiteRemoved] : game.morrisWhiteRemoved;
+    morris.color === MorrisColor.WHITE
+      ? [morris, ...game.gameState.morrisWhiteRemoved]
+      : game.gameState.morrisWhiteRemoved;
   const morrisBlackRemovedWith =
-    morris.color === MorrisColor.BLACK ? [morris, ...game.morrisBlackRemoved] : game.morrisBlackRemoved;
+    morris.color === MorrisColor.BLACK
+      ? [morris, ...game.gameState.morrisBlackRemoved]
+      : game.gameState.morrisBlackRemoved;
 
   return P.Effect.succeed({
     ...game,
-    morrisWhiteRemoved: morrisWhiteRemovedWith,
-    morrisBlackRemoved: morrisBlackRemovedWith,
+    gameState: {
+      ...game.gameState,
+      morrisWhiteRemoved: morrisWhiteRemovedWith,
+      morrisBlackRemoved: morrisBlackRemovedWith,
+    },
   });
 }
 
@@ -180,21 +205,25 @@ export function gameUnDiscardMorris<P extends number, D extends number, N extend
   game: MorrisGame<P, D, N>,
   color: MorrisColor
 ): P.Effect.Effect<never, MorrisEngineError, [MorrisGame<P, D, N>, Morris<N>]> {
-  const morris = color === MorrisColor.WHITE ? game.morrisWhiteRemoved[0] : game.morrisBlackRemoved[0];
+  const morris =
+    color === MorrisColor.WHITE ? game.gameState.morrisWhiteRemoved[0] : game.gameState.morrisBlackRemoved[0];
   if (!morris) {
     return P.Effect.fail(toMorrisEngineError(`No Morris to un-discard for ${color}`));
   }
 
   const morrisWhiteRemovedWithout =
-    morris.color === MorrisColor.WHITE ? [...game.morrisWhiteRemoved] : game.morrisWhiteRemoved;
+    morris.color === MorrisColor.WHITE ? [...game.gameState.morrisWhiteRemoved] : game.gameState.morrisWhiteRemoved;
   const morrisBlackRemovedWithout =
-    morris.color === MorrisColor.BLACK ? [...game.morrisBlackRemoved] : game.morrisBlackRemoved;
+    morris.color === MorrisColor.BLACK ? [...game.gameState.morrisBlackRemoved] : game.gameState.morrisBlackRemoved;
 
   return P.Effect.succeed([
     {
       ...game,
-      morrisWhiteRemoved: morrisWhiteRemovedWithout,
-      morrisBlackRemoved: morrisBlackRemovedWithout,
+      gameState: {
+        ...game.gameState,
+        morrisWhiteRemoved: morrisWhiteRemovedWithout,
+        morrisBlackRemoved: morrisBlackRemovedWithout,
+      },
     },
     morris,
   ]);
@@ -224,14 +253,14 @@ export function gameApplyMoveToGameBoard<P extends number, D extends number, N e
     case MorrisMoveType.MOVE:
       return P.pipe(
         P.Effect.Do,
-        P.Effect.bind('point', () => boardGetPointByCoord(game.board, move.from)),
+        P.Effect.bind('point', () => boardGetPointByCoord(game.gameState.board, move.from)),
         P.Effect.bind('newGame', () => boardSetPointEmpty(game, move.from)),
         P.Effect.flatMap(({ newGame, point }) => boardSetPointOccupant(newGame, move.to, point.occupant))
       );
 
     case MorrisMoveType.REMOVE:
       return P.pipe(
-        boardGetMorrisAtCoord<P, D, N>(game.board, move.from),
+        boardGetMorrisAtCoord<P, D, N>(game.gameState.board, move.from),
         P.Effect.flatMap((morris) =>
           P.pipe(
             boardSetPointEmpty(game, move.from),
@@ -256,7 +285,7 @@ export function gameUnApplyMoveToGameBoard<P extends number, D extends number, N
   switch (move.type) {
     case MorrisMoveType.PLACE:
       return P.pipe(
-        boardGetMorrisAtCoord<P, D, N>(game.board, move.to),
+        boardGetMorrisAtCoord<P, D, N>(game.gameState.board, move.to),
         P.Effect.flatMap((morris) =>
           P.pipe(
             gameUnUseMorris(game, morris),
@@ -268,7 +297,7 @@ export function gameUnApplyMoveToGameBoard<P extends number, D extends number, N
     case MorrisMoveType.MOVE:
       return P.pipe(
         P.Effect.Do,
-        P.Effect.bind('point', () => boardGetPointByCoord(game.board, move.to)),
+        P.Effect.bind('point', () => boardGetPointByCoord(game.gameState.board, move.to)),
         P.Effect.bind('newGame', () => boardSetPointEmpty(game, move.to)),
         P.Effect.flatMap(({ newGame, point }) => boardSetPointOccupant(newGame, move.from, point.occupant))
       );

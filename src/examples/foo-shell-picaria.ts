@@ -15,7 +15,7 @@ const MOVES = ['P W b4', 'P B d2', 'P W e5', 'P B e3', 'P W c1', 'P B e1', 'M b4
 
 // --------------------------------------------------------------------------
 const game = gamesInstantiate(TAG, initialGameState);
-if (!game || game._tag !== TAG) {
+if (!game || game.gameState._tag !== TAG) {
   // eslint-disable-next-line fp/no-throw
   throw new Error(`Could not instantiate game ${TAG}`);
 }

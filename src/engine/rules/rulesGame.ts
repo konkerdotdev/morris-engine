@@ -22,13 +22,13 @@ export const RulesGame = <P extends number, D extends number, N extends number>(
       R.addRuleFunc(
         'isFirstMove',
         (c: MorrisRulesContextGame<P, D, N>, _f: MorrisFactsGame) => {
-          return gameHistoryLen(c.game.history) === 0;
+          return gameHistoryLen(c.game.gameState.history) === 0;
         },
         'Is first move'
       ),
       R.addRuleFunc(
         'isSecondMove',
-        (c: MorrisRulesContextGame<P, D, N>, _f: MorrisFactsGame) => gameHistoryLen(c.game.history) === 1,
+        (c: MorrisRulesContextGame<P, D, N>, _f: MorrisFactsGame) => gameHistoryLen(c.game.gameState.history) === 1,
         'Is second move'
       ),
       R.addRuleFunc(
@@ -44,31 +44,33 @@ export const RulesGame = <P extends number, D extends number, N extends number>(
       R.addRuleFunc(
         'isLaskerPhase',
         (c: MorrisRulesContextGame<P, D, N>, _f: MorrisFactsGame) =>
-          c.game.config.phases[0] === MorrisPhase.LASKER &&
-          c.game.morrisWhite.length > 0 &&
-          c.game.morrisBlack.length > 0,
+          c.game.gameState.config.phases[0] === MorrisPhase.LASKER &&
+          c.game.gameState.morrisWhite.length > 0 &&
+          c.game.gameState.morrisBlack.length > 0,
         'Is in Lasker phase: Lasker phase is configured, and not all pieces have been placed'
       ),
       R.addRuleFunc(
         'isPlacingPhase',
         (c: MorrisRulesContextGame<P, D, N>, _f: MorrisFactsGame) =>
-          c.game.config.phases[0] === MorrisPhase.PLACING &&
-          (c.game.morrisWhite.length > 0 || c.game.morrisBlack.length > 0),
+          c.game.gameState.config.phases[0] === MorrisPhase.PLACING &&
+          (c.game.gameState.morrisWhite.length > 0 || c.game.gameState.morrisBlack.length > 0),
         'Is in placing phase: not all pieces have been placed'
       ),
       R.addRuleFunc(
         'isMovingPhase',
         (c: MorrisRulesContextGame<P, D, N>, _f: MorrisFactsGame) =>
-          c.game.morrisWhite.length === 0 && c.game.morrisBlack.length === 0,
+          c.game.gameState.morrisWhite.length === 0 && c.game.gameState.morrisBlack.length === 0,
         'Is in moving phase: all pieces have been placed'
       ),
       R.addRuleFunc(
         'isFlyingPhase',
         (c: MorrisRulesContextGame<P, D, N>, f: MorrisFactsGame) =>
           (R.val(f.isTurnWhite) &&
-            boardCountMorrisByColor(c.game.board, MorrisColor.WHITE) <= c.game.config.numMorrisForFlyingThreshold) ||
+            boardCountMorrisByColor(c.game.gameState.board, MorrisColor.WHITE) <=
+              c.game.gameState.config.numMorrisForFlyingThreshold) ||
           (R.val(f.isTurnBlack) &&
-            boardCountMorrisByColor(c.game.board, MorrisColor.BLACK) <= c.game.config.numMorrisForFlyingThreshold),
+            boardCountMorrisByColor(c.game.gameState.board, MorrisColor.BLACK) <=
+              c.game.gameState.config.numMorrisForFlyingThreshold),
         `Is in flying phase for current player`
       ),
       R.addRuleFunc(
@@ -95,13 +97,14 @@ export const RulesGame = <P extends number, D extends number, N extends number>(
       R.addRuleFunc(
         'isDrawPositionRepeatLimit',
         (c: MorrisRulesContextGame<P, D, N>, _f: MorrisFactsGame) =>
-          boardCountPositionRepeats(c.game, boardHash(c.game.board)) >= c.game.config.numPositionRepeatsForDraw,
+          boardCountPositionRepeats(c.game, boardHash(c.game.gameState.board)) >=
+          c.game.gameState.config.numPositionRepeatsForDraw,
         'The result is a draw due to the move cycle limit'
       ),
       R.addRuleFunc(
         'isDrawNoMillsLimit',
         (c: MorrisRulesContextGame<P, D, N>, _f: MorrisFactsGame) =>
-          c.game.lastMillCounter + 1 >= c.game.config.numMovesWithoutMillForDraw,
+          c.game.gameState.lastMillCounter + 1 >= c.game.gameState.config.numMovesWithoutMillForDraw,
         'The result is a draw due to move with no mills limit'
       ),
       R.addRuleFunc(
@@ -136,15 +139,16 @@ export const RulesGame = <P extends number, D extends number, N extends number>(
       R.addRuleFunc(
         'isWinWhiteMillsMade',
         (c: MorrisRulesContextGame<P, D, N>, f: MorrisFactsGame) =>
-          R.val(f.isMillMadeWhite) && c.game.config.numMillsToWinThreshold === 1,
+          R.val(f.isMillMadeWhite) && c.game.gameState.config.numMillsToWinThreshold === 1,
         'The result is a win for white due to mills made'
       ),
       R.addRuleFunc(
         'isWinWhiteOpponentCount',
         (c: MorrisRulesContextGame<P, D, N>, f: MorrisFactsGame) =>
           R.val(f.isTurnWhite) &&
-          c.game.morrisBlack.length === 0 &&
-          boardCountMorrisByColor(c.game.board, MorrisColor.BLACK) < c.game.config.numMorrisToLoseThreshold + 1,
+          c.game.gameState.morrisBlack.length === 0 &&
+          boardCountMorrisByColor(c.game.gameState.board, MorrisColor.BLACK) <
+            c.game.gameState.config.numMorrisToLoseThreshold + 1,
         'The result is a win for white due to too few black pieces'
       ),
       R.addRuleFunc(
@@ -162,15 +166,16 @@ export const RulesGame = <P extends number, D extends number, N extends number>(
       R.addRuleFunc(
         'isWinBlackMillsMade',
         (c: MorrisRulesContextGame<P, D, N>, f: MorrisFactsGame) =>
-          R.val(f.isMillMadeBlack) && c.game.config.numMillsToWinThreshold === 1,
+          R.val(f.isMillMadeBlack) && c.game.gameState.config.numMillsToWinThreshold === 1,
         'The result is a win for black due to mills made'
       ),
       R.addRuleFunc(
         'isWinBlackOpponentCount',
         (c: MorrisRulesContextGame<P, D, N>, f: MorrisFactsGame) =>
           R.val(f.isTurnBlack) &&
-          c.game.morrisBlack.length === 0 &&
-          boardCountMorrisByColor(c.game.board, MorrisColor.WHITE) < c.game.config.numMorrisToLoseThreshold + 1,
+          c.game.gameState.morrisBlack.length === 0 &&
+          boardCountMorrisByColor(c.game.gameState.board, MorrisColor.WHITE) <
+            c.game.gameState.config.numMorrisToLoseThreshold + 1,
         'The result is a win for black due to too few black pieces'
       ),
       R.addRuleFunc(

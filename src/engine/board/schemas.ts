@@ -123,12 +123,16 @@ export function MillCandidate<D extends number>(d: D) {
 export type MillCandidate<D extends number> = P.Schema.Schema.To<ReturnType<typeof MillCandidate<D>>>;
 
 export function MorrisBoard<P extends number, D extends number, N extends number>(p: P, d: D, n: N) {
-  return P.Schema.struct({
-    numPoints: P.Schema.literal(p),
-    dimension: P.Schema.literal(d),
-    points: P.Schema.array(MorrisBoardPoint(d, n)),
-    millCandidates: P.Schema.array(MillCandidate(d)),
-  });
+  return P.Schema.ParseJson.pipe(
+    P.Schema.compose(
+      P.Schema.struct({
+        numPoints: P.Schema.literal(p),
+        dimension: P.Schema.literal(d),
+        points: P.Schema.array(MorrisBoardPoint(d, n)),
+        millCandidates: P.Schema.array(MillCandidate(d)),
+      })
+    )
+  );
 }
 export type MorrisBoard<P extends number, D extends number, N extends number> = P.Schema.Schema.To<
   ReturnType<typeof MorrisBoard<P, D, N>>

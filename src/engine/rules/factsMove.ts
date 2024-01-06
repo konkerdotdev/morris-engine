@@ -30,9 +30,10 @@ export const MorrisFactKeysMove = [
   'moveMakesNextTurnBlack',
 ] as const;
 
-export const MorrisFactsMove = P.Schema.record(
-  P.Schema.literal(...MorrisFactKeysMove),
-  P.Schema.tuple(P.Schema.boolean, P.Schema.string)
+export const MorrisFactsMove = P.Schema.ParseJson.pipe(
+  P.Schema.compose(
+    P.Schema.record(P.Schema.literal(...MorrisFactKeysMove), P.Schema.tuple(P.Schema.boolean, P.Schema.string))
+  )
 );
 export type MorrisFactsMove = P.Schema.Schema.To<typeof MorrisFactsMove>;
 

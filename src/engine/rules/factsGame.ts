@@ -36,9 +36,10 @@ export const MorrisFactKeysGame = [
   'isGameOver',
 ] as const;
 
-export const MorrisFactsGame = P.Schema.record(
-  P.Schema.literal(...MorrisFactKeysGame),
-  P.Schema.tuple(P.Schema.boolean, P.Schema.string)
+export const MorrisFactsGame = P.Schema.ParseJson.pipe(
+  P.Schema.compose(
+    P.Schema.record(P.Schema.literal(...MorrisFactKeysGame), P.Schema.tuple(P.Schema.boolean, P.Schema.string))
+  )
 );
 export type MorrisFactsGame = P.Schema.Schema.To<typeof MorrisFactsGame>;
 
@@ -79,10 +80,10 @@ export const BOOTSTRAP_INITIAL_MORRIS_FACTS_GAME = <P extends number, D extends 
   // is
   isFirstMove: [true, 'default'],
   isSecondMove: [false, 'default'],
-  isTurnWhite: [game.startColor === MorrisColor.WHITE, 'default'],
-  isTurnBlack: [game.startColor === MorrisColor.BLACK, 'default'],
-  isPlacingPhase: [game.config.phases[0] === MorrisPhase.PLACING, 'default'],
-  isLaskerPhase: [game.config.phases[0] === MorrisPhase.LASKER, 'default'],
+  isTurnWhite: [game.gameState.startColor === MorrisColor.WHITE, 'default'],
+  isTurnBlack: [game.gameState.startColor === MorrisColor.BLACK, 'default'],
+  isPlacingPhase: [game.gameState.config.phases[0] === MorrisPhase.PLACING, 'default'],
+  isLaskerPhase: [game.gameState.config.phases[0] === MorrisPhase.LASKER, 'default'],
   isMovingPhase: [false, 'default'],
   isFlyingPhase: [false, 'default'],
   isRemoveMode: [false, 'default'],

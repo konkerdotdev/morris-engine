@@ -14,7 +14,7 @@ import type { MorrisGame } from './index';
 export function gameDeriveStartMessage<P extends number, D extends number, N extends number>(
   newGame: MorrisGame<P, D, N>
 ): string {
-  return newGame.startColor === MorrisColor.WHITE ? 'Place White' : 'Place Black';
+  return newGame.gameState.startColor === MorrisColor.WHITE ? 'Place White' : 'Place Black';
 }
 
 /**

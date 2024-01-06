@@ -174,7 +174,7 @@ export function gameTreeCreateChild<P extends number, D extends number, N extend
           moveListValidMovesForColor(newGameTick.game, newGameTick.facts, tickGetTurnColor(newGameTick))
         ),
         P.Effect.bind('nodeType', ({ newGameTick }) =>
-          newGameTick.game.result === MorrisGameResult.IN_PROGRESS
+          newGameTick.game.gameState.result === MorrisGameResult.IN_PROGRESS
             ? P.Effect.succeed(NodeType.NODE)
             : P.Effect.succeed(NodeType.LEAF)
         ),

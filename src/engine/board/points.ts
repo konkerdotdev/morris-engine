@@ -56,17 +56,20 @@ export function boardSetPointOccupant<P extends number, D extends number, N exte
   coord: MorrisBoardCoord<D>,
   occupant: MorrisBoardPointOccupant<N>
 ): P.Effect.Effect<never, MorrisEngineError, MorrisGame<P, D, N>> {
-  const i = game.board.points.findIndex((p: MorrisBoardPoint<D, N>) => p.coord === coord);
-  const p = game.board.points[i];
+  const i = game.gameState.board.points.findIndex((p: MorrisBoardPoint<D, N>) => p.coord === coord);
+  const p = game.gameState.board.points[i];
 
   return p
     ? P.Effect.succeed({
         ...game,
-        board: {
-          ...game.board,
-          points: game.board.points.map((p: MorrisBoardPoint<D, N>) =>
-            p.coord === coord ? { ...p, occupant } : p
-          ) as Tuple<MorrisBoardPoint<D, N>, P>,
+        gameState: {
+          ...game.gameState,
+          board: {
+            ...game.gameState.board,
+            points: game.gameState.board.points.map((p: MorrisBoardPoint<D, N>) =>
+              p.coord === coord ? { ...p, occupant } : p
+            ) as Tuple<MorrisBoardPoint<D, N>, P>,
+          },
         },
       })
     : P.Effect.fail(toMorrisEngineError(`Invalid point: ${coord}`));

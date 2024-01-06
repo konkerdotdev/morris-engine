@@ -103,7 +103,7 @@ export function boardCountPositionRepeats<P extends number, D extends number, N 
   game: MorrisGame<P, D, N>,
   position: MorrisBoardPositionString<P>
 ): number {
-  return game.positions.filter((p: MorrisBoardPositionString<P>) => p === position).length;
+  return game.gameState.positions.filter((p: MorrisBoardPositionString<P>) => p === position).length;
 }
 
 export function boardHasMorrisBeenPlaced<P extends number, D extends number, N extends number>(

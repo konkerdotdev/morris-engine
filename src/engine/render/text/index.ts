@@ -140,10 +140,10 @@ export function renderOccupant<D extends number, N extends number>(
 export function renderString<P extends number, D extends number, N extends number>(
   gameTick: MorrisGameTick<P, D, N>
 ): P.Effect.Effect<never, MorrisEngineError, string> {
-  const params = initMorrisBoardRenderParams(DEFAULT_MORRIS_BOARD_RENDER_CONFIG_TEXT, gameTick.game.board);
+  const params = initMorrisBoardRenderParams(DEFAULT_MORRIS_BOARD_RENDER_CONFIG_TEXT, gameTick.game.gameState.board);
 
   return P.pipe(
-    initMorrisBoardRenderContext(params, gameTick.game.board),
+    initMorrisBoardRenderContext(params, gameTick.game.gameState.board),
     P.Effect.map((context) => {
       context.renderPoints.forEach((row, j) =>
         row.forEach((_, i) => {
@@ -189,7 +189,7 @@ export function renderString<P extends number, D extends number, N extends numbe
     }),
     P.Effect.flatMap((context) => {
       return P.pipe(
-        gameTick.game.board.points.map((p) =>
+        gameTick.game.gameState.board.points.map((p) =>
           P.pipe(
             P.Effect.Do,
             P.Effect.bind('renderCoords', () => getRenderCoord(context, p.coord)),

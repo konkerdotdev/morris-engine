@@ -97,12 +97,12 @@ export const tick =
 export const tickUndo = <P extends number, D extends number, N extends number>(
   gameTick: MorrisGameTick<P, D, N>
 ): P.Effect.Effect<RulesImpl, MorrisEngineError, MorrisGameTick<P, D, N>> => {
-  if (gameHistoryLen(gameTick.game.history) < 2) {
+  if (gameHistoryLen(gameTick.game.gameState.history) < 2) {
     const game = gameReset(gameTick.game);
     return tickCreate(game, BOOTSTRAP_INITIAL_MORRIS_FACTS_GAME(game), 0, gameDeriveStartMessage(game));
   }
 
-  const { lastMove, lastMoveFacts } = gameHistoryPeek(gameTick.game.history);
+  const { lastMove, lastMoveFacts } = gameHistoryPeek(gameTick.game.gameState.history);
   if (!lastMove || !lastMoveFacts) {
     // TODO: Warning? Error?
     return P.Effect.succeed(gameTick);
