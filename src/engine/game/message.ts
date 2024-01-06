@@ -2,7 +2,6 @@ import * as P from '@konker.dev/effect-ts-prelude';
 
 import type { MorrisEngineError } from '../../lib/error';
 import { toMorrisEngineError } from '../../lib/error';
-import * as R from '../../lib/tiny-rules-fp';
 import { MorrisColor } from '../consts';
 import type { MorrisFactsGame } from '../rules/factsGame';
 import type { MorrisFactsMove } from '../rules/factsMove';
@@ -22,19 +21,19 @@ export function gameDeriveStartMessage<P extends number, D extends number, N ext
  */
 // eslint-disable-next-line fp/no-nil
 export function gameDeriveResultMessage(newFacts: MorrisFactsGame): string {
-  if (R.val(newFacts.isWinWhite)) {
-    if (R.val(newFacts.isWinWhiteMillsMade)) return 'White wins! (number of mills made)';
-    else if (R.val(newFacts.isWinWhiteOpponentCount)) return 'White wins! (too few black pieces left)';
-    else if (R.val(newFacts.isWinWhiteOpponentNoValidMove)) return 'White wins! (no valid move left for black)';
+  if (newFacts.isWinWhite) {
+    if (newFacts.isWinWhiteMillsMade) return 'White wins! (number of mills made)';
+    else if (newFacts.isWinWhiteOpponentCount) return 'White wins! (too few black pieces left)';
+    else if (newFacts.isWinWhiteOpponentNoValidMove) return 'White wins! (no valid move left for black)';
     else return 'White wins!';
-  } else if (R.val(newFacts.isWinBlack)) {
-    if (R.val(newFacts.isWinBlackMillsMade)) return 'Black wins! (number of mills made)';
-    else if (R.val(newFacts.isWinBlackOpponentCount)) return 'Black wins! (too few white pieces left)';
-    else if (R.val(newFacts.isWinBlackOpponentNoValidMove)) return 'Black wins! (no valid move left for white)';
+  } else if (newFacts.isWinBlack) {
+    if (newFacts.isWinBlackMillsMade) return 'Black wins! (number of mills made)';
+    else if (newFacts.isWinBlackOpponentCount) return 'Black wins! (too few white pieces left)';
+    else if (newFacts.isWinBlackOpponentNoValidMove) return 'Black wins! (no valid move left for white)';
     else return 'Black wins!';
   } else {
-    if (R.val(newFacts.isDrawNoMillsLimit)) return 'Draw (too many moves without a mill)';
-    if (R.val(newFacts.isDrawPositionRepeatLimit)) return 'Draw (position repeated too many times)';
+    if (newFacts.isDrawNoMillsLimit) return 'Draw (too many moves without a mill)';
+    if (newFacts.isDrawPositionRepeatLimit) return 'Draw (position repeated too many times)';
     else return 'Draw';
   }
 }
@@ -43,9 +42,9 @@ export function gameDeriveResultMessage(newFacts: MorrisFactsGame): string {
  * Derive an error message when given an invalid move
  */
 export function gameDeriveInvalidMoveErrorMessage(moveFacts: MorrisFactsMove): string {
-  if (!R.val(moveFacts.moveIsCorrectColor)) return 'Invalid move: wrong color';
-  if (!R.val(moveFacts.moveIsCorrectType)) return 'Invalid move: wrong move type';
-  if (!R.val(moveFacts.moveIsPossible)) return 'Invalid move: move is not possible';
+  if (!moveFacts.moveIsCorrectColor) return 'Invalid move: wrong color';
+  if (!moveFacts.moveIsCorrectType) return 'Invalid move: wrong move type';
+  if (!moveFacts.moveIsPossible) return 'Invalid move: move is not possible';
   return 'Invalid move';
 }
 
@@ -54,27 +53,27 @@ export function gameDeriveInvalidMoveErrorMessage(moveFacts: MorrisFactsMove): s
  */
 export function gameDeriveMessage(gameFacts: MorrisFactsGame): P.Effect.Effect<never, MorrisEngineError, string> {
   const message = () => {
-    if (R.val(gameFacts.isGameOver)) return gameDeriveResultMessage(gameFacts);
+    if (gameFacts.isGameOver) return gameDeriveResultMessage(gameFacts);
 
-    if (R.val(gameFacts.isLaskerPhase)) {
-      if (R.val(gameFacts.isTurnWhite)) return 'Place or move White';
-      if (R.val(gameFacts.isTurnBlack)) return 'Place or move Black';
+    if (gameFacts.isLaskerPhase) {
+      if (gameFacts.isTurnWhite) return 'Place or move White';
+      if (gameFacts.isTurnBlack) return 'Place or move Black';
     }
-    if (R.val(gameFacts.isRemoveMode)) {
-      if (R.val(gameFacts.isTurnWhite)) return 'Remove Black';
-      if (R.val(gameFacts.isTurnBlack)) return 'Remove White';
+    if (gameFacts.isRemoveMode) {
+      if (gameFacts.isTurnWhite) return 'Remove Black';
+      if (gameFacts.isTurnBlack) return 'Remove White';
     }
-    if (R.val(gameFacts.isPlacingPhase)) {
-      if (R.val(gameFacts.isTurnWhite)) return 'Place White';
-      if (R.val(gameFacts.isTurnBlack)) return 'Place Black';
+    if (gameFacts.isPlacingPhase) {
+      if (gameFacts.isTurnWhite) return 'Place White';
+      if (gameFacts.isTurnBlack) return 'Place Black';
     }
-    if (R.val(gameFacts.isFlyingPhase)) {
-      if (R.val(gameFacts.isTurnWhite)) return 'Fly White';
-      if (R.val(gameFacts.isTurnBlack)) return 'Fly Black';
+    if (gameFacts.isFlyingPhase) {
+      if (gameFacts.isTurnWhite) return 'Fly White';
+      if (gameFacts.isTurnBlack) return 'Fly Black';
     }
-    if (R.val(gameFacts.isMovingPhase)) {
-      if (R.val(gameFacts.isTurnWhite)) return 'Move White';
-      if (R.val(gameFacts.isTurnBlack)) return 'Move Black';
+    if (gameFacts.isMovingPhase) {
+      if (gameFacts.isTurnWhite) return 'Move White';
+      if (gameFacts.isTurnBlack) return 'Move Black';
     }
 
     // eslint-disable-next-line fp/no-nil

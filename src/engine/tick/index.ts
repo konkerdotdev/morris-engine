@@ -35,7 +35,7 @@ export function tickCreate<P extends number, D extends number, N extends number>
 export function tickGetTurnColor<P extends number, D extends number, N extends number>(
   gameTick: MorrisGameTick<P, D, N>
 ): MorrisColor {
-  return R.val(gameTick.facts.isTurnWhite) ? MorrisColor.WHITE : MorrisColor.BLACK;
+  return gameTick.facts.isTurnWhite ? MorrisColor.WHITE : MorrisColor.BLACK;
 }
 
 // --------------------------------------------------------------------------
@@ -63,7 +63,7 @@ export const tick =
       ),
       // Short-circuit if the move is invalid
       P.Effect.flatMap((binding) =>
-        R.val(binding.moveFacts.moveIsValid)
+        binding.moveFacts.moveIsValid
           ? P.Effect.succeed(binding)
           : P.Effect.fail(toMorrisEngineError(gameDeriveInvalidMoveErrorMessage(binding.moveFacts)))
       ),

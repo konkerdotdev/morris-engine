@@ -2,7 +2,6 @@ import * as P from '@konker.dev/effect-ts-prelude';
 
 import type { MorrisEngineError } from '../../lib/error';
 import { toMorrisEngineError } from '../../lib/error';
-import * as R from '../../lib/tiny-rules-fp';
 import { someE } from '../../lib/utils';
 import { boardGetPointByCoord } from '../board/points';
 import {
@@ -74,17 +73,17 @@ export function moveListValidMovesForMorris<P extends number, D extends number, 
   morris: Morris<N>
 ): P.Effect.Effect<never, MorrisEngineError, ReadonlyArray<MorrisMove<D>>> {
   if (boardHasMorrisBeenPlaced(game.gameState.board, morris)) {
-    if (!R.val(facts.isMovingPhase) && !R.val(facts.isLaskerPhase)) {
+    if (!facts.isMovingPhase && !facts.isLaskerPhase) {
       return P.Effect.succeed([]);
     }
 
-    if (R.val(facts.isRemoveMode)) {
+    if (facts.isRemoveMode) {
       return moveListValidRemoveMovesForMorris(game, morris);
     } else {
       return moveListValidMoveMovesForMorris(game, morris);
     }
   } else {
-    if (!R.val(facts.isPlacingPhase) && !R.val(facts.isLaskerPhase)) {
+    if (!facts.isPlacingPhase && !facts.isLaskerPhase) {
       return P.Effect.fail(
         toMorrisEngineError(`Morris ${morris.color} has not been placed, but it is not placing or Lasker phase`)
       );

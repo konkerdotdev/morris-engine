@@ -14,7 +14,6 @@ import type { MorrisGameTick } from '../engine/tick';
 import { gamesInstantiate } from '../games';
 import type { config } from '../games/10mm';
 import { initialGameState, TAG } from '../games/10mm';
-import * as R from '../lib/tiny-rules-fp';
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -54,7 +53,7 @@ export async function execLoop(
   try {
     while (gt) {
       gt = await execLoop(gt);
-      if (gt && R.val(gt.facts.isGameOver)) {
+      if (gt?.facts?.isGameOver) {
         console.log(`\n${chalk.green.bold(gt.message)}`);
         break;
       }

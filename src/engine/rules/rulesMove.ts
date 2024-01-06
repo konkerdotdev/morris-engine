@@ -28,8 +28,8 @@ export const RulesMove = <P extends number, D extends number, N extends number>(
             P.Effect.bind('moveColor', () => moveColor(c.gameTick.game, c.move)),
             P.Effect.map(
               ({ moveColor }) =>
-                (R.val(c.gameTick.facts.isTurnWhite) && moveColor === MorrisColor.WHITE) ||
-                (R.val(c.gameTick.facts.isTurnBlack) && moveColor === MorrisColor.BLACK)
+                (c.gameTick.facts.isTurnWhite && moveColor === MorrisColor.WHITE) ||
+                (c.gameTick.facts.isTurnBlack && moveColor === MorrisColor.BLACK)
             ),
             P.Effect.orElseSucceed(() => false)
           ),
@@ -38,22 +38,18 @@ export const RulesMove = <P extends number, D extends number, N extends number>(
       R.addRuleFunc(
         'moveIsCorrectType',
         (c: MorrisRulesContextMove<P, D, N>, _f: MorrisFactsMove) =>
-          (R.val(c.gameTick.facts.isRemoveMode) && c.move.type === MorrisMoveType.REMOVE) ||
-          (!R.val(c.gameTick.facts.isRemoveMode) &&
-            R.val(c.gameTick.facts.isPlacingPhase) &&
-            c.move.type === MorrisMoveType.PLACE) ||
-          (!R.val(c.gameTick.facts.isRemoveMode) &&
-            R.val(c.gameTick.facts.isMovingPhase) &&
-            c.move.type === MorrisMoveType.MOVE) ||
-          (!R.val(c.gameTick.facts.isRemoveMode) &&
-            R.val(c.gameTick.facts.isLaskerPhase) &&
+          (c.gameTick.facts.isRemoveMode && c.move.type === MorrisMoveType.REMOVE) ||
+          (!c.gameTick.facts.isRemoveMode && c.gameTick.facts.isPlacingPhase && c.move.type === MorrisMoveType.PLACE) ||
+          (!c.gameTick.facts.isRemoveMode && c.gameTick.facts.isMovingPhase && c.move.type === MorrisMoveType.MOVE) ||
+          (!c.gameTick.facts.isRemoveMode &&
+            c.gameTick.facts.isLaskerPhase &&
             (c.move.type === MorrisMoveType.PLACE || c.move.type === MorrisMoveType.MOVE)),
         'The move is of the correct type for the phase'
       ),
       R.addRuleFunc(
         'moveIsForbiddenOnFirstMove',
         (c: MorrisRulesContextMove<P, D, N>, _f: MorrisFactsMove) =>
-          R.val(c.gameTick.facts.isFirstMove) &&
+          c.gameTick.facts.isFirstMove &&
           c.move.type === MorrisMoveType.PLACE &&
           c.gameTick.game.gameState.config.forbiddenPointsFirstMove.includes(c.move.to),
         'The move is forbidden on the first move'
@@ -61,7 +57,7 @@ export const RulesMove = <P extends number, D extends number, N extends number>(
       R.addRuleFunc(
         'moveIsForbiddenOnSecondMove',
         (c: MorrisRulesContextMove<P, D, N>, _f: MorrisFactsMove) =>
-          R.val(c.gameTick.facts.isSecondMove) &&
+          c.gameTick.facts.isSecondMove &&
           c.move.type === MorrisMoveType.PLACE &&
           c.gameTick.game.gameState.config.forbiddenPointsFirstMove.includes(c.move.to),
         'The move is forbidden on the second move'
@@ -69,8 +65,8 @@ export const RulesMove = <P extends number, D extends number, N extends number>(
       R.addRuleFunc(
         'moveIsForbiddenInPlacingPhase',
         (c: MorrisRulesContextMove<P, D, N>, _f: MorrisFactsMove) =>
-          !R.val(c.gameTick.facts.isRemoveMode) &&
-          (R.val(c.gameTick.facts.isPlacingPhase) || R.val(c.gameTick.facts.isLaskerPhase)) &&
+          !c.gameTick.facts.isRemoveMode &&
+          (c.gameTick.facts.isPlacingPhase || c.gameTick.facts.isLaskerPhase) &&
           (c.move.type === MorrisMoveType.PLACE || c.move.type === MorrisMoveType.MOVE) &&
           c.gameTick.game.gameState.config.forbiddenPointsPlacingPhase.includes(c.move.to),
         'The move is forbidden in placing phase'
@@ -128,7 +124,7 @@ export const RulesMove = <P extends number, D extends number, N extends number>(
             ),
             P.Effect.map(
               ({ isPointEmptyFrom }) =>
-                R.val(c.gameTick.facts.isRemoveMode) && c.move.type === MorrisMoveType.REMOVE && !isPointEmptyFrom
+                c.gameTick.facts.isRemoveMode && c.move.type === MorrisMoveType.REMOVE && !isPointEmptyFrom
             )
           ),
         'The move is a flying move which is possible'
@@ -136,7 +132,7 @@ export const RulesMove = <P extends number, D extends number, N extends number>(
       R.addRuleFunc(
         'moveIsPossibleForLasker',
         (_c: MorrisRulesContextMove<P, D, N>, f: MorrisFactsMove) =>
-          R.val(f.moveIsPossibleForPlace) || R.val(f.moveIsPossibleForMove),
+          f.moveIsPossibleForPlace || f.moveIsPossibleForMove,
         'The move is a Lasker move which is possible'
       ),
       R.addRuleFuncEffect(
@@ -151,7 +147,7 @@ export const RulesMove = <P extends number, D extends number, N extends number>(
             ),
             P.Effect.map(
               ({ isPointEmptyTo }) =>
-                R.val(c.gameTick.facts.isFlyingPhase) && c.move.type === MorrisMoveType.MOVE && isPointEmptyTo
+                c.gameTick.facts.isFlyingPhase && c.move.type === MorrisMoveType.MOVE && isPointEmptyTo
             )
           ),
         'The move is a flying move which is possible'
@@ -159,20 +155,20 @@ export const RulesMove = <P extends number, D extends number, N extends number>(
       R.addRuleFunc(
         'moveIsPossible',
         (_c: MorrisRulesContextMove<P, D, N>, f: MorrisFactsMove) =>
-          !R.val(f.moveIsForbiddenOnFirstMove) &&
-          !R.val(f.moveIsForbiddenOnSecondMove) &&
-          !R.val(f.moveIsForbiddenInPlacingPhase) &&
-          (R.val(f.moveIsPossibleForPlace) ||
-            R.val(f.moveIsPossibleForMove) ||
-            R.val(f.moveIsPossibleForRemove) ||
-            R.val(f.moveIsPossibleForLasker) ||
-            R.val(f.moveIsPossibleForFlying)),
+          !f.moveIsForbiddenOnFirstMove &&
+          !f.moveIsForbiddenOnSecondMove &&
+          !f.moveIsForbiddenInPlacingPhase &&
+          (f.moveIsPossibleForPlace ||
+            f.moveIsPossibleForMove ||
+            f.moveIsPossibleForRemove ||
+            f.moveIsPossibleForLasker ||
+            f.moveIsPossibleForFlying),
         'The move is possible'
       ),
       R.addRuleFunc(
         'moveIsValid',
         (_c: MorrisRulesContextMove<P, D, N>, f: MorrisFactsMove) =>
-          R.val(f.moveIsCorrectColor) && R.val(f.moveIsCorrectType) && R.val(f.moveIsPossible),
+          f.moveIsCorrectColor && f.moveIsCorrectType && f.moveIsPossible,
         'The move is valid: not game over; correct color; correct type for phase; the move is possible'
       ),
 
@@ -182,7 +178,7 @@ export const RulesMove = <P extends number, D extends number, N extends number>(
         (c: MorrisRulesContextMove<P, D, N>, _f: MorrisFactsMove) =>
           P.pipe(
             moveMakesMill(c.gameTick.game, c.move),
-            P.Effect.map((makesMill) => makesMill && R.val(c.gameTick.facts.isTurnWhite)),
+            P.Effect.map((makesMill) => makesMill && c.gameTick.facts.isTurnWhite),
             P.Effect.orElseSucceed(() => false),
             P.Effect.mapError(toMorrisEngineError)
           ),
@@ -193,7 +189,7 @@ export const RulesMove = <P extends number, D extends number, N extends number>(
         (c: MorrisRulesContextMove<P, D, N>, _f: MorrisFactsMove) =>
           P.pipe(
             moveMakesMill(c.gameTick.game, c.move),
-            P.Effect.map((makesMill) => makesMill && R.val(c.gameTick.facts.isTurnBlack)),
+            P.Effect.map((makesMill) => makesMill && c.gameTick.facts.isTurnBlack),
             P.Effect.orElseSucceed(() => false),
             P.Effect.mapError(toMorrisEngineError)
           ),
@@ -201,34 +197,33 @@ export const RulesMove = <P extends number, D extends number, N extends number>(
       ),
       R.addRuleFunc(
         'moveMakesMill',
-        (_c: MorrisRulesContextMove<P, D, N>, f: MorrisFactsMove) =>
-          R.val(f.moveMakesMillWhite) || R.val(f.moveMakesMillBlack),
+        (_c: MorrisRulesContextMove<P, D, N>, f: MorrisFactsMove) => f.moveMakesMillWhite || f.moveMakesMillBlack,
         'The move will make a mill'
       ),
       R.addRuleFunc(
         'moveMakesRemoveMode',
         (c: MorrisRulesContextMove<P, D, N>, f: MorrisFactsMove) =>
-          R.val(f.moveMakesMill) && c.gameTick.game.gameState.config.numMillsToWinThreshold > 1,
+          f.moveMakesMill && c.gameTick.game.gameState.config.numMillsToWinThreshold > 1,
         'Next turn is remove: the move makes a mill'
       ),
       R.addRuleFunc(
         'moveMakesNextTurnWhite',
         (c: MorrisRulesContextMove<P, D, N>, f: MorrisFactsMove) =>
-          (R.val(c.gameTick.facts.isTurnBlack) && !R.val(f.moveMakesRemoveMode)) ||
-          (R.val(c.gameTick.facts.isTurnWhite) && R.val(f.moveMakesRemoveMode)),
+          (c.gameTick.facts.isTurnBlack && !f.moveMakesRemoveMode) ||
+          (c.gameTick.facts.isTurnWhite && f.moveMakesRemoveMode),
         'Next turn is white: this turn is black and the next move is not remove'
       ),
       R.addRuleFunc(
         'moveMakesNextTurnBlack',
         (c: MorrisRulesContextMove<P, D, N>, f: MorrisFactsMove) =>
-          (R.val(c.gameTick.facts.isTurnWhite) && !R.val(f.moveMakesRemoveMode)) ||
-          (R.val(c.gameTick.facts.isTurnBlack) && R.val(f.moveMakesRemoveMode)),
+          (c.gameTick.facts.isTurnWhite && !f.moveMakesRemoveMode) ||
+          (c.gameTick.facts.isTurnBlack && f.moveMakesRemoveMode),
         'Next turn is black: this turn is white and the next move is not remove'
       ),
       R.addRuleFunc(
         'moveMakesLaskerPhase',
         (c: MorrisRulesContextMove<P, D, N>, f: MorrisFactsMove) =>
-          !R.val(f.moveMakesRemoveMode) &&
+          !f.moveMakesRemoveMode &&
           c.gameTick.game.gameState.config.phases[0] === MorrisPhase.LASKER &&
           c.gameTick.game.gameState.morrisWhite.length > 1 &&
           c.gameTick.game.gameState.morrisBlack.length > 1,
@@ -237,18 +232,18 @@ export const RulesMove = <P extends number, D extends number, N extends number>(
       R.addRuleFunc(
         'moveMakesFlyingPhase',
         (c: MorrisRulesContextMove<P, D, N>, _f: MorrisFactsMove) =>
-          (R.val(c.gameTick.facts.isRemoveMode) &&
-            ((R.val(c.gameTick.facts.isTurnWhite) &&
+          (c.gameTick.facts.isRemoveMode &&
+            ((c.gameTick.facts.isTurnWhite &&
               boardCountMorrisByColor(c.gameTick.game.gameState.board, MorrisColor.BLACK) ===
                 c.gameTick.game.gameState.config.numMorrisForFlyingThreshold + 1) ||
-              (R.val(c.gameTick.facts.isTurnBlack) &&
+              (c.gameTick.facts.isTurnBlack &&
                 boardCountMorrisByColor(c.gameTick.game.gameState.board, MorrisColor.WHITE) ===
                   c.gameTick.game.gameState.config.numMorrisForFlyingThreshold + 1))) ||
-          (!R.val(c.gameTick.facts.isRemoveMode) &&
-            ((R.val(c.gameTick.facts.isTurnWhite) &&
+          (!c.gameTick.facts.isRemoveMode &&
+            ((c.gameTick.facts.isTurnWhite &&
               boardCountMorrisByColor(c.gameTick.game.gameState.board, MorrisColor.BLACK) <=
                 c.gameTick.game.gameState.config.numMorrisForFlyingThreshold) ||
-              (R.val(c.gameTick.facts.isTurnBlack) &&
+              (c.gameTick.facts.isTurnBlack &&
                 boardCountMorrisByColor(c.gameTick.game.gameState.board, MorrisColor.WHITE) <=
                   c.gameTick.game.gameState.config.numMorrisForFlyingThreshold))),
         'Next turn is flying phase'
@@ -256,12 +251,12 @@ export const RulesMove = <P extends number, D extends number, N extends number>(
       R.addRuleFunc(
         'moveMakesPlacingPhase',
         (c: MorrisRulesContextMove<P, D, N>, f: MorrisFactsMove) =>
-          (!R.val(f.moveMakesRemoveMode) &&
-            R.val(c.gameTick.facts.isTurnWhite) &&
+          (!f.moveMakesRemoveMode &&
+            c.gameTick.facts.isTurnWhite &&
             c.gameTick.game.gameState.morrisWhite.length >= 1 &&
             c.gameTick.game.gameState.morrisBlack.length > 0) ||
-          (!R.val(f.moveMakesRemoveMode) &&
-            R.val(c.gameTick.facts.isTurnBlack) &&
+          (!f.moveMakesRemoveMode &&
+            c.gameTick.facts.isTurnBlack &&
             c.gameTick.game.gameState.morrisBlack.length >= 1 &&
             c.gameTick.game.gameState.morrisWhite.length > 0),
         'Next turn is placing phase'
@@ -269,10 +264,10 @@ export const RulesMove = <P extends number, D extends number, N extends number>(
       R.addRuleFunc(
         'moveMakesMovingPhase',
         (c: MorrisRulesContextMove<P, D, N>, _f: MorrisFactsMove) =>
-          (R.val(c.gameTick.facts.isTurnWhite) &&
+          (c.gameTick.facts.isTurnWhite &&
             c.gameTick.game.gameState.morrisWhite.length <= 1 &&
             c.gameTick.game.gameState.morrisBlack.length === 0) ||
-          (R.val(c.gameTick.facts.isTurnBlack) &&
+          (c.gameTick.facts.isTurnBlack &&
             c.gameTick.game.gameState.morrisBlack.length <= 1 &&
             c.gameTick.game.gameState.morrisWhite.length === 0),
         'Next turn is moving phase'

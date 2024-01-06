@@ -1,7 +1,6 @@
 import * as P from '@konker.dev/effect-ts-prelude';
 
 import type { MorrisEngineError } from '../../lib/error';
-import * as R from '../../lib/tiny-rules-fp';
 import { boardHash } from '../board';
 import type { MorrisGame } from '../game';
 import { gameApplyMoveToGameBoard, gameUnApplyMoveToGameBoard } from '../game';
@@ -18,7 +17,7 @@ export const tickApplyMove =
         ...newGame,
         gameState: {
           ...newGame.gameState,
-          lastMillCounter: R.val(moveFacts.moveMakesMill) ? 0 : oldGame.gameState.lastMillCounter + 1,
+          lastMillCounter: moveFacts.moveMakesMill ? 0 : oldGame.gameState.lastMillCounter + 1,
           history: gameHistoryPush(oldGame.gameState.history, move, moveFacts),
           positions: [boardHash(newGame.gameState.board), ...oldGame.gameState.positions],
         },
@@ -35,7 +34,7 @@ export const tickUndoApplyMove =
         ...oldGame,
         gameState: {
           ...oldGame.gameState,
-          lastMillCounter: R.val(oldMoveFacts.moveMakesMill) ? 0 : oldGame.gameState.lastMillCounter + 1,
+          lastMillCounter: oldMoveFacts.moveMakesMill ? 0 : oldGame.gameState.lastMillCounter + 1,
           history: gameHistoryPop(oldGame.gameState.history),
           positions: oldGame.gameState.positions.slice(1),
         },

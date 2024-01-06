@@ -1,7 +1,6 @@
 import * as P from '@konker.dev/effect-ts-prelude';
 
 import type { MorrisEngineError } from '../../../lib/error';
-import * as R from '../../../lib/tiny-rules-fp';
 import { flipColor, MorrisColor } from '../../consts';
 import { moveCountValidMovesForColor } from '../../moves/query';
 import type { GameTreeNode } from './gameTree';
@@ -21,23 +20,23 @@ export function gameTreeNodeScore<P extends number, D extends number, N extends 
     P.Effect.map(({ numValidMovesForMaxColor, numValidMovesForMinColor }) => {
       const winForMaxColor =
         maxColor === MorrisColor.BLACK
-          ? R.val(gameTreeNode.gameTick.facts.isWinBlack)
+          ? gameTreeNode.gameTick.facts.isWinBlack
             ? 1
             : 0
-          : R.val(gameTreeNode.gameTick.facts.isWinWhite)
+          : gameTreeNode.gameTick.facts.isWinWhite
             ? 1
             : 0;
       const winForMinColor =
         flipColor(maxColor) === MorrisColor.BLACK
-          ? R.val(gameTreeNode.gameTick.facts.isWinBlack)
+          ? gameTreeNode.gameTick.facts.isWinBlack
             ? 1
             : 0
-          : R.val(gameTreeNode.gameTick.facts.isWinWhite)
+          : gameTreeNode.gameTick.facts.isWinWhite
             ? 1
             : 0;
 
-      const millMadeForMaxColor = R.val(gameTreeNode.gameTick.facts.isMillMadeBlack) ? 1 : 0;
-      const millMadeForMinColor = R.val(gameTreeNode.gameTick.facts.isMillMadeWhite) ? 1 : 0;
+      const millMadeForMaxColor = gameTreeNode.gameTick.facts.isMillMadeBlack ? 1 : 0;
+      const millMadeForMinColor = gameTreeNode.gameTick.facts.isMillMadeWhite ? 1 : 0;
 
       const maxColorHeuristic = 0 * numValidMovesForMaxColor + 0 * millMadeForMaxColor + 100 * winForMaxColor;
       const minColorHeuristic = 0 * numValidMovesForMinColor + 0 * millMadeForMinColor + 100 * winForMinColor;

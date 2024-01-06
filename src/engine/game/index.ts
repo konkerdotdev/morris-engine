@@ -2,7 +2,6 @@ import * as P from '@konker.dev/effect-ts-prelude';
 
 import type { MorrisEngineError } from '../../lib/error';
 import { toMorrisEngineError } from '../../lib/error';
-import * as R from '../../lib/tiny-rules-fp';
 import { boardHash } from '../board';
 import {
   boardGetMorrisAtCoord,
@@ -303,7 +302,7 @@ export function gameUnApplyMoveToGameBoard<P extends number, D extends number, N
       );
 
     case MorrisMoveType.REMOVE:
-      const colorToReplace = R.val(oldMoveFacts.moveMakesNextTurnWhite) ? MorrisColor.WHITE : MorrisColor.BLACK;
+      const colorToReplace = oldMoveFacts.moveMakesNextTurnWhite ? MorrisColor.WHITE : MorrisColor.BLACK;
       return P.pipe(
         gameUnDiscardMorris(game, colorToReplace),
         P.Effect.flatMap(([game, morris]) => P.pipe(boardSetPointOccupant(game, move.from, morris)))
@@ -319,11 +318,11 @@ export function gameUnApplyMoveToGameBoard<P extends number, D extends number, N
  * Derive the game result from the given game facts
  */
 export function gameDeriveResult(newFacts: MorrisFactsGame): MorrisGameResult {
-  return R.val(newFacts.isWinWhite)
+  return newFacts.isWinWhite
     ? MorrisGameResult.WIN_WHITE
-    : R.val(newFacts.isWinBlack)
+    : newFacts.isWinBlack
       ? MorrisGameResult.WIN_BLACK
-      : R.val(newFacts.isDraw)
+      : newFacts.isDraw
         ? MorrisGameResult.DRAW
         : MorrisGameResult.IN_PROGRESS;
 }

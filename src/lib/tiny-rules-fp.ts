@@ -1,22 +1,12 @@
 import * as P from '@konker.dev/effect-ts-prelude';
 
-export type Fact = readonly [boolean, string];
+export type Fact = boolean;
 export type Facts = Record<string, Fact>;
 
 export const UNSET_FACT = 'unset';
 
-export const note = (fact: Fact | undefined): string => fact?.[1] ?? UNSET_FACT;
-export const val = (fact: Fact | undefined): boolean => {
-  // eslint-disable-next-line fp/no-throw
-  if (note(fact) === UNSET_FACT) throw new Error('Unset fact access');
-  return fact?.[0] ?? false;
-};
-
 //---------------------------------------------------------------------------
-export type Rule<R, C, E, F extends Facts> = {
-  readonly rule: (context: C, facts: F) => P.Effect.Effect<R, E, F>;
-  readonly note: string;
-};
+export type Rule<R, C, E, F extends Facts> = (context: C, facts: F) => P.Effect.Effect<R, E, F>;
 
 export type RuleSet<R, C, E, F extends Facts> = {
   readonly facts: F;
@@ -48,7 +38,7 @@ export const sequence =
 
 //---------------------------------------------------------------------------
 export const setFact =
-  <F extends Facts>(key: keyof F, value: [boolean, string]) =>
+  <F extends Facts>(key: keyof F, value: Fact) =>
   (facts: F): F => ({ ...facts, [key]: value });
 
 //---------------------------------------------------------------------------
@@ -63,28 +53,28 @@ export const addRule =
 export const addRuleFunc = <R, C, E, F extends Facts>(
   factName: keyof F,
   ruleFunc: RuleFunc<C, F>,
-  note: string
+  _note: string
 ): RuleSetTransform<R, C, E, F> => {
   const rule = (context: C, facts: F) =>
     P.pipe(
       P.Effect.succeed(facts),
-      P.Effect.map(P.pipe(ruleFunc(context, facts), (value) => setFact(factName, [value, note])))
+      P.Effect.map(P.pipe(ruleFunc(context, facts), (value) => setFact(factName, value)))
     );
-  return addRule<R, C, E, F>({ rule, note });
+  return addRule<R, C, E, F>(rule);
 };
 
 export const addRuleFuncEffect = <R, C, E, F extends Facts>(
   factName: keyof F,
   ruleFuncEffect: RuleFuncEffect<R, C, E, F>,
-  note: string
+  _note: string
 ): RuleSetTransform<R, C, E, F> => {
   const rule = (context: C, facts: F) =>
     P.pipe(
       ruleFuncEffect(context, facts),
-      P.Effect.map((value) => P.pipe(facts, setFact(factName, [value, note])))
+      P.Effect.map((value) => P.pipe(facts, setFact(factName, value)))
     );
 
-  return addRule({ rule, note });
+  return addRule(rule);
 };
 
 //---------------------------------------------------------------------------
@@ -93,7 +83,7 @@ export const decide =
   (ruleSet: RuleSet<R, C, E, F>): P.Effect.Effect<R, E, F> =>
     P.pipe(
       ruleSet.rules,
-      P.Effect.reduce(ruleSet.facts, (facts, rule) => rule.rule(context, facts))
+      P.Effect.reduce(ruleSet.facts, (facts, rule) => rule(context, facts))
     );
 
 export const overrideDecide =
@@ -103,6 +93,6 @@ export const overrideDecide =
       P.pipe(
         ruleSet,
         (ruleSet) => ruleSet.rules,
-        P.Effect.reduce(ruleSet.facts, (facts, rule) => rule.rule(context, facts))
+        P.Effect.reduce(ruleSet.facts, (facts, rule) => rule(context, facts))
       )
     );
