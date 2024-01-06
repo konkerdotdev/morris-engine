@@ -21,16 +21,14 @@ import { tickCreate } from '../tick';
 import { gameDeriveStartMessage } from './message';
 import type { MorrisGameState } from './schemas';
 
-export type MorrisGame<P extends number, D extends number, N extends number> = MorrisGameState<P, D, N> & {
-  readonly _tag: string;
-
+export type MorrisGame<P extends number, D extends number, N extends number> = {
   readonly initMorrisBoard: () => MorrisBoard<P, D, N>;
   readonly initMorrisWhite: () => ReadonlyArray<MorrisWhite<N>>;
   readonly initMorrisBlack: () => ReadonlyArray<MorrisBlack<N>>;
-};
+} & MorrisGameState<P, D, N>;
 
 // --------------------------------------------------------------------------
-export const MorrisGameBoilerplate = {
+export const MorrisGameStateBoilerplate = {
   result: MorrisGameResult.IN_PROGRESS,
   lastMillCounter: 0,
   morrisWhiteRemoved: [],
@@ -78,7 +76,7 @@ export function gameReset<P extends number, D extends number, N extends number>(
 ): MorrisGame<P, D, N> {
   return {
     ...game,
-    ...MorrisGameBoilerplate,
+    ...MorrisGameStateBoilerplate,
 
     board: game.initMorrisBoard(),
     morrisWhite: game.initMorrisWhite(),
@@ -233,7 +231,7 @@ export function gameApplyMoveToGameBoard<P extends number, D extends number, N e
 
     case MorrisMoveType.REMOVE:
       return P.pipe(
-        boardGetMorrisAtCoord(game.board, move.from),
+        boardGetMorrisAtCoord<P, D, N>(game.board, move.from),
         P.Effect.flatMap((morris) =>
           P.pipe(
             boardSetPointEmpty(game, move.from),
@@ -258,7 +256,7 @@ export function gameUnApplyMoveToGameBoard<P extends number, D extends number, N
   switch (move.type) {
     case MorrisMoveType.PLACE:
       return P.pipe(
-        boardGetMorrisAtCoord(game.board, move.to),
+        boardGetMorrisAtCoord<P, D, N>(game.board, move.to),
         P.Effect.flatMap((morris) =>
           P.pipe(
             gameUnUseMorris(game, morris),

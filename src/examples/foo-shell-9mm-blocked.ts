@@ -3,10 +3,13 @@ import * as console from 'console';
 
 import { renderString } from '../engine/render/text';
 import { shellStartMorrisGame, shellTick, shellWrapRenderString } from '../engine/shell';
-import type { params } from '../games/9mm';
-import { game } from '../games/9mm';
+import { gamesInstantiate } from '../games';
+import type { config } from '../games/9mm';
+import { initialGameState, TAG } from '../games/9mm';
 
-const shellRenderString = shellWrapRenderString<typeof params.P, typeof params.D, typeof params.N>(renderString);
+const shellRenderString = shellWrapRenderString<typeof config.params.P, typeof config.params.D, typeof config.params.N>(
+  renderString
+);
 
 const MOVES = [
   'P W a7',
@@ -31,7 +34,13 @@ const MOVES = [
 ];
 
 // --------------------------------------------------------------------------
-let gt = shellStartMorrisGame<typeof params.P, typeof params.D, typeof params.N>(game);
+const game = gamesInstantiate(TAG, initialGameState);
+if (!game || game._tag !== TAG) {
+  // eslint-disable-next-line fp/no-throw
+  throw new Error(`Could not instantiate game ${TAG}`);
+}
+
+let gt = shellStartMorrisGame<typeof config.params.P, typeof config.params.D, typeof config.params.N>(game);
 console.log(shellRenderString(gt));
 
 MOVES.forEach((moveStr) => {

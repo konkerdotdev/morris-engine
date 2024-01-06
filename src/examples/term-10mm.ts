@@ -11,8 +11,9 @@ import { gameSetStartColorRandom } from '../engine/game';
 import { renderString } from '../engine/render/text';
 import { shellStartMorrisGame, shellTick, shellWrapRenderString } from '../engine/shell';
 import type { MorrisGameTick } from '../engine/tick';
-import type { params } from '../games/10mm';
-import { game } from '../games/10mm';
+import { gamesInstantiate } from '../games';
+import type { config } from '../games/10mm';
+import { initialGameState, TAG } from '../games/10mm';
 import * as R from '../lib/tiny-rules-fp';
 
 const rl = readline.createInterface({
@@ -20,11 +21,13 @@ const rl = readline.createInterface({
   output: process.stdout,
 });
 
-const shellRenderString = shellWrapRenderString<typeof params.P, typeof params.D, typeof params.N>(renderString);
+const shellRenderString = shellWrapRenderString<typeof config.params.P, typeof config.params.D, typeof config.params.N>(
+  renderString
+);
 
 export async function execLoop(
-  gt: MorrisGameTick<typeof params.P, typeof params.D, typeof params.N>
-): Promise<MorrisGameTick<typeof params.P, typeof params.D, typeof params.N> | undefined> {
+  gt: MorrisGameTick<typeof config.params.P, typeof config.params.D, typeof config.params.N>
+): Promise<MorrisGameTick<typeof config.params.P, typeof config.params.D, typeof config.params.N> | undefined> {
   const move = await rl.question(`${gt.message} (Q to quit): `);
   if (move.toUpperCase() === 'Q') {
     return undefined;
@@ -37,11 +40,15 @@ export async function execLoop(
 }
 
 (async () => {
+  const game = gamesInstantiate(TAG, initialGameState);
+  if (!game || game._tag !== TAG) {
+    // eslint-disable-next-line fp/no-throw
+    throw new Error(`Could not instantiate game ${TAG}`);
+  }
   console.log(chalk.cyan.bold(game.config.name));
 
-  let gt: MorrisGameTick<typeof params.P, typeof params.D, typeof params.N> | undefined = shellStartMorrisGame(
-    gameSetStartColorRandom(game)
-  );
+  let gt: MorrisGameTick<typeof config.params.P, typeof config.params.D, typeof config.params.N> | undefined =
+    shellStartMorrisGame(gameSetStartColorRandom(game));
   console.log('\n' + shellRenderString(gt));
 
   try {

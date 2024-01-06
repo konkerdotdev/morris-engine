@@ -14,15 +14,13 @@ import { MorrisMoveMove, MorrisMovePlace, MorrisMoveRemove, MorrisMoveRoot } fro
 export const String_MorrisMoveRoot = P.Schema.transformOrFail(
   P.Schema.string,
   MorrisMoveRoot,
-  (s: string) => {
+  (s, _, ast): P.ParseResult.ParseResult<MorrisMoveRoot> => {
     if (s !== ROOT_MOVE_STR) {
       return P.ParseResult.fail(
-        P.ParseResult.parseError([
-          P.ParseResult.type(P.Schema.string.ast, `Failed to deserialize root move string: ${s}`),
-        ])
+        P.ParseResult.parseError([P.ParseResult.type(ast, `Failed to deserialize root move string: ${s}`)])
       );
     }
-    return P.pipe(moveCreateRoot(), P.Effect.succeed);
+    return P.pipe(moveCreateRoot(), P.ParseResult.success);
   },
   (_m: MorrisMoveRoot) => P.ParseResult.success(ROOT_MOVE_STR)
 );
@@ -31,18 +29,21 @@ export function String_MorrisMovePlace<D extends number>(d: D) {
   return P.Schema.transformOrFail(
     P.Schema.string,
     MorrisMovePlace(d),
-    (s: string) => {
+    (s, _, ast) => {
       const parts = s.match(/^P ([BW])\s+([a-zA-Z]\d+)$/i);
       if (!parts || parts.length < 3) {
-        return P.ParseResult.fail(
-          P.ParseResult.parseError([P.ParseResult.type(P.Schema.string.ast, `Failed to deserialize move string: ${s}`)])
+        return P.Effect.fail(
+          P.ParseResult.parseError([P.ParseResult.type(ast, `Failed to deserialize move string: ${s}`)])
         );
       }
+
+      // return P.Effect.succeed(moveCreatePlace<D>(parts[1]! as MorrisColorS, parts[2]! as MorrisBoardCoord<D>));
       return P.pipe(
         P.Effect.Do,
         P.Effect.bind('color', () => P.pipe(parts[1]!, P.Schema.decode(MorrisColorS))),
         P.Effect.bind('toCoord', () => P.pipe(parts[2]!, P.Schema.decode(MorrisBoardCoord(d)))),
-        P.Effect.map(({ color, toCoord }) => moveCreatePlace<D>(color, toCoord))
+        P.Effect.map(({ color, toCoord }) => moveCreatePlace<D>(color, toCoord)),
+        (x) => x
       );
     },
     (m: MorrisMovePlace<D>) => P.ParseResult.success(`P ${m.color} ${m.to}`)
@@ -53,11 +54,11 @@ export function String_MorrisMoveMove<D extends number>(d: D) {
   return P.Schema.transformOrFail(
     P.Schema.string,
     MorrisMoveMove(d),
-    (s: string) => {
+    (s, _, ast) => {
       const parts = s.match(/^M ([a-zA-Z]\d+)\s+([a-zA-Z]\d+)$/i);
       if (!parts || parts.length < 3) {
         return P.ParseResult.fail(
-          P.ParseResult.parseError([P.ParseResult.type(P.Schema.string.ast, `Failed to deserialize move string: ${s}`)])
+          P.ParseResult.parseError([P.ParseResult.type(ast, `Failed to deserialize move string: ${s}`)])
         );
       }
       return P.pipe(
@@ -75,11 +76,11 @@ export function String_MorrisMoveRemove<D extends number>(d: D) {
   return P.Schema.transformOrFail(
     P.Schema.string,
     MorrisMoveRemove(d),
-    (s: string) => {
+    (s, _, ast) => {
       const parts = s.match(/^R ([a-zA-Z]\d+)$/i);
       if (!parts || parts.length < 2) {
         return P.ParseResult.fail(
-          P.ParseResult.parseError([P.ParseResult.type(P.Schema.string.ast, `Failed to deserialize move string: ${s}`)])
+          P.ParseResult.parseError([P.ParseResult.type(ast, `Failed to deserialize move string: ${s}`)])
         );
       }
       return P.pipe(

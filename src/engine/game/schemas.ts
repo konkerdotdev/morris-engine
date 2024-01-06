@@ -5,9 +5,21 @@ import { MorrisColor, MorrisGameResult, MorrisPhase } from '../consts';
 import { MorrisMove } from '../moves/schemas';
 import { MorrisFactsMove } from '../rules/factsMove';
 
-export function MorrisGameConfig<D extends number, N extends number>(d: D, n: N) {
+export function MorrisGameConfigParams<P extends number, D extends number, N extends number>(p: P, d: D, n: N) {
+  return P.Schema.struct({
+    P: P.Schema.literal(p),
+    D: P.Schema.literal(d),
+    N: P.Schema.literal(n),
+  });
+}
+export type MorrisGameConfigParams<P extends number, D extends number, N extends number> = P.Schema.Schema.To<
+  ReturnType<typeof MorrisGameConfigParams<P, D, N>>
+>;
+
+export function MorrisGameConfig<P extends number, D extends number, N extends number>(p: P, d: D, n: N) {
   return P.Schema.struct({
     name: P.Schema.string,
+    params: MorrisGameConfigParams(p, d, n),
     numMorrisPerPlayer: P.Schema.number.pipe(P.Schema.between(1, n)),
     forbiddenPointsFirstMove: P.Schema.array(MorrisBoardCoord(d)),
     forbiddenPointsSecondMove: P.Schema.array(MorrisBoardCoord(d)),
@@ -20,8 +32,8 @@ export function MorrisGameConfig<D extends number, N extends number>(d: D, n: N)
     phases: P.Schema.array(P.Schema.enums(MorrisPhase)), // 3MM: [PLACING, MOVING], L: [LASKER, MOVING]
   });
 }
-export type MorrisGameConfig<D extends number, N extends number> = P.Schema.Schema.To<
-  ReturnType<typeof MorrisGameConfig<D, N>>
+export type MorrisGameConfig<P extends number, D extends number, N extends number> = P.Schema.Schema.To<
+  ReturnType<typeof MorrisGameConfig<P, D, N>>
 >;
 
 // --------------------------------------------------------------------------
@@ -45,9 +57,10 @@ export function MorrisGameHistoryEntry<D extends number>(d: D) {
 export type MorrisGameHistoryEntry<D extends number> = P.Schema.Schema.To<ReturnType<typeof MorrisGameHistoryEntry<D>>>;
 
 // --------------------------------------------------------------------------
-export function MorrisGameState<P extends number, D extends number, N extends number>(p: P, d: D, n: N) {
-  return P.Schema.struct({
-    config: MorrisGameConfig(d, n),
+export function MorrisGameStateStructFields<P extends number, D extends number, N extends number>(p: P, d: D, n: N) {
+  return {
+    _tag: P.Schema.string,
+    config: MorrisGameConfig(p, d, n),
     board: MorrisBoard(p, d, n),
 
     startColor: P.Schema.enums(MorrisColor),
@@ -60,7 +73,11 @@ export function MorrisGameState<P extends number, D extends number, N extends nu
     morrisWhite: P.Schema.array(MorrisWhite(n)).pipe(P.Schema.maxItems(n)),
     morrisBlack: P.Schema.array(MorrisBlack(n)).pipe(P.Schema.maxItems(n)),
     positions: P.Schema.array(MorrisBoardPositionString(p)),
-  });
+  };
+}
+
+export function MorrisGameState<P extends number, D extends number, N extends number>(p: P, d: D, n: N) {
+  return P.Schema.struct(MorrisGameStateStructFields(p, d, n));
 }
 export type MorrisGameState<P extends number, D extends number, N extends number> = P.Schema.Schema.To<
   ReturnType<typeof MorrisGameState<P, D, N>>

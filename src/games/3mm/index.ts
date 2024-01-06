@@ -1,27 +1,23 @@
+import type * as P from '@konker.dev/effect-ts-prelude';
+
 import { boardHash } from '../../engine/board';
 import type { MorrisBlack, MorrisBoard, MorrisWhite } from '../../engine/board/schemas';
 import { EmptyOccupant } from '../../engine/board/schemas';
 import { MorrisColor, MorrisLinkType, MorrisPhase } from '../../engine/consts';
 import type { MorrisGame } from '../../engine/game';
-import { MorrisGameBoilerplate } from '../../engine/game';
-import type { MorrisGameConfig } from '../../engine/game/schemas';
+import { MorrisGameStateBoilerplate } from '../../engine/game';
+import type { MorrisGameConfig, MorrisGameState } from '../../engine/game/schemas';
 import { createMorrisBlack, createMorrisWhite } from '../../engine/morris';
 
 export const TAG = '3mm';
 
 // Not exported
-const P = 9;
-type P = typeof P;
-const D = 3;
-type D = typeof D;
-const N = 3;
-type N = typeof N;
-
-export const params = {
-  P: P,
-  D: D,
-  N: N,
-} as const;
+const P_ = 9;
+type P = typeof P_;
+const D_ = 3;
+type D = typeof D_;
+const N_ = 3;
+type N = typeof N_;
 
 /*
 // --------------------------------------------------------------------------
@@ -35,8 +31,8 @@ export const params = {
 */
 function initMorrisBoard(): MorrisBoard<P, D, N> {
   return {
-    numPoints: P,
-    dimension: D,
+    numPoints: P_,
+    dimension: D_,
     points: [
       {
         coord: 'a1',
@@ -147,9 +143,14 @@ function initMorrisBlack(): ReadonlyArray<MorrisBlack<N>> {
 }
 
 // --------------------------------------------------------------------------
-export const config: MorrisGameConfig<D, N> = {
+export const config: MorrisGameConfig<P, D, N> = {
   name: "3 Men's Morris",
-  numMorrisPerPlayer: 3,
+  params: {
+    P: P_,
+    D: D_,
+    N: N_,
+  },
+  numMorrisPerPlayer: N_,
   numMillsToWinThreshold: 1,
   numMorrisForFlyingThreshold: 0,
   numMorrisToLoseThreshold: 2,
@@ -161,17 +162,25 @@ export const config: MorrisGameConfig<D, N> = {
   forbiddenPointsPlacingPhase: [],
 };
 
-export const game: MorrisGame<P, D, N> = {
+export const initialGameState: MorrisGameState<P, D, N> = {
   _tag: TAG,
-  ...MorrisGameBoilerplate,
+  ...MorrisGameStateBoilerplate,
   config,
   startColor: MorrisColor.WHITE,
   board: initMorrisBoard(),
   morrisWhite: initMorrisWhite(),
   morrisBlack: initMorrisBlack(),
   positions: [boardHash(initMorrisBoard())],
-
-  initMorrisBoard,
-  initMorrisWhite,
-  initMorrisBlack,
 };
+
+export function Game3mm(gameState: MorrisGameState<P, D, N> = initialGameState): MorrisGame<P, D, N> {
+  return {
+    ...gameState,
+    initMorrisBoard,
+    initMorrisWhite,
+    initMorrisBlack,
+  };
+}
+export type Game3mm = ReturnType<typeof Game3mm>;
+
+export const Game = Game3mm;

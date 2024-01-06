@@ -5,16 +5,14 @@ import { COORD_CHARS, EMPTY, MORRIS, MorrisColor, MorrisLinkType, THREE } from '
 export const MorrisColorS = P.Schema.transformOrFail(
   P.Schema.string,
   P.Schema.enums(MorrisColor),
-  (s: string) => {
+  (s, _, ast) => {
     switch (s.toUpperCase()) {
       case MorrisColor.WHITE:
         return P.ParseResult.success(MorrisColor.WHITE);
       case MorrisColor.BLACK:
         return P.ParseResult.success(MorrisColor.BLACK);
     }
-    return P.ParseResult.fail(
-      P.ParseResult.parseError([P.ParseResult.type(P.Schema.string.ast, `Invalid color: ${s}`)])
-    );
+    return P.ParseResult.fail(P.ParseResult.parseError([P.ParseResult.type(ast, `Invalid color: ${s}`)]));
   },
   (c: MorrisColor) => P.ParseResult.success(c)
 );

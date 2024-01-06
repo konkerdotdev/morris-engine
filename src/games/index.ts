@@ -16,17 +16,36 @@ const GAMES = {
 } as const;
 type GAMES = typeof GAMES;
 
+type GameType<T extends keyof GAMES> = T extends typeof Game3mm.TAG
+  ? Game3mm.Game3mm
+  : T extends typeof Game6mm.TAG
+    ? Game6mm.Game6mm
+    : T extends typeof Game9mm.TAG
+      ? Game9mm.Game9mm
+      : T extends typeof Game10mm.TAG
+        ? Game10mm.Game10mm
+        : T extends typeof Game12mm.TAG
+          ? Game12mm.Game12mm
+          : T extends typeof GamePicaria.TAG
+            ? GamePicaria.GamePicaria
+            : never;
+
 export function isGameTag(tag: string): tag is keyof GAMES {
   return tag in GAMES;
 }
 
 export function gamesInstantiate<T extends keyof GAMES>(
-  tag: T | string,
-  gameState: MorrisGameState<GAMES[T]['params']['P'], GAMES[T]['params']['D'], GAMES[T]['params']['N']>
+  tag: T,
+  gameState: MorrisGameState<
+    GAMES[T]['config']['params']['P'],
+    GAMES[T]['config']['params']['D'],
+    GAMES[T]['config']['params']['N']
+  >
 ) {
-  if (isGameTag(tag)) {
-    return { ...GAMES[tag].game, ...gameState };
+  if (isGameTag(tag) && gameState._tag === tag) {
+    return GAMES[tag].Game(gameState as never) as GameType<T>;
   }
+
   // eslint-disable-next-line fp/no-nil
   return undefined;
 }

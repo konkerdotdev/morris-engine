@@ -38,7 +38,8 @@ export function shellTick<P extends number, D extends number, N extends number>(
           rulesetGame: RulesGame,
           rulesetMove: RulesMove,
         })
-      )
+      ),
+      (x) => x
     )
   );
 }
