@@ -1,8 +1,8 @@
 import * as P from '@konker.dev/effect-ts-prelude';
+import * as R from '@konker.dev/tiny-rules-fp';
 
 import type { MorrisEngineError } from '../../lib/error';
 import { toMorrisEngineError } from '../../lib/error';
-import * as R from '../../lib/tiny-rules-fp';
 import { boardIsPointAdjacent, boardIsPointEmpty } from '../board/points';
 import { boardCountMorrisByColor } from '../board/query';
 import { MorrisColor, MorrisMoveType, MorrisPhase } from '../consts';

@@ -11,18 +11,15 @@ dependencies:
   '@effect/io':
     specifier: ^0.41.2
     version: 0.41.2(@effect/data@0.18.7)
-  '@effect/platform-node':
-    specifier: ^0.40.1
-    version: 0.40.1(@effect/platform@0.40.1)(effect@2.0.1)
   '@effect/schema':
     specifier: ^0.36.5
     version: 0.36.5(@effect/data@0.18.7)(@effect/io@0.41.2)
   '@konker.dev/effect-ts-prelude':
     specifier: 0.0.5
     version: 0.0.5(@effect/data@0.18.7)(@effect/io@0.41.2)(@effect/schema@0.36.5)(effect@2.0.1)
-  '@swc/core':
-    specifier: ^1.3.96
-    version: 1.3.102
+  '@konker.dev/tiny-rules-fp':
+    specifier: ^0.0.1
+    version: 0.0.1
   chalk:
     specifier: ^4.1.2
     version: 4.1.2
@@ -37,6 +34,9 @@ devDependencies:
   '@effect/language-service':
     specifier: ^0.1.0
     version: 0.1.0
+  '@swc/core':
+    specifier: ^1.3.96
+    version: 1.3.102
   '@types/jest':
     specifier: ^29.5.11
     version: 29.5.11
@@ -497,31 +497,6 @@ packages:
     resolution: {integrity: sha512-BnlM8LlaqCAYgdRfxlbR7gXGh/FD1scL1fPgNVJEPoOM08od1jtJz+iKhwfaud8TPnnhZR+TED2h5ynjanLeCQ==}
     dev: true
 
-  /@effect/platform-node@0.40.1(@effect/platform@0.40.1)(effect@2.0.1):
-    resolution: {integrity: sha512-VmHLXABQwgnLC6G2xT4CZbxBltDXQVdB9JOuQugKwuMS/qrteMNCgMi27WgNAg7KgphwU0by7X5F3zPM0L32Jw==}
-    peerDependencies:
-      '@effect/platform': ^0.40.1
-      effect: ^2.0.1
-    dependencies:
-      '@effect/platform': 0.40.1(@effect/schema@0.36.5)(effect@2.0.1)
-      effect: 2.0.1
-      mime: 3.0.0
-      multipasta: 0.1.21
-    dev: false
-
-  /@effect/platform@0.40.1(@effect/schema@0.36.5)(effect@2.0.1):
-    resolution: {integrity: sha512-2foUmR0kn59S82ETFEDFaXTaOsb0KoQaGMYpfByErZzrMXF8yzf4j/mFHV0zO/sSxWKmMWb249wn0PclcgU3zw==}
-    peerDependencies:
-      '@effect/schema': ^0.57.1
-      effect: ^2.0.1
-    dependencies:
-      '@effect/schema': 0.36.5(@effect/data@0.18.7)(@effect/io@0.41.2)
-      effect: 2.0.1
-      find-my-way-ts: 0.1.1
-      multipasta: 0.1.21
-      path-browserify: 1.0.1
-    dev: false
-
   /@effect/schema@0.36.5(@effect/data@0.18.7)(@effect/io@0.41.2):
     resolution: {integrity: sha512-E8KZ17DqZJl7E/eEVTkxb2NEv6vYhab79HugHi10krd2Gm3vOJvWs+nRgtPhI+0dvkXVxzCcY8bLfkND2F0rBg==}
     peerDependencies:
@@ -871,6 +846,16 @@ packages:
       effect: 2.0.1
     dev: false
 
+  /@konker.dev/tiny-rules-fp@0.0.1:
+    resolution: {integrity: sha512-3s3Ti0pmQOnX1H9EMNGqizOiWEvQ4aTzzKS6ZXPbQKssVVm7LSrfiXeKRDbri4uWZ2dqOcOAPbIYpZnwEdyUpQ==}
+    dependencies:
+      '@effect/data': 0.18.7
+      '@effect/io': 0.41.2(@effect/data@0.18.7)
+      '@effect/schema': 0.36.5(@effect/data@0.18.7)(@effect/io@0.41.2)
+      '@konker.dev/effect-ts-prelude': 0.0.5(@effect/data@0.18.7)(@effect/io@0.41.2)(@effect/schema@0.36.5)(effect@2.0.1)
+      effect: 2.0.1
+    dev: false
+
   /@nodelib/fs.scandir@2.1.5:
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}
     engines: {node: '>= 8'}
@@ -919,6 +904,7 @@ packages:
     cpu: [arm64]
     os: [darwin]
     requiresBuild: true
+    dev: true
     optional: true
 
   /@swc/core-darwin-x64@1.3.102:
@@ -927,6 +913,7 @@ packages:
     cpu: [x64]
     os: [darwin]
     requiresBuild: true
+    dev: true
     optional: true
 
   /@swc/core-linux-arm-gnueabihf@1.3.102:
@@ -935,6 +922,7 @@ packages:
     cpu: [arm]
     os: [linux]
     requiresBuild: true
+    dev: true
     optional: true
 
   /@swc/core-linux-arm64-gnu@1.3.102:
@@ -943,6 +931,7 @@ packages:
     cpu: [arm64]
     os: [linux]
     requiresBuild: true
+    dev: true
     optional: true
 
   /@swc/core-linux-arm64-musl@1.3.102:
@@ -951,6 +940,7 @@ packages:
     cpu: [arm64]
     os: [linux]
     requiresBuild: true
+    dev: true
     optional: true
 
   /@swc/core-linux-x64-gnu@1.3.102:
@@ -959,6 +949,7 @@ packages:
     cpu: [x64]
     os: [linux]
     requiresBuild: true
+    dev: true
     optional: true
 
   /@swc/core-linux-x64-musl@1.3.102:
@@ -967,6 +958,7 @@ packages:
     cpu: [x64]
     os: [linux]
     requiresBuild: true
+    dev: true
     optional: true
 
   /@swc/core-win32-arm64-msvc@1.3.102:
@@ -975,6 +967,7 @@ packages:
     cpu: [arm64]
     os: [win32]
     requiresBuild: true
+    dev: true
     optional: true
 
   /@swc/core-win32-ia32-msvc@1.3.102:
@@ -983,6 +976,7 @@ packages:
     cpu: [ia32]
     os: [win32]
     requiresBuild: true
+    dev: true
     optional: true
 
   /@swc/core-win32-x64-msvc@1.3.102:
@@ -991,6 +985,7 @@ packages:
     cpu: [x64]
     os: [win32]
     requiresBuild: true
+    dev: true
     optional: true
 
   /@swc/core@1.3.102:
@@ -1016,12 +1011,15 @@ packages:
       '@swc/core-win32-arm64-msvc': 1.3.102
       '@swc/core-win32-ia32-msvc': 1.3.102
       '@swc/core-win32-x64-msvc': 1.3.102
+    dev: true
 
   /@swc/counter@0.1.2:
     resolution: {integrity: sha512-9F4ys4C74eSTEUNndnER3VJ15oru2NumfQxS8geE+f3eB5xvfxpWyqE5XlVnxb/R14uoXi6SLbBwwiDSkv+XEw==}
+    dev: true
 
   /@swc/types@0.1.5:
     resolution: {integrity: sha512-myfUej5naTBWnqOCc/MdVOLVjXUXtIA+NpDrDBKJtLLg2shUjBu3cZmB/85RyitKc55+lUUyl7oRfLOvkr2hsw==}
+    dev: true
 
   /@tsconfig/node10@1.0.9:
     resolution: {integrity: sha512-jNsYVVxU8v5g43Erja32laIDHXeoNvFEpX33OK4d6hljo3jDhCBDhx5dhCCTMWUojscpAagGiRkBKxpdl9fxqA==}
@@ -3132,10 +3130,6 @@ packages:
       pure-rand: 6.0.4
     dev: false
 
-  /fast-decode-uri-component@1.0.1:
-    resolution: {integrity: sha512-WKgKWg5eUxvRZGwW8FvfbaH7AXSh2cL+3j5fMGzUMCxWBJ3dV3a7Wz8y2f/uQ0e3B6WmodD3oS54jTQ9HVTIIg==}
-    dev: false
-
   /fast-deep-equal@3.1.3:
     resolution: {integrity: sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q==}
     dev: true
@@ -3166,12 +3160,6 @@ packages:
   /fast-levenshtein@2.0.6:
     resolution: {integrity: sha512-DCXu6Ifhqcks7TZKY3Hxp3y6qphY5SJZmrWMDrKcERSOXWQdMhU9Ig/PYrzyw/ul9jOIyh0N4M0tbC5hodg8dw==}
     dev: true
-
-  /fast-querystring@1.1.2:
-    resolution: {integrity: sha512-g6KuKWmFXc0fID8WWH0jit4g0AGBoJhCkJMb1RmbsSEUNvQ+ZC8D6CUZ+GtF8nMzSPXnhiePyyqqipzNNEnHjg==}
-    dependencies:
-      fast-decode-uri-component: 1.0.1
-    dev: false
 
   /fastq@1.16.0:
     resolution: {integrity: sha512-ifCoaXsDrsdkWTtiNJX5uzHDsrck5TzfKKDcuFFTIrrc/BS076qgEIfoIy1VeZqViznfKiysPYTh/QeHtnIsYA==}
@@ -3236,12 +3224,6 @@ packages:
     dependencies:
       to-regex-range: 5.0.1
     dev: true
-
-  /find-my-way-ts@0.1.1:
-    resolution: {integrity: sha512-nXUdq29JRQ1tYa1/n+DHTVChMARJHz+gi7sDZibwQukzHP7Hrr6s+sxKbaIM8xB3LzhSBJy5yLb0JhIUmHmOiA==}
-    dependencies:
-      fast-querystring: 1.1.2
-    dev: false
 
   /find-up@1.1.2:
     resolution: {integrity: sha512-jvElSjyuo4EMQGoTwo1uJU5pQMwTW5lS1x05zzfJuTIyLR3zwO27LYrxNg+dlvKpGOuGy/MzBdXh80g0ve5+HA==}
@@ -5030,12 +5012,6 @@ packages:
       picomatch: 2.3.1
     dev: true
 
-  /mime@3.0.0:
-    resolution: {integrity: sha512-jSCU7/VB1loIWBZe14aEYHU/+1UMEHoaO7qxCOVJOw9GgH72VAWppxNcjU+x9a2k3GSIBXNKxXQFqRvvZ7vr3A==}
-    engines: {node: '>=10.0.0'}
-    hasBin: true
-    dev: false
-
   /mimic-fn@2.1.0:
     resolution: {integrity: sha512-OqbOk5oEQeAZ8WXWydlu9HJjz9WVdEIvamMCcXmuqUYjTknH/sqsWvhQ3vgwKFRR1HpjvNBKQ37nbJgYzGqGcg==}
     engines: {node: '>=6'}
@@ -5109,10 +5085,6 @@ packages:
   /ms@2.1.3:
     resolution: {integrity: sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==}
     dev: true
-
-  /multipasta@0.1.21:
-    resolution: {integrity: sha512-HpF9156uifsQu1L8KKW1EqXIt3DacHJTzQ+JSm6IShkcyyf+krOWzfOgT3OLHzesM40hbs6/QW5CJWSEdDPQag==}
-    dev: false
 
   /mute-stdout@1.0.1:
     resolution: {integrity: sha512-kDcwXR4PS7caBpuRYYBUz9iVixUk3anO3f5OYFiIPwK/20vCzKCHyKoulbiDY1S53zD2bxUpxN/IJ+TnXjfvxg==}
@@ -5465,10 +5437,6 @@ packages:
     resolution: {integrity: sha512-XHXfu/yOQRy9vYOtUDVMN60OEJjW013GoObG1o+xwQTpB9eYJX/BjXMsdW13ZDPruFhYYn0AG22w0xgQMwl3Nw==}
     engines: {node: '>=0.10.0'}
     dev: true
-
-  /path-browserify@1.0.1:
-    resolution: {integrity: sha512-b7uo2UCUOYZcnF/3ID0lulOJi/bafxa1xPe7ZPsammBSpjSWQkjNxlt635YGS2MiR9GjvuXCtz2emr3jbsz98g==}
-    dev: false
 
   /path-dirname@1.0.2:
     resolution: {integrity: sha512-ALzNPpyNq9AqXMBjeymIjFDAkAFH06mHJH/cSBHAgU0s4vfpBn6b2nf8tiRLvagKD8RbTpq2FKTBg7cl9l3c7Q==}

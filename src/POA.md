@@ -4,9 +4,6 @@
 
 - Refactor MorrisGame
 
-  - Separate state from functions
-    - Could we even use OOP here?!?
-  - Schemas/etc to be able to serialize/deserialize state(to/from JSON initially)
   - Create game files which can be used as test fixtures
 
 - Unit tests!!
@@ -19,9 +16,6 @@
   - What do we need to set up a network game, and send moves over the network?
     - P2P
   - Could also be handy for test fixtures
-- Rename schemas types to remove S postfix?
-  - No "non-S" duplicates/shadows
-- Remove state machine [?]
 - Improve Minimax algo for computer player:
 
   - https://en.wikipedia.org/wiki/Minimax
@@ -38,6 +32,12 @@
 - OTHER
   - Clock?
   - Move counts?
+  - ~~Rename schemas types to remove S postfix?~~
+  - ~~No "non-S" duplicates/shadows~~
+- ~~Remove state machine [?]~~
+- ~~Separate state from functions~~
+  - ~~Could we even use OOP here?!?~~
+  - ~~Schemas/etc to be able to serialize/deserialize state(to/from JSON initially)~~
 - ~~Rationalize:~~
   - ~~Naming conventions for functions~~
   - ~~Module/sub-module organization~~
