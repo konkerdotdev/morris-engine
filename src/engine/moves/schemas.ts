@@ -2,6 +2,7 @@ import * as P from '@konker.dev/effect-ts-prelude';
 
 import { MorrisBoardCoord } from '../board/schemas';
 import { MorrisColor, MorrisMoveType } from '../consts';
+import type { BoardDim } from '../index';
 
 export const MorrisMoveRoot = P.Schema.ParseJson.pipe(
   P.Schema.compose(
@@ -12,7 +13,7 @@ export const MorrisMoveRoot = P.Schema.ParseJson.pipe(
 );
 export type MorrisMoveRoot = P.Schema.Schema.To<typeof MorrisMoveRoot>;
 
-export function MorrisMovePlace(d: number) {
+export function MorrisMovePlace(d: BoardDim) {
   return P.Schema.ParseJson.pipe(
     P.Schema.compose(
       P.Schema.struct({
@@ -25,7 +26,7 @@ export function MorrisMovePlace(d: number) {
 }
 export type MorrisMovePlace = P.Schema.Schema.To<ReturnType<typeof MorrisMovePlace>>;
 
-export function MorrisMoveMove(d: number) {
+export function MorrisMoveMove(d: BoardDim) {
   return P.Schema.ParseJson.pipe(
     P.Schema.compose(
       P.Schema.struct({
@@ -38,7 +39,7 @@ export function MorrisMoveMove(d: number) {
 }
 export type MorrisMoveMove = P.Schema.Schema.To<ReturnType<typeof MorrisMoveMove>>;
 
-export function MorrisMoveRemove(d: number) {
+export function MorrisMoveRemove(d: BoardDim) {
   return P.Schema.ParseJson.pipe(
     P.Schema.compose(
       P.Schema.struct({
@@ -50,7 +51,7 @@ export function MorrisMoveRemove(d: number) {
 }
 export type MorrisMoveRemove = P.Schema.Schema.To<ReturnType<typeof MorrisMoveRemove>>;
 
-export function MorrisMove(d: number) {
+export function MorrisMove(d: BoardDim) {
   return P.Schema.union(MorrisMovePlace(d), MorrisMoveMove(d), MorrisMoveRemove(d), MorrisMoveRoot);
 }
 export type MorrisMove = P.Schema.Schema.To<ReturnType<typeof MorrisMove>>;

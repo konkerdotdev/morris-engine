@@ -67,9 +67,9 @@ export const shellSerializeGameState = (gameTick: MorrisGameTick): string =>
       P.Schema.encode(
         MorrisGameState(
           gameTick.game.gameState._tag,
-          gameTick.game.gameState.config.params.P,
-          gameTick.game.gameState.config.params.D,
-          gameTick.game.gameState.config.params.N
+          gameTick.game.gameState.board.numPoints,
+          gameTick.game.gameState.board.dimension,
+          gameTick.game.gameState.config.numMorrisPerPlayer
         )
       )
     )

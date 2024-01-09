@@ -2,10 +2,11 @@ import * as P from '@konker.dev/effect-ts-prelude';
 
 import { MorrisBlack, MorrisBoard, MorrisBoardCoord, MorrisBoardPositionString, MorrisWhite } from '../board/schemas';
 import { MorrisColor, MorrisGameResult, MorrisPhase } from '../consts';
+import type { BoardDim, NumMorris, NumPoints } from '../index';
 import { MorrisMove } from '../moves/schemas';
 import { MorrisFactsMove } from '../rules/factsMove';
 
-export function MorrisGameConfigParams(p: number, d: number, n: number) {
+export function MorrisGameConfigParams(p: NumPoints, d: BoardDim, n: NumMorris) {
   return P.Schema.struct({
     P: P.Schema.literal(p),
     D: P.Schema.literal(d),
@@ -14,11 +15,10 @@ export function MorrisGameConfigParams(p: number, d: number, n: number) {
 }
 export type MorrisGameConfigParams = P.Schema.Schema.To<ReturnType<typeof MorrisGameConfigParams>>;
 
-export function MorrisGameConfig(p: number, d: number, n: number) {
+export function MorrisGameConfig(d: BoardDim, n: NumMorris) {
   return P.Schema.struct({
     name: P.Schema.string,
-    params: MorrisGameConfigParams(p, d, n),
-    numMorrisPerPlayer: P.Schema.number.pipe(P.Schema.between(1, n)),
+    numMorrisPerPlayer: P.Schema.literal(n),
     forbiddenPointsFirstMove: P.Schema.array(MorrisBoardCoord(d)),
     forbiddenPointsSecondMove: P.Schema.array(MorrisBoardCoord(d)),
     forbiddenPointsPlacingPhase: P.Schema.array(MorrisBoardCoord(d)),
@@ -33,7 +33,7 @@ export function MorrisGameConfig(p: number, d: number, n: number) {
 export type MorrisGameConfig = P.Schema.Schema.To<ReturnType<typeof MorrisGameConfig>>;
 
 // --------------------------------------------------------------------------
-export function MorrisGameHistory(d: number) {
+export function MorrisGameHistory(d: BoardDim) {
   return P.Schema.struct({
     moves: P.Schema.array(MorrisMove(d)),
     moveFacts: P.Schema.array(MorrisFactsMove),
@@ -42,7 +42,7 @@ export function MorrisGameHistory(d: number) {
 }
 export type MorrisGameHistory = P.Schema.Schema.To<ReturnType<typeof MorrisGameHistory>>;
 
-export function MorrisGameHistoryEntry(d: number) {
+export function MorrisGameHistoryEntry(d: BoardDim) {
   return P.Schema.struct({
     // eslint-disable-next-line fp/no-nil
     lastMove: P.Schema.union(MorrisMove(d), P.Schema.undefined),
@@ -53,10 +53,10 @@ export function MorrisGameHistoryEntry(d: number) {
 export type MorrisGameHistoryEntry = P.Schema.Schema.To<ReturnType<typeof MorrisGameHistoryEntry>>;
 
 // --------------------------------------------------------------------------
-export function MorrisGameStateStructFields<T extends string>(t: T, p: number, d: number, n: number) {
+export function MorrisGameStateStructFields(t: string, p: NumPoints, d: BoardDim, n: NumMorris) {
   return {
     _tag: P.Schema.literal(t),
-    config: MorrisGameConfig(p, d, n),
+    config: MorrisGameConfig(d, n),
     board: MorrisBoard(p, d, n),
 
     startColor: P.Schema.enums(MorrisColor),
@@ -72,7 +72,7 @@ export function MorrisGameStateStructFields<T extends string>(t: T, p: number, d
   };
 }
 
-export function MorrisGameState(t: string, p: number, d: number, n: number) {
+export function MorrisGameState(t: string, p: NumPoints, d: BoardDim, n: NumMorris) {
   return P.Schema.ParseJson.pipe(P.Schema.compose(P.Schema.struct(MorrisGameStateStructFields(t, p, d, n))));
 }
 export type MorrisGameState = P.Schema.Schema.To<ReturnType<typeof MorrisGameState>>;

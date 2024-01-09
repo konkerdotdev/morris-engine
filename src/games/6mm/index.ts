@@ -1,3 +1,4 @@
+import type { BoardDim, NumMorris, NumPoints } from '../../engine';
 import { boardHash } from '../../engine/board';
 import type { MorrisBlack, MorrisBoard, MorrisWhite } from '../../engine/board/schemas';
 import { EmptyOccupant } from '../../engine/board/schemas';
@@ -11,9 +12,9 @@ export const TAG = '6mm';
 export type TAG = typeof TAG;
 
 // Not exported
-const P = 16;
-const D = 5;
-const N = 6;
+const P = 16 as NumPoints;
+const D = 5 as BoardDim;
+const N = 6 as NumMorris;
 
 /*
 // --------------------------------------------------------------------------
@@ -214,7 +215,6 @@ function initMorrisBlack(): ReadonlyArray<MorrisBlack> {
 // --------------------------------------------------------------------------
 export const config: MorrisGameConfig = {
   name: "6 Men's Morris",
-  params: { P, D, N },
   numMorrisPerPlayer: N,
   numMillsToWinThreshold: 0,
   numMorrisForFlyingThreshold: 3,
