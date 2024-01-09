@@ -10,9 +10,10 @@ import { gameDeriveResult, gameReset, gameSetResult } from '../game';
 import { gameHistoryLen, gameHistoryPeek } from '../game/history';
 import { gameDeriveInvalidMoveErrorMessage, gameDeriveMessage, gameDeriveStartMessage } from '../game/message';
 import type { MorrisMove } from '../moves/schemas';
-import { RulesImpl } from '../rules';
 import type { MorrisFactsGame } from '../rules/factsGame';
 import { BOOTSTRAP_INITIAL_MORRIS_FACTS_GAME } from '../rules/factsGame';
+import { RulesGame } from '../rules/rulesGame';
+import { RulesMove } from '../rules/rulesMove';
 import { tickApplyMove, tickUndoApplyMove } from './apply';
 
 export type MorrisGameTick<P extends number, D extends number, N extends number> = {
@@ -41,7 +42,7 @@ export function tickGetTurnColor<P extends number, D extends number, N extends n
 // --------------------------------------------------------------------------
 export const tick =
   <P extends number, D extends number, N extends number>(move: MorrisMove<D>) =>
-  (gameTick: MorrisGameTick<P, D, N>): P.Effect.Effect<RulesImpl, MorrisEngineError, MorrisGameTick<P, D, N>> => {
+  (gameTick: MorrisGameTick<P, D, N>): P.Effect.Effect<never, MorrisEngineError, MorrisGameTick<P, D, N>> => {
     const oldGame = gameTick.game;
 
     return P.pipe(
@@ -49,16 +50,11 @@ export const tick =
       // Run the move rules
       P.Effect.bind('moveFacts', () =>
         P.pipe(
-          RulesImpl,
-          P.Effect.flatMap((ruleImpl) =>
-            P.pipe(
-              ruleImpl.rulesetMove<P, D, N>(),
-              R.decide({
-                gameTick,
-                move,
-              })
-            )
-          )
+          RulesMove<P, D, N>(),
+          R.decide({
+            gameTick,
+            move,
+          })
         )
       ),
       // Short-circuit if the move is invalid
@@ -72,16 +68,11 @@ export const tick =
       // Run the game rules to derive the new facts for the new game
       P.Effect.bind('newGameFacts', ({ moveFacts, newGame }) =>
         P.pipe(
-          RulesImpl,
-          P.Effect.flatMap((ruleImpl) =>
-            P.pipe(
-              ruleImpl.rulesetGame<P, D, N>(),
-              R.decide({
-                game: newGame,
-                moveFacts,
-              })
-            )
-          )
+          RulesGame<P, D, N>(),
+          R.decide({
+            game: newGame,
+            moveFacts,
+          })
         )
       ),
       // Get a message prompt for the new game state
@@ -96,7 +87,7 @@ export const tick =
 // --------------------------------------------------------------------------
 export const tickUndo = <P extends number, D extends number, N extends number>(
   gameTick: MorrisGameTick<P, D, N>
-): P.Effect.Effect<RulesImpl, MorrisEngineError, MorrisGameTick<P, D, N>> => {
+): P.Effect.Effect<never, MorrisEngineError, MorrisGameTick<P, D, N>> => {
   if (gameHistoryLen(gameTick.game.gameState.history) < 2) {
     const game = gameReset(gameTick.game);
     return tickCreate(game, BOOTSTRAP_INITIAL_MORRIS_FACTS_GAME(game), 0, gameDeriveStartMessage(game));
@@ -113,16 +104,11 @@ export const tickUndo = <P extends number, D extends number, N extends number>(
     P.Effect.bind('oldGame', () => P.pipe(gameTick.game, tickUndoApplyMove(lastMove, lastMoveFacts))),
     P.Effect.bind('oldGameFacts', ({ oldGame }) =>
       P.pipe(
-        RulesImpl,
-        P.Effect.flatMap((ruleImpl) =>
-          P.pipe(
-            ruleImpl.rulesetGame<P, D, N>(),
-            R.decide({
-              game: oldGame,
-              moveFacts: lastMoveFacts,
-            })
-          )
-        )
+        RulesGame<P, D, N>(),
+        R.decide({
+          game: oldGame,
+          moveFacts: lastMoveFacts,
+        })
       )
     ),
     P.Effect.bind('oldMessage', ({ oldGameFacts }) => gameDeriveMessage(oldGameFacts)),
@@ -135,7 +121,7 @@ export const tickUndo = <P extends number, D extends number, N extends number>(
 // --------------------------------------------------------------------------
 export const tickAutoPlayer =
   <P extends number, D extends number, N extends number>(autoPlayer: AutoPlayer<P, D, N>) =>
-  (gameTick: MorrisGameTick<P, D, N>): P.Effect.Effect<RulesImpl, MorrisEngineError, MorrisGameTick<P, D, N>> =>
+  (gameTick: MorrisGameTick<P, D, N>): P.Effect.Effect<never, MorrisEngineError, MorrisGameTick<P, D, N>> =>
     P.pipe(
       autoPlayer(gameTick),
       P.Effect.tap((x) => P.Console.log(x)),

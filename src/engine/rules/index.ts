@@ -1,4 +1,3 @@
-import * as P from '@konker.dev/effect-ts-prelude';
 import type * as R from '@konker.dev/tiny-rules-fp';
 
 import type { MorrisEngineError } from '../../lib/error';
@@ -33,11 +32,3 @@ export type MorrisRulesetMove<P extends number, D extends number, N extends numb
   MorrisEngineError,
   MorrisFactsMove
 >;
-
-// --------------------------------------------------------------------------
-export type RulesImpl = {
-  readonly rulesetGame: <P extends number, D extends number, N extends number>() => MorrisRulesetGame<P, D, N>;
-  readonly rulesetMove: <P extends number, D extends number, N extends number>() => MorrisRulesetMove<P, D, N>;
-};
-
-export const RulesImpl = P.Context.Tag<RulesImpl>('RulesImpl');

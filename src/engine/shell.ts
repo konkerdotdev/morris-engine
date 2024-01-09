@@ -8,9 +8,6 @@ import { gameStart } from './game';
 import { MorrisGameState } from './game/schemas';
 import { MorrisMove } from './moves/schemas';
 import { RenderImpl } from './render';
-import { RulesImpl } from './rules';
-import { RulesGame } from './rules/rulesGame';
-import { RulesMove } from './rules/rulesMove';
 import type { MorrisGameTick } from './tick';
 import { tick, tickAutoPlayer, tickUndo } from './tick';
 
@@ -32,15 +29,7 @@ export function shellTick<P extends number, D extends number, N extends number>(
       P.Effect.flatMap((move) => P.pipe(gameTick, tick(move))),
       P.Effect.mapError(toMorrisEngineError),
       P.Effect.tapError((e) => P.Console.error(chalk.redBright.bold(e.message))),
-      P.Effect.orElse(() => P.pipe(P.Effect.succeed(gameTick))),
-      P.Effect.provideService(
-        RulesImpl,
-        RulesImpl.of({
-          rulesetGame: RulesGame,
-          rulesetMove: RulesMove,
-        })
-      ),
-      (x) => x
+      P.Effect.orElse(() => P.pipe(P.Effect.succeed(gameTick)))
     )
   );
 }
@@ -53,14 +42,7 @@ export function shellUntick<P extends number, D extends number, N extends number
       tickUndo(gameTick),
       P.Effect.mapError(toMorrisEngineError),
       P.Effect.tapError((e) => P.Console.error(chalk.redBright.bold(e.message))),
-      P.Effect.orElse(() => P.pipe(P.Effect.succeed(gameTick))),
-      P.Effect.provideService(
-        RulesImpl,
-        RulesImpl.of({
-          rulesetGame: RulesGame,
-          rulesetMove: RulesMove,
-        })
-      )
+      P.Effect.orElse(() => P.pipe(P.Effect.succeed(gameTick)))
     )
   );
 }
@@ -74,14 +56,7 @@ export function shellTickAutoPlayer<P extends number, D extends number, N extend
       gameTick,
       tickAutoPlayer(autoPlayer),
       P.Effect.tapError((e) => P.Console.error(chalk.redBright.bold(e.message))),
-      P.Effect.orElse(() => P.pipe(P.Effect.succeed(gameTick))),
-      P.Effect.provideService(
-        RulesImpl,
-        RulesImpl.of({
-          rulesetGame: RulesGame,
-          rulesetMove: RulesMove,
-        })
-      )
+      P.Effect.orElse(() => P.pipe(P.Effect.succeed(gameTick)))
     )
   );
 }

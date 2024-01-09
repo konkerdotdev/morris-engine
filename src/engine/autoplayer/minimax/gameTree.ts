@@ -8,7 +8,6 @@ import { MorrisGameResult } from '../../consts';
 import { moveCreateRoot } from '../../moves';
 import { moveListValidMovesForColor } from '../../moves/query';
 import type { MorrisMove } from '../../moves/schemas';
-import type { RulesImpl } from '../../rules';
 import type { MorrisGameTick } from '../../tick';
 import { tick, tickGetTurnColor } from '../../tick';
 
@@ -107,7 +106,7 @@ export function gameTreeCreate<P extends number, D extends number, N extends num
   _scoreF: scoreGameTreeNode<P, D, N>,
   maxColor: MorrisColor,
   depth: number
-): P.Effect.Effect<RulesImpl, MorrisEngineError, EvaluatedGameTreeNode<P, D, N>> {
+): P.Effect.Effect<never, MorrisEngineError, EvaluatedGameTreeNode<P, D, N>> {
   return P.pipe(
     P.Effect.Do,
     P.Effect.bind('validMoves', () =>
@@ -144,7 +143,7 @@ export function gameTreeCreateChild<P extends number, D extends number, N extend
   _scoreF: scoreGameTreeNode<P, D, N>,
   maxColor: MorrisColor,
   depth: number
-): P.Effect.Effect<RulesImpl, MorrisEngineError, EvaluatedGameTreeNode<P, D, N>> {
+): P.Effect.Effect<never, MorrisEngineError, EvaluatedGameTreeNode<P, D, N>> {
   return depth === 0
     ? // Leaf node
       P.pipe(
