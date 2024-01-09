@@ -6,11 +6,7 @@ import type { EvaluatedGameTreeNode } from './gameTree';
 /**
  * Generate a dot format rendering of the game tree
  */
-export function gameTreeNodeDot<P extends number, D extends number, N extends number>(
-  gameTreeNode: EvaluatedGameTreeNode<P, D, N>,
-  index = 0,
-  depth = 0
-): string {
+export function gameTreeNodeDot(gameTreeNode: EvaluatedGameTreeNode, index = 0, depth = 0): string {
   const preamble = depth === 0 ? 'digraph G {\n' : '';
   const postamble = depth === 0 ? '}' : '';
 

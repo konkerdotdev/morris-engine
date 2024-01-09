@@ -1,5 +1,3 @@
-import type * as P from '@konker.dev/effect-ts-prelude';
-
 import { boardHash } from '../../engine/board';
 import type { MorrisBlack, MorrisBoard, MorrisWhite } from '../../engine/board/schemas';
 import { EmptyOccupant } from '../../engine/board/schemas';
@@ -10,14 +8,12 @@ import type { MorrisGameConfig, MorrisGameState } from '../../engine/game/schema
 import { createMorrisBlack, createMorrisWhite } from '../../engine/morris';
 
 export const TAG = 'picaria';
+export type TAG = typeof TAG;
 
 // Not exported
-const P_ = 13;
-type P = typeof P_;
-const D_ = 5;
-type D = typeof D_;
-const N_ = 3;
-type N = typeof N_;
+const P = 13;
+const D = 5;
+const N = 3;
 
 /*
 // --------------------------------------------------------------------------
@@ -33,10 +29,10 @@ type N = typeof N_;
 1 o---------o---------o
   a    b    c    d    e
 */
-export function initMorrisBoard(): MorrisBoard<P, D, N> {
+export function initMorrisBoard(): MorrisBoard {
   return {
-    numPoints: P_,
-    dimension: D_,
+    numPoints: P,
+    dimension: D,
     points: [
       {
         coord: 'a1',
@@ -199,23 +195,19 @@ export function initMorrisBoard(): MorrisBoard<P, D, N> {
   };
 }
 
-function initMorrisWhite(): ReadonlyArray<MorrisWhite<N>> {
-  return [createMorrisWhite<N>(1), createMorrisWhite<N>(2), createMorrisWhite<N>(3)];
+function initMorrisWhite(): ReadonlyArray<MorrisWhite> {
+  return [createMorrisWhite(1), createMorrisWhite(2), createMorrisWhite(3)];
 }
 
-function initMorrisBlack(): ReadonlyArray<MorrisBlack<N>> {
-  return [createMorrisBlack<N>(1), createMorrisBlack<N>(2), createMorrisBlack<N>(3)];
+function initMorrisBlack(): ReadonlyArray<MorrisBlack> {
+  return [createMorrisBlack(1), createMorrisBlack(2), createMorrisBlack(3)];
 }
 
 // --------------------------------------------------------------------------
-export const config: MorrisGameConfig<P, D, N> = {
+export const config: MorrisGameConfig = {
   name: 'Picaria',
-  params: {
-    P: P_,
-    D: D_,
-    N: N_,
-  },
-  numMorrisPerPlayer: 3,
+  params: { P, D, N },
+  numMorrisPerPlayer: N,
   numMillsToWinThreshold: 1,
   numMorrisForFlyingThreshold: 0,
   numMorrisToLoseThreshold: 2,
@@ -227,7 +219,7 @@ export const config: MorrisGameConfig<P, D, N> = {
   forbiddenPointsPlacingPhase: ['c3'],
 };
 
-export const initialGameState: MorrisGameState<P, D, N> = {
+export const initialGameState: MorrisGameState = {
   _tag: TAG,
   ...MorrisGameStateBoilerplate,
   config,
@@ -238,7 +230,7 @@ export const initialGameState: MorrisGameState<P, D, N> = {
   positions: [boardHash(initMorrisBoard())],
 };
 
-export function GamePicaria(gameState: MorrisGameState<P, D, N> = initialGameState): MorrisGame<P, D, N> {
+export function GamePicaria(gameState: MorrisGameState = initialGameState): MorrisGame {
   return {
     gameState,
     initMorrisBoard,

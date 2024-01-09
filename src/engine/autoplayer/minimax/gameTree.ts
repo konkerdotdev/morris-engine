@@ -22,39 +22,39 @@ export enum NodeAim {
   MAX = 1,
 }
 
-export type GameTreeNode<P extends number, D extends number, N extends number> = {
+export type GameTreeNode = {
   readonly type: NodeType;
   readonly aim: NodeAim;
   readonly depth: number;
-  readonly gameTick: MorrisGameTick<P, D, N>;
-  readonly move: MorrisMove<D>;
-  readonly children: ReadonlyArray<EvaluatedGameTreeNode<P, D, N>>;
+  readonly gameTick: MorrisGameTick;
+  readonly move: MorrisMove;
+  readonly children: ReadonlyArray<EvaluatedGameTreeNode>;
 };
 
-export type EvaluatedGameTreeNode<P extends number, D extends number, N extends number> = GameTreeNode<P, D, N> & {
-  readonly bestChildMove: MorrisMove<D>;
+export type EvaluatedGameTreeNode = GameTreeNode & {
+  readonly bestChildMove: MorrisMove;
   readonly score: number;
 };
 
-export type EvalResult<D extends number> = {
+export type EvalResult = {
   readonly score: number;
-  readonly bestChildMove: MorrisMove<D>;
+  readonly bestChildMove: MorrisMove;
 };
 
-export type scoreGameTreeNode<P extends number, D extends number, N extends number> = (
-  gameTreeNode: GameTreeNode<P, D, N>,
+export type scoreGameTreeNode = (
+  gameTreeNode: GameTreeNode,
   maxColor: MorrisColor
 ) => P.Effect.Effect<never, MorrisEngineError, number>;
 
 // --------------------------------------------------------------------------
-export function gameTreeNodeCreate<P extends number, D extends number, N extends number>(
+export function gameTreeNodeCreate(
   type: NodeType,
   aim: NodeAim,
   depth: number,
-  gameTick: MorrisGameTick<P, D, N>,
-  move: MorrisMove<D>,
-  children: ReadonlyArray<EvaluatedGameTreeNode<P, D, N>>
-): GameTreeNode<P, D, N> {
+  gameTick: MorrisGameTick,
+  move: MorrisMove,
+  children: ReadonlyArray<EvaluatedGameTreeNode>
+): GameTreeNode {
   return {
     type,
     aim,
@@ -65,21 +65,18 @@ export function gameTreeNodeCreate<P extends number, D extends number, N extends
   };
 }
 
-export function gameTreeNodeSetEvalResult<P extends number, D extends number, N extends number>(
-  gameTreeNode: GameTreeNode<P, D, N>,
-  evalResult: EvalResult<D>
-): EvaluatedGameTreeNode<P, D, N> {
+export function gameTreeNodeSetEvalResult(gameTreeNode: GameTreeNode, evalResult: EvalResult): EvaluatedGameTreeNode {
   return {
     ...gameTreeNode,
     ...evalResult,
   };
 }
 
-export function gameTreeNodeEvaluate<P extends number, D extends number, N extends number>(
-  gameTreeNode: GameTreeNode<P, D, N>,
-  scoreF: scoreGameTreeNode<P, D, N>,
+export function gameTreeNodeEvaluate(
+  gameTreeNode: GameTreeNode,
+  scoreF: scoreGameTreeNode,
   maxColor: MorrisColor
-): P.Effect.Effect<never, MorrisEngineError, EvalResult<D>> {
+): P.Effect.Effect<never, MorrisEngineError, EvalResult> {
   if (gameTreeNode.type === NodeType.LEAF) {
     return P.pipe(
       scoreF(gameTreeNode, maxColor),
@@ -92,8 +89,8 @@ export function gameTreeNodeEvaluate<P extends number, D extends number, N exten
 
   const bestChild =
     gameTreeNode.aim === NodeAim.MAX
-      ? (_maxBy(gameTreeNode.children, 'score') as EvaluatedGameTreeNode<P, D, N>)
-      : (_minBy(gameTreeNode.children, 'score') as EvaluatedGameTreeNode<P, D, N>);
+      ? (_maxBy(gameTreeNode.children, 'score') as EvaluatedGameTreeNode)
+      : (_minBy(gameTreeNode.children, 'score') as EvaluatedGameTreeNode);
 
   return P.Effect.succeed({
     score: bestChild.score,
@@ -101,12 +98,12 @@ export function gameTreeNodeEvaluate<P extends number, D extends number, N exten
   });
 }
 
-export function gameTreeCreate<P extends number, D extends number, N extends number>(
-  gameTick: MorrisGameTick<P, D, N>,
-  _scoreF: scoreGameTreeNode<P, D, N>,
+export function gameTreeCreate(
+  gameTick: MorrisGameTick,
+  _scoreF: scoreGameTreeNode,
   maxColor: MorrisColor,
   depth: number
-): P.Effect.Effect<never, MorrisEngineError, EvaluatedGameTreeNode<P, D, N>> {
+): P.Effect.Effect<never, MorrisEngineError, EvaluatedGameTreeNode> {
   return P.pipe(
     P.Effect.Do,
     P.Effect.bind('validMoves', () =>
@@ -137,13 +134,13 @@ export function gameTreeCreate<P extends number, D extends number, N extends num
   );
 }
 
-export function gameTreeCreateChild<P extends number, D extends number, N extends number>(
-  gameTick: MorrisGameTick<P, D, N>,
-  move: MorrisMove<D>,
-  _scoreF: scoreGameTreeNode<P, D, N>,
+export function gameTreeCreateChild(
+  gameTick: MorrisGameTick,
+  move: MorrisMove,
+  _scoreF: scoreGameTreeNode,
   maxColor: MorrisColor,
   depth: number
-): P.Effect.Effect<never, MorrisEngineError, EvaluatedGameTreeNode<P, D, N>> {
+): P.Effect.Effect<never, MorrisEngineError, EvaluatedGameTreeNode> {
   return depth === 0
     ? // Leaf node
       P.pipe(

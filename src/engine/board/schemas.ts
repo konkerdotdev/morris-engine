@@ -18,32 +18,32 @@ export const MorrisColorS = P.Schema.transformOrFail(
 );
 export type MorrisColorS = P.Schema.Schema.To<typeof MorrisColorS>;
 
-export function MorrisBlack<N extends number>(n: N) {
+export function MorrisBlack(n: number) {
   return P.Schema.struct({
     _tag: P.Schema.literal(MORRIS),
     color: P.Schema.literal(MorrisColor.BLACK),
     n: P.Schema.number.pipe(P.Schema.between(1, n)),
   });
 }
-export type MorrisBlack<N extends number> = P.Schema.Schema.To<ReturnType<typeof MorrisBlack<N>>>;
+export type MorrisBlack = P.Schema.Schema.To<ReturnType<typeof MorrisBlack>>;
 
-export function MorrisWhite<N extends number>(n: N) {
+export function MorrisWhite(n: number) {
   return P.Schema.struct({
     _tag: P.Schema.literal(MORRIS),
     color: P.Schema.literal(MorrisColor.WHITE),
     n: P.Schema.number.pipe(P.Schema.between(1, n)),
   });
 }
-export type MorrisWhite<N extends number> = P.Schema.Schema.To<ReturnType<typeof MorrisWhite<N>>>;
+export type MorrisWhite = P.Schema.Schema.To<ReturnType<typeof MorrisWhite>>;
 
-export function Morris<N extends number>(n: N) {
+export function Morris(n: number) {
   return P.Schema.union(MorrisBlack(n), MorrisWhite(n));
 }
-export type Morris<N extends number> = P.Schema.Schema.To<ReturnType<typeof Morris<N>>>;
+export type Morris = P.Schema.Schema.To<ReturnType<typeof Morris>>;
 
 // --------------------------------------------------------------------------
 export const isBoardCoord =
-  <D extends number>(d: D) =>
+  (d: number) =>
   (s: string): boolean => {
     const parts = s.split('', 2).map((c) => c?.toLowerCase());
     if (!parts[0] || !parts[1]) return false;
@@ -52,7 +52,7 @@ export const isBoardCoord =
     return isCoordChar(parts[0]) && COORD_CHARS.slice(0, d).includes(parts[0]) && y >= 1 && y <= d;
   };
 
-export function MorrisBoardCoord<D extends number>(d: D) {
+export function MorrisBoardCoord(d: number) {
   return P.pipe(
     P.Schema.string,
     P.Schema.compose(P.Schema.Lowercase),
@@ -62,7 +62,7 @@ export function MorrisBoardCoord<D extends number>(d: D) {
     })
   );
 }
-export type MorrisBoardCoord<D extends number> = P.Schema.Schema.To<ReturnType<typeof MorrisBoardCoord<D>>>;
+export type MorrisBoardCoord = P.Schema.Schema.To<ReturnType<typeof MorrisBoardCoord>>;
 
 // --------------------------------------------------------------------------
 export const EmptyOccupantS = P.Schema.struct({ _tag: P.Schema.literal(EMPTY) });
@@ -74,55 +74,47 @@ export function isEmptyOccupant(x: unknown): x is EmptyOccupant {
 }
 
 // --------------------------------------------------------------------------
-export function MorrisBoardPointOccupant<N extends number>(n: N) {
+export function MorrisBoardPointOccupant(n: number) {
   return P.Schema.union(EmptyOccupantS, Morris(n));
 }
-export type MorrisBoardPointOccupant<N extends number> = P.Schema.Schema.To<
-  ReturnType<typeof MorrisBoardPointOccupant<N>>
->;
+export type MorrisBoardPointOccupant = P.Schema.Schema.To<ReturnType<typeof MorrisBoardPointOccupant>>;
 
-export function MorrisBoardLink<D extends number>(d: D) {
+export function MorrisBoardLink(d: number) {
   return P.Schema.struct({
     to: MorrisBoardCoord(d),
     linkType: P.Schema.enums(MorrisLinkType),
   });
 }
-export type MorrisBoardLink<D extends number> = P.Schema.Schema.To<ReturnType<typeof MorrisBoardLink<D>>>;
+export type MorrisBoardLink = P.Schema.Schema.To<ReturnType<typeof MorrisBoardLink>>;
 
-export function MorrisBoardPoint<D extends number, N extends number>(d: D, n: N) {
+export function MorrisBoardPoint(d: number, n: number) {
   return P.Schema.struct({
     coord: MorrisBoardCoord(d),
     links: P.Schema.array(MorrisBoardLink(d)),
     occupant: MorrisBoardPointOccupant(n),
   });
 }
-export type MorrisBoardPoint<D extends number, N extends number> = P.Schema.Schema.To<
-  ReturnType<typeof MorrisBoardPoint<D, N>>
->;
+export type MorrisBoardPoint = P.Schema.Schema.To<ReturnType<typeof MorrisBoardPoint>>;
 
-export function OccupiedBoardPoint<D extends number, N extends number>(d: D, n: N) {
+export function OccupiedBoardPoint(d: number, n: number) {
   return P.Schema.struct({
     coord: MorrisBoardCoord(d),
     links: P.Schema.array(MorrisBoardLink(d)),
     occupant: Morris(n),
   });
 }
-export type OccupiedBoardPoint<D extends number, N extends number> = P.Schema.Schema.To<
-  ReturnType<typeof OccupiedBoardPoint<D, N>>
->;
+export type OccupiedBoardPoint = P.Schema.Schema.To<ReturnType<typeof OccupiedBoardPoint>>;
 
-export function isOccupiedBoardPoint<D extends number, N extends number>(
-  x: MorrisBoardPoint<D, N>
-): x is OccupiedBoardPoint<D, N> {
+export function isOccupiedBoardPoint(x: MorrisBoardPoint): x is OccupiedBoardPoint {
   return x.occupant._tag === MORRIS;
 }
 
-export function MillCandidate<D extends number>(d: D) {
+export function MillCandidate(d: number) {
   return P.Schema.array(MorrisBoardCoord(d)).pipe(P.Schema.itemsCount(THREE));
 }
-export type MillCandidate<D extends number> = P.Schema.Schema.To<ReturnType<typeof MillCandidate<D>>>;
+export type MillCandidate = P.Schema.Schema.To<ReturnType<typeof MillCandidate>>;
 
-export function MorrisBoard<P extends number, D extends number, N extends number>(p: P, d: D, n: N) {
+export function MorrisBoard(p: number, d: number, n: number) {
   return P.Schema.ParseJson.pipe(
     P.Schema.compose(
       P.Schema.struct({
@@ -134,13 +126,9 @@ export function MorrisBoard<P extends number, D extends number, N extends number
     )
   );
 }
-export type MorrisBoard<P extends number, D extends number, N extends number> = P.Schema.Schema.To<
-  ReturnType<typeof MorrisBoard<P, D, N>>
->;
+export type MorrisBoard = P.Schema.Schema.To<ReturnType<typeof MorrisBoard>>;
 
-export function MorrisBoardPositionString<P extends number>(p: P) {
+export function MorrisBoardPositionString(p: number) {
   return P.Schema.string.pipe(P.Schema.length(p));
 }
-export type MorrisBoardPositionString<P extends number> = P.Schema.Schema.To<
-  ReturnType<typeof MorrisBoardPositionString<P>>
->;
+export type MorrisBoardPositionString = P.Schema.Schema.To<ReturnType<typeof MorrisBoardPositionString>>;

@@ -34,14 +34,7 @@ export function isGameTag(tag: string): tag is keyof GAMES {
   return tag in GAMES;
 }
 
-export function gamesInstantiate<T extends keyof GAMES>(
-  tag: T,
-  gameState: MorrisGameState<
-    GAMES[T]['config']['params']['P'],
-    GAMES[T]['config']['params']['D'],
-    GAMES[T]['config']['params']['N']
-  >
-) {
+export function gamesInstantiate<T extends keyof GAMES>(tag: T, gameState: MorrisGameState) {
   if (isGameTag(tag) && gameState._tag === tag) {
     return GAMES[tag].Game(gameState as never) as GameType<T>;
   }

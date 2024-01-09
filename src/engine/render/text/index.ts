@@ -81,9 +81,9 @@ export type MorrisBoardRenderContext = MorrisBoardRenderParamsText & {
   readonly renderPoints: Array<Array<string>>;
 };
 
-export function initMorrisBoardRenderParams<P extends number, D extends number, N extends number>(
+export function initMorrisBoardRenderParams(
   config: MorrisBoardRenderConfigText,
-  board: MorrisBoard<P, D, N>
+  board: MorrisBoard
 ): MorrisBoardRenderParamsText {
   return {
     config,
@@ -100,9 +100,9 @@ export function initMorrisBoardRenderParams<P extends number, D extends number, 
   };
 }
 
-export function initMorrisBoardRenderContext<P extends number, D extends number, N extends number>(
+export function initMorrisBoardRenderContext(
   params: MorrisBoardRenderParamsText,
-  board: MorrisBoard<P, D, N>
+  board: MorrisBoard
 ): P.Effect.Effect<never, MorrisEngineError, MorrisBoardRenderContext> {
   return P.pipe(
     P.Effect.Do,
@@ -126,10 +126,7 @@ export function initMorrisBoardRenderContext<P extends number, D extends number,
   );
 }
 
-export function renderOccupant<D extends number, N extends number>(
-  context: MorrisBoardRenderContext,
-  p: MorrisBoardPoint<D, N>
-): string {
+export function renderOccupant(context: MorrisBoardRenderContext, p: MorrisBoardPoint): string {
   return isOccupiedBoardPoint(p)
     ? p.occupant.color === MorrisColor.WHITE
       ? chalk.bgHex(context.config.colorBoardBg).hex(context.config.colorWhite).bold(context.config.avatarWhite)
@@ -137,9 +134,7 @@ export function renderOccupant<D extends number, N extends number>(
     : chalk.bgHex(context.config.colorBoardBg).hex(context.config.colorBoard).bold(context.config.avatarEmpty);
 }
 
-export function renderString<P extends number, D extends number, N extends number>(
-  gameTick: MorrisGameTick<P, D, N>
-): P.Effect.Effect<never, MorrisEngineError, string> {
+export function renderString(gameTick: MorrisGameTick): P.Effect.Effect<never, MorrisEngineError, string> {
   const params = initMorrisBoardRenderParams(DEFAULT_MORRIS_BOARD_RENDER_CONFIG_TEXT, gameTick.game.gameState.board);
 
   return P.pipe(
@@ -193,7 +188,7 @@ export function renderString<P extends number, D extends number, N extends numbe
           P.pipe(
             P.Effect.Do,
             P.Effect.bind('renderCoords', () => getRenderCoord(context, p.coord)),
-            P.Effect.map(({ renderCoords }) => [...renderCoords, p] as [number, number, MorrisBoardPoint<D, N>])
+            P.Effect.map(({ renderCoords }) => [...renderCoords, p] as [number, number, MorrisBoardPoint])
           )
         ),
         P.Effect.all,

@@ -8,27 +8,17 @@ import type { MorrisFactsGame } from './factsGame';
 import type { MorrisFactsMove } from './factsMove';
 
 // --------------------------------------------------------------------------
-export type MorrisRulesContextGame<P extends number, D extends number, N extends number> = {
-  readonly game: MorrisGame<P, D, N>;
+export type MorrisRulesContextGame = {
+  readonly game: MorrisGame;
   readonly moveFacts: MorrisFactsMove;
 };
 
-export type MorrisRulesetGame<P extends number, D extends number, N extends number> = R.RuleSet<
-  never,
-  MorrisRulesContextGame<P, D, N>,
-  MorrisEngineError,
-  MorrisFactsGame
->;
+export type MorrisRulesetGame = R.RuleSet<never, MorrisRulesContextGame, MorrisEngineError, MorrisFactsGame>;
 
 // --------------------------------------------------------------------------
-export type MorrisRulesContextMove<P extends number, D extends number, N extends number> = {
-  readonly gameTick: MorrisGameTick<P, D, N>;
-  readonly move: MorrisMove<D>;
+export type MorrisRulesContextMove = {
+  readonly gameTick: MorrisGameTick;
+  readonly move: MorrisMove;
 };
 
-export type MorrisRulesetMove<P extends number, D extends number, N extends number> = R.RuleSet<
-  never,
-  MorrisRulesContextMove<P, D, N>,
-  MorrisEngineError,
-  MorrisFactsMove
->;
+export type MorrisRulesetMove = R.RuleSet<never, MorrisRulesContextMove, MorrisEngineError, MorrisFactsMove>;

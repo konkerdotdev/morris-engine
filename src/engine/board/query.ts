@@ -17,24 +17,22 @@ import type {
 } from './schemas';
 import { isOccupiedBoardPoint } from './schemas';
 
-export function boardListEmptyPoints<P extends number, D extends number, N extends number>(
-  board: MorrisBoard<P, D, N>
-): ReadonlyArray<MorrisBoardPoint<D, N>> {
+export function boardListEmptyPoints(board: MorrisBoard): ReadonlyArray<MorrisBoardPoint> {
   return board.points.filter((p) => !isOccupiedBoardPoint(p));
 }
 
-export function boardListOccupiedPointsByColor<P extends number, D extends number, N extends number>(
-  board: MorrisBoard<P, D, N>,
+export function boardListOccupiedPointsByColor(
+  board: MorrisBoard,
   color: MorrisColor
-): ReadonlyArray<OccupiedBoardPoint<D, N>> {
+): ReadonlyArray<OccupiedBoardPoint> {
   // return board.points.filter((p) => isOccupiedBoardPoint(p) && p.occupant.color === color);
   return board.points.filter(isOccupiedBoardPoint).filter((p) => p.occupant.color === color);
 }
 
-export function boardGetOccupiedPointForMorris<P extends number, D extends number, N extends number>(
-  board: MorrisBoard<P, D, N>,
-  morris: Morris<N>
-): P.Effect.Effect<never, MorrisEngineError, OccupiedBoardPoint<D, N>> {
+export function boardGetOccupiedPointForMorris(
+  board: MorrisBoard,
+  morris: Morris
+): P.Effect.Effect<never, MorrisEngineError, OccupiedBoardPoint> {
   const occupiedPoints = boardListOccupiedPointsByColor(board, morris.color);
   const point = occupiedPoints.find((p) => p.occupant.n === morris.n && p.occupant.color === morris.color);
 
@@ -44,52 +42,41 @@ export function boardGetOccupiedPointForMorris<P extends number, D extends numbe
 /**
  * Get every morris on the board of a given color
  */
-export function boardListMorrisOnBoardForColor<P extends number, D extends number, N extends number>(
-  board: MorrisBoard<P, D, N>,
-  color: MorrisColor
-): ReadonlyArray<Morris<N>> {
+export function boardListMorrisOnBoardForColor(board: MorrisBoard, color: MorrisColor): ReadonlyArray<Morris> {
   return boardListOccupiedPointsByColor(board, color)
     .filter((p) => p.occupant.color === color)
     .map((p) => p.occupant);
 }
 
-export function boardCountMorrisByColor<P extends number, D extends number, N extends number>(
-  board: MorrisBoard<P, D, N>,
-  color: MorrisColor
-): number {
+export function boardCountMorrisByColor(board: MorrisBoard, color: MorrisColor): number {
   return boardListOccupiedPointsByColor(board, color).length;
 }
 
-export function boardCountEmptyPoints<P extends number, D extends number, N extends number>(
-  board: MorrisBoard<P, D, N>
-): number {
+export function boardCountEmptyPoints(board: MorrisBoard): number {
   return boardListEmptyPoints(board).length;
 }
 
-export function boardListAdjacentPoints<P extends number, D extends number, N extends number>(
-  board: MorrisBoard<P, D, N>,
-  point: MorrisBoardPoint<D, N>
-): P.Effect.Effect<never, MorrisEngineError, ReadonlyArray<MorrisBoardPoint<D, N>>> {
+export function boardListAdjacentPoints(
+  board: MorrisBoard,
+  point: MorrisBoardPoint
+): P.Effect.Effect<never, MorrisEngineError, ReadonlyArray<MorrisBoardPoint>> {
   return P.pipe(
     board.points,
     filterE((bp) => boardIsPointAdjacent(board, point.coord, bp.coord))
   );
 }
 
-export function boardListAdjacentPointsEmpty<P extends number, D extends number, N extends number>(
-  board: MorrisBoard<P, D, N>,
-  point: MorrisBoardPoint<D, N>
-): P.Effect.Effect<never, MorrisEngineError, ReadonlyArray<MorrisBoardPoint<D, N>>> {
+export function boardListAdjacentPointsEmpty(
+  board: MorrisBoard,
+  point: MorrisBoardPoint
+): P.Effect.Effect<never, MorrisEngineError, ReadonlyArray<MorrisBoardPoint>> {
   return P.pipe(
     boardListEmptyPoints(board),
     filterE((bp) => boardIsPointAdjacent(board, point.coord, bp.coord))
   );
 }
 
-export function boardListMillCandidatesForMove<P extends number, D extends number, N extends number>(
-  board: MorrisBoard<P, D, N>,
-  move: MorrisMove<D>
-): ReadonlyArray<MillCandidate<D>> {
+export function boardListMillCandidatesForMove(board: MorrisBoard, move: MorrisMove): ReadonlyArray<MillCandidate> {
   // A REMOVE move can never create a mill
   if (move.type === MorrisMoveType.REMOVE || move.type === MorrisMoveType.ROOT) {
     return [];
@@ -98,17 +85,11 @@ export function boardListMillCandidatesForMove<P extends number, D extends numbe
   return board.millCandidates.filter((m) => m.includes(move.to));
 }
 
-export function boardCountPositionRepeats<P extends number, D extends number, N extends number>(
-  game: MorrisGame<P, D, N>,
-  position: MorrisBoardPositionString<P>
-): number {
-  return game.gameState.positions.filter((p: MorrisBoardPositionString<P>) => p === position).length;
+export function boardCountPositionRepeats(game: MorrisGame, position: MorrisBoardPositionString): number {
+  return game.gameState.positions.filter((p: MorrisBoardPositionString) => p === position).length;
 }
 
-export function boardHasMorrisBeenPlaced<P extends number, D extends number, N extends number>(
-  board: MorrisBoard<P, D, N>,
-  morris: Morris<N>
-): boolean {
+export function boardHasMorrisBeenPlaced(board: MorrisBoard, morris: Morris): boolean {
   return board.points.some(
     (p) => isOccupiedBoardPoint(p) && p.occupant.n === morris.n && p.occupant.color === morris.color
   );

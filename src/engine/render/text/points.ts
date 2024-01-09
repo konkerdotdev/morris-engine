@@ -7,8 +7,8 @@ import type { COORD_CHAR } from '../../consts';
 import { COORD_CHARS } from '../../consts';
 import type { CoordTuple, MorrisBoardRenderParamsText } from './index';
 
-export function getBoardCoordParts<D extends number>(
-  coord: MorrisBoardCoord<D>
+export function getBoardCoordParts(
+  coord: MorrisBoardCoord
 ): P.Effect.Effect<never, MorrisEngineError, [COORD_CHAR, number]> {
   return P.Effect.try({
     try: () => {
@@ -30,9 +30,9 @@ export function getBoardCoordParts<D extends number>(
   });
 }
 
-export function getRenderCoord<D extends number>(
+export function getRenderCoord(
   params: MorrisBoardRenderParamsText,
-  coord: MorrisBoardCoord<D>
+  coord: MorrisBoardCoord
 ): P.Effect.Effect<never, MorrisEngineError, CoordTuple> {
   return P.pipe(
     getBoardCoordParts(coord),
@@ -53,9 +53,9 @@ export function getRenderCoord<D extends number>(
   );
 }
 
-export function boardPointToCoord<D extends number, N extends number>(
+export function boardPointToCoord(
   params: MorrisBoardRenderParamsText,
-  point: MorrisBoardPoint<D, N>
+  point: MorrisBoardPoint
 ): P.Effect.Effect<never, MorrisEngineError, [COORD_CHAR, number, CoordTuple]> {
   return P.pipe(
     P.Effect.Do,
@@ -65,9 +65,9 @@ export function boardPointToCoord<D extends number, N extends number>(
   );
 }
 
-export function boardPointsToCoords<D extends number, N extends number>(
+export function boardPointsToCoords(
   params: MorrisBoardRenderParamsText,
-  points: ReadonlyArray<MorrisBoardPoint<D, N>>
+  points: ReadonlyArray<MorrisBoardPoint>
 ): P.Effect.Effect<never, MorrisEngineError, Array<[COORD_CHAR, number, CoordTuple]>> {
   return P.pipe(
     points.map((p) => boardPointToCoord(params, p)),

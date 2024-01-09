@@ -15,7 +15,6 @@ import { shellStartMorrisGame, shellTick, shellTickAutoPlayer, shellWrapRenderSt
 import type { MorrisGameTick } from '../engine/tick';
 import { tickGetTurnColor } from '../engine/tick';
 import { gamesInstantiate } from '../games';
-import type { config } from '../games/3mm';
 import { initialGameState, TAG } from '../games/3mm';
 
 const rl = readline.createInterface({
@@ -23,13 +22,9 @@ const rl = readline.createInterface({
   output: process.stdout,
 });
 
-const shellRenderString = shellWrapRenderString<typeof config.params.P, typeof config.params.D, typeof config.params.N>(
-  renderString
-);
+const shellRenderString = shellWrapRenderString(renderString);
 
-export async function execLoop(
-  gt: MorrisGameTick<typeof config.params.P, typeof config.params.D, typeof config.params.N>
-): Promise<MorrisGameTick<typeof config.params.P, typeof config.params.D, typeof config.params.N> | undefined> {
+export async function execLoop(gt: MorrisGameTick): Promise<MorrisGameTick | undefined> {
   if (tickGetTurnColor(gt) === gt.game.gameState.startColor) {
     const move = await rl.question(`${gt.message} (Q to quit): `);
     if (move.toUpperCase() === 'Q') {
@@ -57,8 +52,7 @@ export async function execLoop(
   }
   console.log(chalk.cyan.bold(game.gameState.config.name));
 
-  let gt: MorrisGameTick<typeof config.params.P, typeof config.params.D, typeof config.params.N> | undefined =
-    shellStartMorrisGame(gameSetStartColor(game, MorrisColor.WHITE));
+  let gt: MorrisGameTick | undefined = shellStartMorrisGame(gameSetStartColor(game, MorrisColor.WHITE));
   console.log('\n' + shellRenderString(gt));
 
   try {

@@ -68,9 +68,7 @@ export const INITIAL_MORRIS_FACTS_GAME: MorrisFactsGame = {
   isGameOver: false,
 };
 
-export const BOOTSTRAP_INITIAL_MORRIS_FACTS_GAME = <P extends number, D extends number, N extends number>(
-  game: MorrisGame<P, D, N>
-): MorrisFactsGame => ({
+export const BOOTSTRAP_INITIAL_MORRIS_FACTS_GAME = (game: MorrisGame): MorrisFactsGame => ({
   isFirstMove: true,
   isSecondMove: false,
   isTurnWhite: game.gameState.startColor === MorrisColor.WHITE,

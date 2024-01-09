@@ -16,10 +16,10 @@ export function lineFunc(a: CoordTuple, b: CoordTuple): LineFunc {
   return (x: number) => m * x + c;
 }
 
-export function linkToCoords<D extends number, N extends number>(
+export function linkToCoords(
   params: MorrisBoardRenderParamsText,
-  point: MorrisBoardPoint<D, N>,
-  link: MorrisBoardLink<D>,
+  point: MorrisBoardPoint,
+  link: MorrisBoardLink,
   sortAxisC: typeof X | typeof Y
 ): P.Effect.Effect<never, MorrisEngineError, [CoordTuple, CoordTuple]> {
   return P.pipe(
@@ -30,9 +30,9 @@ export function linkToCoords<D extends number, N extends number>(
   );
 }
 
-export function links<D extends number, N extends number>(
+export function links(
   params: MorrisBoardRenderParamsText,
-  points: ReadonlyArray<MorrisBoardPoint<D, N>>,
+  points: ReadonlyArray<MorrisBoardPoint>,
   linkType: MorrisLinkType,
   sortAxisL: typeof X | typeof Y,
   sortAxisC: typeof X | typeof Y
@@ -49,9 +49,9 @@ export function links<D extends number, N extends number>(
   );
 }
 
-export function linksD<D extends number, N extends number>(
+export function linksD(
   params: MorrisBoardRenderParamsText,
-  points: ReadonlyArray<MorrisBoardPoint<D, N>>,
+  points: ReadonlyArray<MorrisBoardPoint>,
   linkType: MorrisLinkType,
   sortAxisL: typeof X | typeof Y,
   sortAxisC: typeof X | typeof Y

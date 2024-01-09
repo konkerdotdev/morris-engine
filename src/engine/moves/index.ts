@@ -15,22 +15,19 @@ export const moveCreateRoot = (): MorrisMoveRoot => ({
   type: MorrisMoveType.ROOT,
 });
 
-export const moveCreatePlace = <D extends number>(color: MorrisColor, to: MorrisBoardCoord<D>): MorrisMovePlace<D> => ({
+export const moveCreatePlace = (color: MorrisColor, to: MorrisBoardCoord): MorrisMovePlace => ({
   type: MorrisMoveType.PLACE,
   color,
   to,
 });
 
-export const moveCreateMove = <D extends number>(
-  from: MorrisBoardCoord<D>,
-  to: MorrisBoardCoord<D>
-): MorrisMoveMove<D> => ({
+export const moveCreateMove = (from: MorrisBoardCoord, to: MorrisBoardCoord): MorrisMoveMove => ({
   type: MorrisMoveType.MOVE,
   from,
   to,
 });
 
-export const moveCreateRemove = <D extends number>(from: MorrisBoardCoord<D>): MorrisMoveRemove<D> => ({
+export const moveCreateRemove = (from: MorrisBoardCoord): MorrisMoveRemove => ({
   type: MorrisMoveType.REMOVE,
   from,
 });
@@ -38,10 +35,7 @@ export const moveCreateRemove = <D extends number>(from: MorrisBoardCoord<D>): M
 // --------------------------------------------------------------------------
 
 // eslint-disable-next-line fp/no-nil
-export function moveColor<P extends number, D extends number, N extends number>(
-  game: MorrisGame<P, D, N>,
-  move: MorrisMove<D>
-): P.Effect.Effect<never, MorrisEngineError, MorrisColor> {
+export function moveColor(game: MorrisGame, move: MorrisMove): P.Effect.Effect<never, MorrisEngineError, MorrisColor> {
   switch (move.type) {
     case MorrisMoveType.PLACE:
       return P.Effect.succeed(move.color);
@@ -62,7 +56,7 @@ export function moveColor<P extends number, D extends number, N extends number>(
 
 // --------------------------------------------------------------------------
 // eslint-disable-next-line fp/no-nil
-export function moveEqual<D extends number>(m1: MorrisMove<D>, m2: MorrisMove<D>): boolean {
+export function moveEqual(m1: MorrisMove, m2: MorrisMove): boolean {
   switch (m1.type) {
     case MorrisMoveType.PLACE:
       return m2.type === MorrisMoveType.PLACE && m1.color === m2.color && m1.to === m2.to;

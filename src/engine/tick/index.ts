@@ -16,33 +16,31 @@ import { RulesGame } from '../rules/rulesGame';
 import { RulesMove } from '../rules/rulesMove';
 import { tickApplyMove, tickUndoApplyMove } from './apply';
 
-export type MorrisGameTick<P extends number, D extends number, N extends number> = {
-  readonly game: MorrisGame<P, D, N>;
+export type MorrisGameTick = {
+  readonly game: MorrisGame;
   readonly facts: MorrisFactsGame;
   readonly tickN: number;
   readonly message: string;
 };
 
 // --------------------------------------------------------------------------
-export function tickCreate<P extends number, D extends number, N extends number>(
-  game: MorrisGame<P, D, N>,
+export function tickCreate(
+  game: MorrisGame,
   facts: MorrisFactsGame,
   tickN: number,
   message: string
-): P.Effect.Effect<never, MorrisEngineError, MorrisGameTick<P, D, N>> {
+): P.Effect.Effect<never, MorrisEngineError, MorrisGameTick> {
   return P.Effect.succeed({ game, facts, tickN, message });
 }
 
-export function tickGetTurnColor<P extends number, D extends number, N extends number>(
-  gameTick: MorrisGameTick<P, D, N>
-): MorrisColor {
+export function tickGetTurnColor(gameTick: MorrisGameTick): MorrisColor {
   return gameTick.facts.isTurnWhite ? MorrisColor.WHITE : MorrisColor.BLACK;
 }
 
 // --------------------------------------------------------------------------
 export const tick =
-  <P extends number, D extends number, N extends number>(move: MorrisMove<D>) =>
-  (gameTick: MorrisGameTick<P, D, N>): P.Effect.Effect<never, MorrisEngineError, MorrisGameTick<P, D, N>> => {
+  (move: MorrisMove) =>
+  (gameTick: MorrisGameTick): P.Effect.Effect<never, MorrisEngineError, MorrisGameTick> => {
     const oldGame = gameTick.game;
 
     return P.pipe(
@@ -50,7 +48,7 @@ export const tick =
       // Run the move rules
       P.Effect.bind('moveFacts', () =>
         P.pipe(
-          RulesMove<P, D, N>(),
+          RulesMove(),
           R.decide({
             gameTick,
             move,
@@ -68,7 +66,7 @@ export const tick =
       // Run the game rules to derive the new facts for the new game
       P.Effect.bind('newGameFacts', ({ moveFacts, newGame }) =>
         P.pipe(
-          RulesGame<P, D, N>(),
+          RulesGame(),
           R.decide({
             game: newGame,
             moveFacts,
@@ -85,9 +83,7 @@ export const tick =
   };
 
 // --------------------------------------------------------------------------
-export const tickUndo = <P extends number, D extends number, N extends number>(
-  gameTick: MorrisGameTick<P, D, N>
-): P.Effect.Effect<never, MorrisEngineError, MorrisGameTick<P, D, N>> => {
+export const tickUndo = (gameTick: MorrisGameTick): P.Effect.Effect<never, MorrisEngineError, MorrisGameTick> => {
   if (gameHistoryLen(gameTick.game.gameState.history) < 2) {
     const game = gameReset(gameTick.game);
     return tickCreate(game, BOOTSTRAP_INITIAL_MORRIS_FACTS_GAME(game), 0, gameDeriveStartMessage(game));
@@ -104,7 +100,7 @@ export const tickUndo = <P extends number, D extends number, N extends number>(
     P.Effect.bind('oldGame', () => P.pipe(gameTick.game, tickUndoApplyMove(lastMove, lastMoveFacts))),
     P.Effect.bind('oldGameFacts', ({ oldGame }) =>
       P.pipe(
-        RulesGame<P, D, N>(),
+        RulesGame(),
         R.decide({
           game: oldGame,
           moveFacts: lastMoveFacts,
@@ -120,8 +116,8 @@ export const tickUndo = <P extends number, D extends number, N extends number>(
 
 // --------------------------------------------------------------------------
 export const tickAutoPlayer =
-  <P extends number, D extends number, N extends number>(autoPlayer: AutoPlayer<P, D, N>) =>
-  (gameTick: MorrisGameTick<P, D, N>): P.Effect.Effect<never, MorrisEngineError, MorrisGameTick<P, D, N>> =>
+  (autoPlayer: AutoPlayer) =>
+  (gameTick: MorrisGameTick): P.Effect.Effect<never, MorrisEngineError, MorrisGameTick> =>
     P.pipe(
       autoPlayer(gameTick),
       P.Effect.tap((x) => P.Console.log(x)),

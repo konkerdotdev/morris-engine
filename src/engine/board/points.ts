@@ -6,19 +6,19 @@ import type { MorrisGame } from '../game';
 import type { Morris, MorrisBoard, MorrisBoardCoord, MorrisBoardPoint, MorrisBoardPointOccupant } from './schemas';
 import { EmptyOccupant, isEmptyOccupant, isOccupiedBoardPoint } from './schemas';
 
-export function boardGetPointByCoord<P extends number, D extends number, N extends number>(
-  board: MorrisBoard<P, D, N>,
-  coord: MorrisBoardCoord<D>
-): P.Effect.Effect<never, MorrisEngineError, MorrisBoardPoint<D, N>> {
+export function boardGetPointByCoord(
+  board: MorrisBoard,
+  coord: MorrisBoardCoord
+): P.Effect.Effect<never, MorrisEngineError, MorrisBoardPoint> {
   const i = board.points.findIndex((p) => p.coord === coord);
   const p = board.points[i];
   return p ? P.Effect.succeed(p) : P.Effect.fail(toMorrisEngineError(`Invalid point: ${coord}`));
 }
 
-export function boardGetMorrisAtCoord<P extends number, D extends number, N extends number>(
-  board: MorrisBoard<P, D, N>,
-  coord: MorrisBoardCoord<D>
-): P.Effect.Effect<never, MorrisEngineError, Morris<N>> {
+export function boardGetMorrisAtCoord(
+  board: MorrisBoard,
+  coord: MorrisBoardCoord
+): P.Effect.Effect<never, MorrisEngineError, Morris> {
   return P.pipe(
     boardGetPointByCoord(board, coord),
     P.Effect.flatMap((p) =>
@@ -29,9 +29,9 @@ export function boardGetMorrisAtCoord<P extends number, D extends number, N exte
   );
 }
 
-export function boardIsPointEmpty<P extends number, D extends number, N extends number>(
-  board: MorrisBoard<P, D, N>,
-  coord: MorrisBoardCoord<D>
+export function boardIsPointEmpty(
+  board: MorrisBoard,
+  coord: MorrisBoardCoord
 ): P.Effect.Effect<never, MorrisEngineError, boolean> {
   return P.pipe(
     boardGetPointByCoord(board, coord),
@@ -39,10 +39,10 @@ export function boardIsPointEmpty<P extends number, D extends number, N extends 
   );
 }
 
-export function boardIsPointAdjacent<P extends number, D extends number, N extends number>(
-  board: MorrisBoard<P, D, N>,
-  from: MorrisBoardCoord<D>,
-  to: MorrisBoardCoord<D>
+export function boardIsPointAdjacent(
+  board: MorrisBoard,
+  from: MorrisBoardCoord,
+  to: MorrisBoardCoord
 ): P.Effect.Effect<never, MorrisEngineError, boolean> {
   return P.pipe(
     boardGetPointByCoord(board, from),
@@ -50,12 +50,12 @@ export function boardIsPointAdjacent<P extends number, D extends number, N exten
   );
 }
 
-export function boardSetPointOccupant<P extends number, D extends number, N extends number>(
-  game: MorrisGame<P, D, N>,
-  coord: MorrisBoardCoord<D>,
-  occupant: MorrisBoardPointOccupant<N>
-): P.Effect.Effect<never, MorrisEngineError, MorrisGame<P, D, N>> {
-  const i = game.gameState.board.points.findIndex((p: MorrisBoardPoint<D, N>) => p.coord === coord);
+export function boardSetPointOccupant(
+  game: MorrisGame,
+  coord: MorrisBoardCoord,
+  occupant: MorrisBoardPointOccupant
+): P.Effect.Effect<never, MorrisEngineError, MorrisGame> {
+  const i = game.gameState.board.points.findIndex((p: MorrisBoardPoint) => p.coord === coord);
   const p = game.gameState.board.points[i];
 
   return p
@@ -65,7 +65,7 @@ export function boardSetPointOccupant<P extends number, D extends number, N exte
           ...game.gameState,
           board: {
             ...game.gameState.board,
-            points: game.gameState.board.points.map((p: MorrisBoardPoint<D, N>) =>
+            points: game.gameState.board.points.map((p: MorrisBoardPoint) =>
               p.coord === coord ? { ...p, occupant } : p
             ),
           },
@@ -74,9 +74,9 @@ export function boardSetPointOccupant<P extends number, D extends number, N exte
     : P.Effect.fail(toMorrisEngineError(`Invalid point: ${coord}`));
 }
 
-export function boardSetPointEmpty<P extends number, D extends number, N extends number>(
-  board: MorrisGame<P, D, N>,
-  coord: MorrisBoardCoord<D>
-): P.Effect.Effect<never, MorrisEngineError, MorrisGame<P, D, N>> {
+export function boardSetPointEmpty(
+  board: MorrisGame,
+  coord: MorrisBoardCoord
+): P.Effect.Effect<never, MorrisEngineError, MorrisGame> {
   return boardSetPointOccupant(board, coord, EmptyOccupant);
 }

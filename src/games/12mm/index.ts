@@ -1,5 +1,3 @@
-import type * as P from '@konker.dev/effect-ts-prelude';
-
 import { boardHash } from '../../engine/board';
 import type { MorrisBlack, MorrisBoard, MorrisWhite } from '../../engine/board/schemas';
 import { EmptyOccupant } from '../../engine/board/schemas';
@@ -10,14 +8,12 @@ import type { MorrisGameConfig, MorrisGameState } from '../../engine/game/schema
 import { createMorrisBlack, createMorrisWhite } from '../../engine/morris';
 
 export const TAG = '12mm';
+export type TAG = typeof TAG;
 
 // Not exported
-const P_ = 24;
-type P = typeof P_;
-const D_ = 7;
-type D = typeof D_;
-const N_ = 12;
-type N = typeof N_;
+const P = 24;
+const D = 7;
+const N = 12;
 
 /*
 // --------------------------------------------------------------------------
@@ -37,10 +33,10 @@ type N = typeof N_;
 1  o--------------o--------------o
    a    b    c    d    e    f    g
 */
-export function initMorrisBoard(): MorrisBoard<P, D, N> {
+export function initMorrisBoard(): MorrisBoard {
   return {
-    numPoints: P_,
-    dimension: D_,
+    numPoints: P,
+    dimension: D,
     points: [
       {
         coord: 'a1',
@@ -297,49 +293,45 @@ export function initMorrisBoard(): MorrisBoard<P, D, N> {
   };
 }
 
-function initMorrisWhite(): ReadonlyArray<MorrisWhite<N>> {
+function initMorrisWhite(): ReadonlyArray<MorrisWhite> {
   return [
-    createMorrisWhite<N>(1),
-    createMorrisWhite<N>(2),
-    createMorrisWhite<N>(3),
-    createMorrisWhite<N>(4),
-    createMorrisWhite<N>(5),
-    createMorrisWhite<N>(6),
-    createMorrisWhite<N>(7),
-    createMorrisWhite<N>(8),
-    createMorrisWhite<N>(9),
-    createMorrisWhite<N>(10),
-    createMorrisWhite<N>(11),
-    createMorrisWhite<N>(12),
+    createMorrisWhite(1),
+    createMorrisWhite(2),
+    createMorrisWhite(3),
+    createMorrisWhite(4),
+    createMorrisWhite(5),
+    createMorrisWhite(6),
+    createMorrisWhite(7),
+    createMorrisWhite(8),
+    createMorrisWhite(9),
+    createMorrisWhite(10),
+    createMorrisWhite(11),
+    createMorrisWhite(12),
   ];
 }
 
-function initMorrisBlack(): ReadonlyArray<MorrisBlack<N>> {
+function initMorrisBlack(): ReadonlyArray<MorrisBlack> {
   return [
-    createMorrisBlack<N>(1),
-    createMorrisBlack<N>(2),
-    createMorrisBlack<N>(3),
-    createMorrisBlack<N>(4),
-    createMorrisBlack<N>(5),
-    createMorrisBlack<N>(6),
-    createMorrisBlack<N>(7),
-    createMorrisBlack<N>(8),
-    createMorrisBlack<N>(9),
-    createMorrisBlack<N>(10),
-    createMorrisBlack<N>(11),
-    createMorrisBlack<N>(12),
+    createMorrisBlack(1),
+    createMorrisBlack(2),
+    createMorrisBlack(3),
+    createMorrisBlack(4),
+    createMorrisBlack(5),
+    createMorrisBlack(6),
+    createMorrisBlack(7),
+    createMorrisBlack(8),
+    createMorrisBlack(9),
+    createMorrisBlack(10),
+    createMorrisBlack(11),
+    createMorrisBlack(12),
   ];
 }
 
 // --------------------------------------------------------------------------
-export const config: MorrisGameConfig<P, D, N> = {
+export const config: MorrisGameConfig = {
   name: "12 Men's Morris",
-  params: {
-    P: P_,
-    D: D_,
-    N: N_,
-  },
-  numMorrisPerPlayer: 12,
+  params: { P, D, N },
+  numMorrisPerPlayer: N,
   numMillsToWinThreshold: 0,
   numMorrisForFlyingThreshold: 3,
   numMorrisToLoseThreshold: 2,
@@ -351,7 +343,7 @@ export const config: MorrisGameConfig<P, D, N> = {
   forbiddenPointsPlacingPhase: [],
 };
 
-export const initialGameState: MorrisGameState<P, D, N> = {
+export const initialGameState: MorrisGameState = {
   _tag: TAG,
   ...MorrisGameStateBoilerplate,
   config,
@@ -362,7 +354,7 @@ export const initialGameState: MorrisGameState<P, D, N> = {
   positions: [boardHash(initMorrisBoard())],
 };
 
-export function Game12mm(gameState: MorrisGameState<P, D, N> = initialGameState): MorrisGame<P, D, N> {
+export function Game12mm(gameState: MorrisGameState = initialGameState): MorrisGame {
   return {
     gameState,
     initMorrisBoard,

@@ -11,16 +11,11 @@ import { RenderImpl } from './render';
 import type { MorrisGameTick } from './tick';
 import { tick, tickAutoPlayer, tickUndo } from './tick';
 
-export function shellStartMorrisGame<P extends number, D extends number, N extends number>(
-  game: MorrisGame<P, D, N>
-): MorrisGameTick<P, D, N> {
+export function shellStartMorrisGame(game: MorrisGame): MorrisGameTick {
   return P.Effect.runSync(gameStart(game));
 }
 
-export function shellTick<P extends number, D extends number, N extends number>(
-  gameTick: MorrisGameTick<P, D, N>,
-  moveStr: string
-): MorrisGameTick<P, D, N> {
+export function shellTick(gameTick: MorrisGameTick, moveStr: string): MorrisGameTick {
   return P.Effect.runSync(
     P.pipe(
       moveStr,
@@ -34,9 +29,7 @@ export function shellTick<P extends number, D extends number, N extends number>(
   );
 }
 
-export function shellUntick<P extends number, D extends number, N extends number>(
-  gameTick: MorrisGameTick<P, D, N>
-): MorrisGameTick<P, D, N> {
+export function shellUntick(gameTick: MorrisGameTick): MorrisGameTick {
   return P.Effect.runSync(
     P.pipe(
       tickUndo(gameTick),
@@ -47,10 +40,7 @@ export function shellUntick<P extends number, D extends number, N extends number
   );
 }
 
-export function shellTickAutoPlayer<P extends number, D extends number, N extends number>(
-  autoPlayer: AutoPlayer<P, D, N>,
-  gameTick: MorrisGameTick<P, D, N>
-): MorrisGameTick<P, D, N> {
+export function shellTickAutoPlayer(autoPlayer: AutoPlayer, gameTick: MorrisGameTick): MorrisGameTick {
   return P.Effect.runSync(
     P.pipe(
       gameTick,
@@ -61,25 +51,22 @@ export function shellTickAutoPlayer<P extends number, D extends number, N extend
   );
 }
 
-export const shellWrapRenderString =
-  <P extends number, D extends number, N extends number>(renderString: RenderImpl['renderString']) =>
-  (gameTick: MorrisGameTick<P, D, N>) =>
-    P.Effect.runSync(
-      P.pipe(
-        RenderImpl,
-        P.Effect.flatMap(({ renderString }) => P.pipe(P.Effect.succeed(gameTick), P.Effect.flatMap(renderString))),
-        P.Effect.provideService(RenderImpl, RenderImpl.of({ renderString }))
-      )
-    );
+export const shellWrapRenderString = (renderString: RenderImpl['renderString']) => (gameTick: MorrisGameTick) =>
+  P.Effect.runSync(
+    P.pipe(
+      RenderImpl,
+      P.Effect.flatMap(({ renderString }) => P.pipe(P.Effect.succeed(gameTick), P.Effect.flatMap(renderString))),
+      P.Effect.provideService(RenderImpl, RenderImpl.of({ renderString }))
+    )
+  );
 
-export const shellSerializeGameState = <P extends number, D extends number, N extends number>(
-  gameTick: MorrisGameTick<P, D, N>
-): string =>
+export const shellSerializeGameState = (gameTick: MorrisGameTick): string =>
   P.Effect.runSync(
     P.pipe(
       gameTick.game.gameState,
       P.Schema.encode(
         MorrisGameState(
+          gameTick.game.gameState._tag,
           gameTick.game.gameState.config.params.P,
           gameTick.game.gameState.config.params.D,
           gameTick.game.gameState.config.params.N

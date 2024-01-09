@@ -5,18 +5,16 @@ import { MorrisColor, MorrisGameResult, MorrisPhase } from '../consts';
 import { MorrisMove } from '../moves/schemas';
 import { MorrisFactsMove } from '../rules/factsMove';
 
-export function MorrisGameConfigParams<P extends number, D extends number, N extends number>(p: P, d: D, n: N) {
+export function MorrisGameConfigParams(p: number, d: number, n: number) {
   return P.Schema.struct({
     P: P.Schema.literal(p),
     D: P.Schema.literal(d),
     N: P.Schema.literal(n),
   });
 }
-export type MorrisGameConfigParams<P extends number, D extends number, N extends number> = P.Schema.Schema.To<
-  ReturnType<typeof MorrisGameConfigParams<P, D, N>>
->;
+export type MorrisGameConfigParams = P.Schema.Schema.To<ReturnType<typeof MorrisGameConfigParams>>;
 
-export function MorrisGameConfig<P extends number, D extends number, N extends number>(p: P, d: D, n: N) {
+export function MorrisGameConfig(p: number, d: number, n: number) {
   return P.Schema.struct({
     name: P.Schema.string,
     params: MorrisGameConfigParams(p, d, n),
@@ -32,21 +30,19 @@ export function MorrisGameConfig<P extends number, D extends number, N extends n
     phases: P.Schema.array(P.Schema.enums(MorrisPhase)), // 3MM: [PLACING, MOVING], L: [LASKER, MOVING]
   });
 }
-export type MorrisGameConfig<P extends number, D extends number, N extends number> = P.Schema.Schema.To<
-  ReturnType<typeof MorrisGameConfig<P, D, N>>
->;
+export type MorrisGameConfig = P.Schema.Schema.To<ReturnType<typeof MorrisGameConfig>>;
 
 // --------------------------------------------------------------------------
-export function MorrisGameHistory<D extends number>(d: D) {
+export function MorrisGameHistory(d: number) {
   return P.Schema.struct({
     moves: P.Schema.array(MorrisMove(d)),
     moveFacts: P.Schema.array(MorrisFactsMove),
     historyPtr: P.Schema.number,
   });
 }
-export type MorrisGameHistory<D extends number> = P.Schema.Schema.To<ReturnType<typeof MorrisGameHistory<D>>>;
+export type MorrisGameHistory = P.Schema.Schema.To<ReturnType<typeof MorrisGameHistory>>;
 
-export function MorrisGameHistoryEntry<D extends number>(d: D) {
+export function MorrisGameHistoryEntry(d: number) {
   return P.Schema.struct({
     // eslint-disable-next-line fp/no-nil
     lastMove: P.Schema.union(MorrisMove(d), P.Schema.undefined),
@@ -54,12 +50,12 @@ export function MorrisGameHistoryEntry<D extends number>(d: D) {
     lastMoveFacts: P.Schema.union(MorrisFactsMove, P.Schema.undefined),
   });
 }
-export type MorrisGameHistoryEntry<D extends number> = P.Schema.Schema.To<ReturnType<typeof MorrisGameHistoryEntry<D>>>;
+export type MorrisGameHistoryEntry = P.Schema.Schema.To<ReturnType<typeof MorrisGameHistoryEntry>>;
 
 // --------------------------------------------------------------------------
-export function MorrisGameStateStructFields<P extends number, D extends number, N extends number>(p: P, d: D, n: N) {
+export function MorrisGameStateStructFields<T extends string>(t: T, p: number, d: number, n: number) {
   return {
-    _tag: P.Schema.string,
+    _tag: P.Schema.literal(t),
     config: MorrisGameConfig(p, d, n),
     board: MorrisBoard(p, d, n),
 
@@ -76,9 +72,7 @@ export function MorrisGameStateStructFields<P extends number, D extends number, 
   };
 }
 
-export function MorrisGameState<P extends number, D extends number, N extends number>(p: P, d: D, n: N) {
-  return P.Schema.ParseJson.pipe(P.Schema.compose(P.Schema.struct(MorrisGameStateStructFields(p, d, n))));
+export function MorrisGameState(t: string, p: number, d: number, n: number) {
+  return P.Schema.ParseJson.pipe(P.Schema.compose(P.Schema.struct(MorrisGameStateStructFields(t, p, d, n))));
 }
-export type MorrisGameState<P extends number, D extends number, N extends number> = P.Schema.Schema.To<
-  ReturnType<typeof MorrisGameState<P, D, N>>
->;
+export type MorrisGameState = P.Schema.Schema.To<ReturnType<typeof MorrisGameState>>;

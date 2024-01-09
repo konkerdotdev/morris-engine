@@ -12,7 +12,7 @@ export const MorrisMoveRoot = P.Schema.ParseJson.pipe(
 );
 export type MorrisMoveRoot = P.Schema.Schema.To<typeof MorrisMoveRoot>;
 
-export function MorrisMovePlace<D extends number>(d: D) {
+export function MorrisMovePlace(d: number) {
   return P.Schema.ParseJson.pipe(
     P.Schema.compose(
       P.Schema.struct({
@@ -23,9 +23,9 @@ export function MorrisMovePlace<D extends number>(d: D) {
     )
   );
 }
-export type MorrisMovePlace<D extends number> = P.Schema.Schema.To<ReturnType<typeof MorrisMovePlace<D>>>;
+export type MorrisMovePlace = P.Schema.Schema.To<ReturnType<typeof MorrisMovePlace>>;
 
-export function MorrisMoveMove<D extends number>(d: D) {
+export function MorrisMoveMove(d: number) {
   return P.Schema.ParseJson.pipe(
     P.Schema.compose(
       P.Schema.struct({
@@ -36,9 +36,9 @@ export function MorrisMoveMove<D extends number>(d: D) {
     )
   );
 }
-export type MorrisMoveMove<D extends number> = P.Schema.Schema.To<ReturnType<typeof MorrisMoveMove<D>>>;
+export type MorrisMoveMove = P.Schema.Schema.To<ReturnType<typeof MorrisMoveMove>>;
 
-export function MorrisMoveRemove<D extends number>(d: D) {
+export function MorrisMoveRemove(d: number) {
   return P.Schema.ParseJson.pipe(
     P.Schema.compose(
       P.Schema.struct({
@@ -48,9 +48,9 @@ export function MorrisMoveRemove<D extends number>(d: D) {
     )
   );
 }
-export type MorrisMoveRemove<D extends number> = P.Schema.Schema.To<ReturnType<typeof MorrisMoveRemove<D>>>;
+export type MorrisMoveRemove = P.Schema.Schema.To<ReturnType<typeof MorrisMoveRemove>>;
 
-export function MorrisMove<D extends number>(d: D) {
+export function MorrisMove(d: number) {
   return P.Schema.union(MorrisMovePlace(d), MorrisMoveMove(d), MorrisMoveRemove(d), MorrisMoveRoot);
 }
-export type MorrisMove<D extends number> = P.Schema.Schema.To<ReturnType<typeof MorrisMove<D>>>;
+export type MorrisMove = P.Schema.Schema.To<ReturnType<typeof MorrisMove>>;

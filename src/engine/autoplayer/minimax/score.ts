@@ -5,8 +5,8 @@ import { flipColor, MorrisColor } from '../../consts';
 import { moveCountValidMovesForColor } from '../../moves/query';
 import type { GameTreeNode } from './gameTree';
 
-export function gameTreeNodeScore<P extends number, D extends number, N extends number>(
-  gameTreeNode: GameTreeNode<P, D, N>,
+export function gameTreeNodeScore(
+  gameTreeNode: GameTreeNode,
   maxColor: MorrisColor
 ): P.Effect.Effect<never, MorrisEngineError, number> {
   return P.pipe(

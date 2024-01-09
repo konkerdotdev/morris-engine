@@ -4,15 +4,15 @@ import type { MorrisFactsMove } from '../rules/factsMove';
 import type { MorrisGameHistory, MorrisGameHistoryEntry } from './schemas';
 
 // --------------------------------------------------------------------------
-export function gameHistoryLen<D extends number>(gameHistory: MorrisGameHistory<D>): number {
+export function gameHistoryLen(gameHistory: MorrisGameHistory): number {
   return gameHistory.moves.length - gameHistory.historyPtr;
 }
 
-export function gameHistoryPush<D extends number>(
-  gameHistory: MorrisGameHistory<D>,
-  move: MorrisMove<D>,
+export function gameHistoryPush(
+  gameHistory: MorrisGameHistory,
+  move: MorrisMove,
   moveFacts: MorrisFactsMove
-): MorrisGameHistory<D> {
+): MorrisGameHistory {
   if (gameHistory.historyPtr > 0) {
     const lastMove = gameHistory.moves[gameHistory.historyPtr - 1];
     if (lastMove && moveEqual(lastMove, move)) {
@@ -30,7 +30,7 @@ export function gameHistoryPush<D extends number>(
   };
 }
 
-export function gameHistoryPop<D extends number>(gameHistory: MorrisGameHistory<D>): MorrisGameHistory<D> {
+export function gameHistoryPop(gameHistory: MorrisGameHistory): MorrisGameHistory {
   if (gameHistory.historyPtr === gameHistory.moves.length) {
     return gameHistory;
   }
@@ -41,7 +41,7 @@ export function gameHistoryPop<D extends number>(gameHistory: MorrisGameHistory<
   };
 }
 
-export function gameHistoryUnPop<D extends number>(gameHistory: MorrisGameHistory<D>): MorrisGameHistory<D> {
+export function gameHistoryUnPop(gameHistory: MorrisGameHistory): MorrisGameHistory {
   if (gameHistory.historyPtr === 0) {
     return gameHistory;
   }
@@ -52,10 +52,10 @@ export function gameHistoryUnPop<D extends number>(gameHistory: MorrisGameHistor
   };
 }
 
-export function gameHistoryPeek<D extends number>(gameHistory: MorrisGameHistory<D>): MorrisGameHistoryEntry<D> {
+export function gameHistoryPeek(gameHistory: MorrisGameHistory): MorrisGameHistoryEntry {
   if (gameHistory.historyPtr < 0) {
     // eslint-disable-next-line fp/no-nil
-    return { lastMove: undefined, lastMoveFacts: undefined } as MorrisGameHistoryEntry<D>;
+    return { lastMove: undefined, lastMoveFacts: undefined } as MorrisGameHistoryEntry;
   }
 
   const lastMove = gameHistory.moves[gameHistory.historyPtr];
