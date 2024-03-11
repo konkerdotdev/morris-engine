@@ -10,13 +10,13 @@ export const MorrisColorS = P.Schema.transformOrFail(
   (s, _, ast) => {
     switch (s.toUpperCase()) {
       case MorrisColor.WHITE:
-        return P.ParseResult.success(MorrisColor.WHITE);
+        return P.ParseResult.succeed(MorrisColor.WHITE);
       case MorrisColor.BLACK:
-        return P.ParseResult.success(MorrisColor.BLACK);
+        return P.ParseResult.succeed(MorrisColor.BLACK);
     }
-    return P.ParseResult.fail(P.ParseResult.parseError([P.ParseResult.type(ast, `Invalid color: ${s}`)]));
+    return P.ParseResult.fail(P.ParseResult.type(ast, `Invalid color: ${s}`));
   },
-  (c: MorrisColor) => P.ParseResult.success(c)
+  (c: MorrisColor) => P.ParseResult.succeed(c)
 );
 export type MorrisColorS = P.Schema.Schema.To<typeof MorrisColorS>;
 
@@ -117,15 +117,13 @@ export function MillCandidate(d: BoardDim) {
 export type MillCandidate = P.Schema.Schema.To<ReturnType<typeof MillCandidate>>;
 
 export function MorrisBoard(p: NumPoints, d: BoardDim, n: NumMorris) {
-  return P.Schema.ParseJson.pipe(
-    P.Schema.compose(
-      P.Schema.struct({
-        numPoints: P.Schema.literal(p),
-        dimension: P.Schema.literal(d),
-        points: P.Schema.array(MorrisBoardPoint(d, n)),
-        millCandidates: P.Schema.array(MillCandidate(d)),
-      })
-    )
+  return P.Schema.parseJson(
+    P.Schema.struct({
+      numPoints: P.Schema.literal(p),
+      dimension: P.Schema.literal(d),
+      points: P.Schema.array(MorrisBoardPoint(d, n)),
+      millCandidates: P.Schema.array(MillCandidate(d)),
+    })
   );
 }
 export type MorrisBoard = P.Schema.Schema.To<ReturnType<typeof MorrisBoard>>;

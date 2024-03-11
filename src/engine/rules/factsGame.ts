@@ -33,8 +33,8 @@ export const MorrisFactKeysGame = [
   'isGameOver',
 ] as const;
 
-export const MorrisFactsGame = P.Schema.ParseJson.pipe(
-  P.Schema.compose(P.Schema.record(P.Schema.literal(...MorrisFactKeysGame), P.Schema.boolean))
+export const MorrisFactsGame = P.Schema.parseJson(
+  P.Schema.record(P.Schema.literal(...MorrisFactKeysGame), P.Schema.boolean)
 );
 export type MorrisFactsGame = P.Schema.Schema.To<typeof MorrisFactsGame>;
 

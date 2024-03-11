@@ -5,4 +5,4 @@ import type { MorrisEngineError } from '../../lib/error';
 import type { MorrisMove } from '../moves/schemas';
 import type { MorrisGameTick } from '../tick';
 
-export type AutoPlayer = (gameTick: MorrisGameTick) => P.Effect.Effect<never, MorrisEngineError, MorrisMove>;
+export type AutoPlayer = (gameTick: MorrisGameTick) => P.Effect.Effect<MorrisMove, MorrisEngineError>;

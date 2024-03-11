@@ -44,7 +44,7 @@ export type EvalResult = {
 export type scoreGameTreeNode = (
   gameTreeNode: GameTreeNode,
   maxColor: MorrisColor
-) => P.Effect.Effect<never, MorrisEngineError, number>;
+) => P.Effect.Effect<number, MorrisEngineError>;
 
 // --------------------------------------------------------------------------
 export function gameTreeNodeCreate(
@@ -76,7 +76,7 @@ export function gameTreeNodeEvaluate(
   gameTreeNode: GameTreeNode,
   scoreF: scoreGameTreeNode,
   maxColor: MorrisColor
-): P.Effect.Effect<never, MorrisEngineError, EvalResult> {
+): P.Effect.Effect<EvalResult, MorrisEngineError> {
   if (gameTreeNode.type === NodeType.LEAF) {
     return P.pipe(
       scoreF(gameTreeNode, maxColor),
@@ -103,7 +103,7 @@ export function gameTreeCreate(
   _scoreF: scoreGameTreeNode,
   maxColor: MorrisColor,
   depth: number
-): P.Effect.Effect<never, MorrisEngineError, EvaluatedGameTreeNode> {
+): P.Effect.Effect<EvaluatedGameTreeNode, MorrisEngineError> {
   return P.pipe(
     P.Effect.Do,
     P.Effect.bind('validMoves', () =>
@@ -140,7 +140,7 @@ export function gameTreeCreateChild(
   _scoreF: scoreGameTreeNode,
   maxColor: MorrisColor,
   depth: number
-): P.Effect.Effect<never, MorrisEngineError, EvaluatedGameTreeNode> {
+): P.Effect.Effect<EvaluatedGameTreeNode, MorrisEngineError> {
   return depth === 0
     ? // Leaf node
       P.pipe(

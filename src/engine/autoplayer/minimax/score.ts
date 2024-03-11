@@ -8,7 +8,7 @@ import type { GameTreeNode } from './gameTree';
 export function gameTreeNodeScore(
   gameTreeNode: GameTreeNode,
   maxColor: MorrisColor
-): P.Effect.Effect<never, MorrisEngineError, number> {
+): P.Effect.Effect<number, MorrisEngineError> {
   return P.pipe(
     P.Effect.Do,
     P.Effect.bind('numValidMovesForMaxColor', () =>

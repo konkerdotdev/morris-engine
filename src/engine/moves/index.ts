@@ -35,7 +35,7 @@ export const moveCreateRemove = (from: MorrisBoardCoord): MorrisMoveRemove => ({
 // --------------------------------------------------------------------------
 
 // eslint-disable-next-line fp/no-nil
-export function moveColor(game: MorrisGame, move: MorrisMove): P.Effect.Effect<never, MorrisEngineError, MorrisColor> {
+export function moveColor(game: MorrisGame, move: MorrisMove): P.Effect.Effect<MorrisColor, MorrisEngineError> {
   switch (move.type) {
     case MorrisMoveType.PLACE:
       return P.Effect.succeed(move.color);

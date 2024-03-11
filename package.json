@@ -22,14 +22,12 @@
   ],
   "packageManager": "pnpm@8.0.0",
   "dependencies": {
-    "@effect/data": "^0.18.7",
-    "@effect/io": "^0.41.2",
-    "@effect/schema": "^0.36.5",
-    "@konker.dev/effect-ts-prelude": "0.0.5",
+    "@effect/schema": "^0.63.2",
+    "@konker.dev/effect-ts-prelude": "^0.0.13",
     "@konker.dev/tiny-error-fp": "^0.0.1",
-    "@konker.dev/tiny-rules-fp": "^0.0.1",
+    "@konker.dev/tiny-rules-fp": "^0.0.2",
     "chalk": "^4.1.2",
-    "effect": "^2.0.1",
+    "effect": "^2.4.1",
     "lodash": "^4.17.21"
   },
   "devDependencies": {

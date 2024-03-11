@@ -10,7 +10,7 @@ import type { MorrisFactsMove } from '../rules/factsMove';
 
 export const tickApplyMove =
   (move: MorrisMove, moveFacts: MorrisFactsMove) =>
-  (oldGame: MorrisGame): P.Effect.Effect<never, MorrisEngineError, MorrisGame> => {
+  (oldGame: MorrisGame): P.Effect.Effect<MorrisGame, MorrisEngineError> => {
     return P.pipe(
       gameApplyMoveToGameBoard(oldGame, move),
       P.Effect.map((newGame) => ({
@@ -27,7 +27,7 @@ export const tickApplyMove =
 
 export const tickUndoApplyMove =
   (oldMove: MorrisMove, oldMoveFacts: MorrisFactsMove) =>
-  (newGame: MorrisGame): P.Effect.Effect<never, MorrisEngineError, MorrisGame> => {
+  (newGame: MorrisGame): P.Effect.Effect<MorrisGame, MorrisEngineError> => {
     return P.pipe(
       gameUnApplyMoveToGameBoard(newGame, oldMove, oldMoveFacts),
       P.Effect.map((oldGame) => ({

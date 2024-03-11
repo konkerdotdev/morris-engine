@@ -103,7 +103,7 @@ export function initMorrisBoardRenderParams(
 export function initMorrisBoardRenderContext(
   params: MorrisBoardRenderParamsText,
   board: MorrisBoard
-): P.Effect.Effect<never, MorrisEngineError, MorrisBoardRenderContext> {
+): P.Effect.Effect<MorrisBoardRenderContext, MorrisEngineError> {
   return P.pipe(
     P.Effect.Do,
     P.Effect.bind('boardPointCoords', () => boardPointsToCoords(params, board.points)),
@@ -134,7 +134,7 @@ export function renderOccupant(context: MorrisBoardRenderContext, p: MorrisBoard
     : chalk.bgHex(context.config.colorBoardBg).hex(context.config.colorBoard).bold(context.config.avatarEmpty);
 }
 
-export function renderString(gameTick: MorrisGameTick): P.Effect.Effect<never, MorrisEngineError, string> {
+export function renderString(gameTick: MorrisGameTick): P.Effect.Effect<string, MorrisEngineError> {
   const params = initMorrisBoardRenderParams(DEFAULT_MORRIS_BOARD_RENDER_CONFIG_TEXT, gameTick.game.gameState.board);
 
   return P.pipe(

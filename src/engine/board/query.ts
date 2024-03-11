@@ -32,7 +32,7 @@ export function boardListOccupiedPointsByColor(
 export function boardGetOccupiedPointForMorris(
   board: MorrisBoard,
   morris: Morris
-): P.Effect.Effect<never, MorrisEngineError, OccupiedBoardPoint> {
+): P.Effect.Effect<OccupiedBoardPoint, MorrisEngineError> {
   const occupiedPoints = boardListOccupiedPointsByColor(board, morris.color);
   const point = occupiedPoints.find((p) => p.occupant.n === morris.n && p.occupant.color === morris.color);
 
@@ -59,7 +59,7 @@ export function boardCountEmptyPoints(board: MorrisBoard): number {
 export function boardListAdjacentPoints(
   board: MorrisBoard,
   point: MorrisBoardPoint
-): P.Effect.Effect<never, MorrisEngineError, ReadonlyArray<MorrisBoardPoint>> {
+): P.Effect.Effect<ReadonlyArray<MorrisBoardPoint>, MorrisEngineError> {
   return P.pipe(
     board.points,
     filterE((bp) => boardIsPointAdjacent(board, point.coord, bp.coord))
@@ -69,7 +69,7 @@ export function boardListAdjacentPoints(
 export function boardListAdjacentPointsEmpty(
   board: MorrisBoard,
   point: MorrisBoardPoint
-): P.Effect.Effect<never, MorrisEngineError, ReadonlyArray<MorrisBoardPoint>> {
+): P.Effect.Effect<ReadonlyArray<MorrisBoardPoint>, MorrisEngineError> {
   return P.pipe(
     boardListEmptyPoints(board),
     filterE((bp) => boardIsPointAdjacent(board, point.coord, bp.coord))

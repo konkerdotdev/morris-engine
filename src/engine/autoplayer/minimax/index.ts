@@ -9,7 +9,7 @@ import { gameTreeNodeScore } from './score';
 
 export const SEARCH_DEPTH = 3;
 
-export function autoPlayerMiniMax(gameTick: MorrisGameTick): P.Effect.Effect<never, MorrisEngineError, MorrisMove> {
+export function autoPlayerMiniMax(gameTick: MorrisGameTick): P.Effect.Effect<MorrisMove, MorrisEngineError> {
   return P.pipe(
     gameTreeCreate(gameTick, gameTreeNodeScore, tickGetTurnColor(gameTick), SEARCH_DEPTH),
     P.Effect.map((gameTreeNode) => gameTreeNode.bestChildMove)

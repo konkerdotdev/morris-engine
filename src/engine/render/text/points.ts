@@ -7,9 +7,7 @@ import type { COORD_CHAR } from '../../consts';
 import { COORD_CHARS } from '../../consts';
 import type { CoordTuple, MorrisBoardRenderParamsText } from './index';
 
-export function getBoardCoordParts(
-  coord: MorrisBoardCoord
-): P.Effect.Effect<never, MorrisEngineError, [COORD_CHAR, number]> {
+export function getBoardCoordParts(coord: MorrisBoardCoord): P.Effect.Effect<[COORD_CHAR, number], MorrisEngineError> {
   return P.Effect.try({
     try: () => {
       const parts = coord.split('', 2);
@@ -33,7 +31,7 @@ export function getBoardCoordParts(
 export function getRenderCoord(
   params: MorrisBoardRenderParamsText,
   coord: MorrisBoardCoord
-): P.Effect.Effect<never, MorrisEngineError, CoordTuple> {
+): P.Effect.Effect<CoordTuple, MorrisEngineError> {
   return P.pipe(
     getBoardCoordParts(coord),
     P.Effect.map(([bx, by]) => {
@@ -56,7 +54,7 @@ export function getRenderCoord(
 export function boardPointToCoord(
   params: MorrisBoardRenderParamsText,
   point: MorrisBoardPoint
-): P.Effect.Effect<never, MorrisEngineError, [COORD_CHAR, number, CoordTuple]> {
+): P.Effect.Effect<[COORD_CHAR, number, CoordTuple], MorrisEngineError> {
   return P.pipe(
     P.Effect.Do,
     P.Effect.bind('boardCoord', () => getBoardCoordParts(point.coord)),
@@ -68,7 +66,7 @@ export function boardPointToCoord(
 export function boardPointsToCoords(
   params: MorrisBoardRenderParamsText,
   points: ReadonlyArray<MorrisBoardPoint>
-): P.Effect.Effect<never, MorrisEngineError, Array<[COORD_CHAR, number, CoordTuple]>> {
+): P.Effect.Effect<Array<[COORD_CHAR, number, CoordTuple]>, MorrisEngineError> {
   return P.pipe(
     points.map((p) => boardPointToCoord(params, p)),
     P.Effect.all

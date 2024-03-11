@@ -73,6 +73,6 @@ export function MorrisGameStateStructFields(t: string, p: NumPoints, d: BoardDim
 }
 
 export function MorrisGameState(t: string, p: NumPoints, d: BoardDim, n: NumMorris) {
-  return P.Schema.ParseJson.pipe(P.Schema.compose(P.Schema.struct(MorrisGameStateStructFields(t, p, d, n))));
+  return P.Schema.parseJson(P.Schema.struct(MorrisGameStateStructFields(t, p, d, n)));
 }
 export type MorrisGameState = P.Schema.Schema.To<ReturnType<typeof MorrisGameState>>;

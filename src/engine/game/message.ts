@@ -49,7 +49,7 @@ export function gameDeriveInvalidMoveErrorMessage(moveFacts: MorrisFactsMove): s
 /**
  * Derive a message foe the current game state
  */
-export function gameDeriveMessage(gameFacts: MorrisFactsGame): P.Effect.Effect<never, MorrisEngineError, string> {
+export function gameDeriveMessage(gameFacts: MorrisFactsGame): P.Effect.Effect<string, MorrisEngineError> {
   const message = () => {
     if (gameFacts.isGameOver) return gameDeriveResultMessage(gameFacts);
 

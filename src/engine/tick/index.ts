@@ -29,7 +29,7 @@ export function tickCreate(
   facts: MorrisFactsGame,
   tickN: number,
   message: string
-): P.Effect.Effect<never, MorrisEngineError, MorrisGameTick> {
+): P.Effect.Effect<MorrisGameTick, MorrisEngineError> {
   return P.Effect.succeed({ game, facts, tickN, message });
 }
 
@@ -40,7 +40,7 @@ export function tickGetTurnColor(gameTick: MorrisGameTick): MorrisColor {
 // --------------------------------------------------------------------------
 export const tick =
   (move: MorrisMove) =>
-  (gameTick: MorrisGameTick): P.Effect.Effect<never, MorrisEngineError, MorrisGameTick> => {
+  (gameTick: MorrisGameTick): P.Effect.Effect<MorrisGameTick, MorrisEngineError> => {
     const oldGame = gameTick.game;
 
     return P.pipe(
@@ -83,7 +83,7 @@ export const tick =
   };
 
 // --------------------------------------------------------------------------
-export const tickUndo = (gameTick: MorrisGameTick): P.Effect.Effect<never, MorrisEngineError, MorrisGameTick> => {
+export const tickUndo = (gameTick: MorrisGameTick): P.Effect.Effect<MorrisGameTick, MorrisEngineError> => {
   if (gameHistoryLen(gameTick.game.gameState.history) < 2) {
     const game = gameReset(gameTick.game);
     return tickCreate(game, BOOTSTRAP_INITIAL_MORRIS_FACTS_GAME(game), 0, gameDeriveStartMessage(game));
@@ -117,7 +117,7 @@ export const tickUndo = (gameTick: MorrisGameTick): P.Effect.Effect<never, Morri
 // --------------------------------------------------------------------------
 export const tickAutoPlayer =
   (autoPlayer: AutoPlayer) =>
-  (gameTick: MorrisGameTick): P.Effect.Effect<never, MorrisEngineError, MorrisGameTick> =>
+  (gameTick: MorrisGameTick): P.Effect.Effect<MorrisGameTick, MorrisEngineError> =>
     P.pipe(
       autoPlayer(gameTick),
       P.Effect.tap((x) => P.Console.log(x)),

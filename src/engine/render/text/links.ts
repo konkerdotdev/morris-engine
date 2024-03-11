@@ -21,7 +21,7 @@ export function linkToCoords(
   point: MorrisBoardPoint,
   link: MorrisBoardLink,
   sortAxisC: typeof X | typeof Y
-): P.Effect.Effect<never, MorrisEngineError, [CoordTuple, CoordTuple]> {
+): P.Effect.Effect<[CoordTuple, CoordTuple], MorrisEngineError> {
   return P.pipe(
     P.Effect.Do,
     P.Effect.bind('c1', () => getRenderCoord(params, point.coord)),
@@ -36,7 +36,7 @@ export function links(
   linkType: MorrisLinkType,
   sortAxisL: typeof X | typeof Y,
   sortAxisC: typeof X | typeof Y
-): P.Effect.Effect<never, MorrisEngineError, Array<[CoordTuple, CoordTuple]>> {
+): P.Effect.Effect<Array<[CoordTuple, CoordTuple]>, MorrisEngineError> {
   return P.pipe(
     points
       .map((p) =>
@@ -55,7 +55,7 @@ export function linksD(
   linkType: MorrisLinkType,
   sortAxisL: typeof X | typeof Y,
   sortAxisC: typeof X | typeof Y
-): P.Effect.Effect<never, MorrisEngineError, Array<[CoordTuple, CoordTuple, LineFunc]>> {
+): P.Effect.Effect<Array<[CoordTuple, CoordTuple, LineFunc]>, MorrisEngineError> {
   return P.pipe(
     links(params, points, linkType, sortAxisL, sortAxisC),
     P.Effect.map((ret) => ret.map(([a, b]) => [a, b, lineFunc(a, b)]))

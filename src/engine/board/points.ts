@@ -9,7 +9,7 @@ import { EmptyOccupant, isEmptyOccupant, isOccupiedBoardPoint } from './schemas'
 export function boardGetPointByCoord(
   board: MorrisBoard,
   coord: MorrisBoardCoord
-): P.Effect.Effect<never, MorrisEngineError, MorrisBoardPoint> {
+): P.Effect.Effect<MorrisBoardPoint, MorrisEngineError> {
   const i = board.points.findIndex((p) => p.coord === coord);
   const p = board.points[i];
   return p ? P.Effect.succeed(p) : P.Effect.fail(toMorrisEngineError(`Invalid point: ${coord}`));
@@ -18,7 +18,7 @@ export function boardGetPointByCoord(
 export function boardGetMorrisAtCoord(
   board: MorrisBoard,
   coord: MorrisBoardCoord
-): P.Effect.Effect<never, MorrisEngineError, Morris> {
+): P.Effect.Effect<Morris, MorrisEngineError> {
   return P.pipe(
     boardGetPointByCoord(board, coord),
     P.Effect.flatMap((p) =>
@@ -32,7 +32,7 @@ export function boardGetMorrisAtCoord(
 export function boardIsPointEmpty(
   board: MorrisBoard,
   coord: MorrisBoardCoord
-): P.Effect.Effect<never, MorrisEngineError, boolean> {
+): P.Effect.Effect<boolean, MorrisEngineError> {
   return P.pipe(
     boardGetPointByCoord(board, coord),
     P.Effect.map((p) => isEmptyOccupant(p.occupant))
@@ -43,7 +43,7 @@ export function boardIsPointAdjacent(
   board: MorrisBoard,
   from: MorrisBoardCoord,
   to: MorrisBoardCoord
-): P.Effect.Effect<never, MorrisEngineError, boolean> {
+): P.Effect.Effect<boolean, MorrisEngineError> {
   return P.pipe(
     boardGetPointByCoord(board, from),
     P.Effect.map((p) => p.links.some((link) => link.to === to))
@@ -54,7 +54,7 @@ export function boardSetPointOccupant(
   game: MorrisGame,
   coord: MorrisBoardCoord,
   occupant: MorrisBoardPointOccupant
-): P.Effect.Effect<never, MorrisEngineError, MorrisGame> {
+): P.Effect.Effect<MorrisGame, MorrisEngineError> {
   const i = game.gameState.board.points.findIndex((p: MorrisBoardPoint) => p.coord === coord);
   const p = game.gameState.board.points[i];
 
@@ -77,6 +77,6 @@ export function boardSetPointOccupant(
 export function boardSetPointEmpty(
   board: MorrisGame,
   coord: MorrisBoardCoord
-): P.Effect.Effect<never, MorrisEngineError, MorrisGame> {
+): P.Effect.Effect<MorrisGame, MorrisEngineError> {
   return boardSetPointOccupant(board, coord, EmptyOccupant);
 }

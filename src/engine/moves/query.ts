@@ -33,7 +33,7 @@ export function moveHasUnusedMorrisForColor(game: MorrisGame, color: MorrisColor
 export function moveListValidPlaceMovesForMorris(
   game: MorrisGame,
   morris: Morris
-): P.Effect.Effect<never, MorrisEngineError, ReadonlyArray<MorrisMove>> {
+): P.Effect.Effect<ReadonlyArray<MorrisMove>, MorrisEngineError> {
   const emptyPoints = boardListEmptyPoints(game.gameState.board);
   return P.Effect.succeed(emptyPoints.map((p) => moveCreatePlace(morris.color, p.coord)));
 }
@@ -41,7 +41,7 @@ export function moveListValidPlaceMovesForMorris(
 export function moveListValidMoveMovesForMorris(
   game: MorrisGame,
   morris: Morris
-): P.Effect.Effect<never, MorrisEngineError, ReadonlyArray<MorrisMove>> {
+): P.Effect.Effect<ReadonlyArray<MorrisMove>, MorrisEngineError> {
   return P.pipe(
     boardGetOccupiedPointForMorris(game.gameState.board, morris),
     P.Effect.flatMap((point) =>
@@ -56,7 +56,7 @@ export function moveListValidMoveMovesForMorris(
 export function moveListValidRemoveMovesForMorris(
   game: MorrisGame,
   morris: Morris
-): P.Effect.Effect<never, MorrisEngineError, ReadonlyArray<MorrisMove>> {
+): P.Effect.Effect<ReadonlyArray<MorrisMove>, MorrisEngineError> {
   const oppositeMorrisPoints = boardListOccupiedPointsByColor(game.gameState.board, flipColor(morris.color));
   return P.Effect.succeed(oppositeMorrisPoints.map((p) => moveCreateRemove(p.coord)));
 }
@@ -65,7 +65,7 @@ export function moveListValidMovesForMorris(
   game: MorrisGame,
   facts: MorrisFactsGame,
   morris: Morris
-): P.Effect.Effect<never, MorrisEngineError, ReadonlyArray<MorrisMove>> {
+): P.Effect.Effect<ReadonlyArray<MorrisMove>, MorrisEngineError> {
   if (boardHasMorrisBeenPlaced(game.gameState.board, morris)) {
     if (!facts.isMovingPhase && !facts.isLaskerPhase) {
       return P.Effect.succeed([]);
@@ -94,7 +94,7 @@ export function moveListValidMovesForColor(
   game: MorrisGame,
   facts: MorrisFactsGame,
   color: MorrisColor
-): P.Effect.Effect<never, MorrisEngineError, ReadonlyArray<MorrisMove>> {
+): P.Effect.Effect<ReadonlyArray<MorrisMove>, MorrisEngineError> {
   // eslint-disable-next-line fp/no-nil
   const placedMorris = boardListMorrisOnBoardForColor(game.gameState.board, color);
 
@@ -127,14 +127,14 @@ export function moveCountValidMovesForColor(
   game: MorrisGame,
   facts: MorrisFactsGame,
   color: MorrisColor
-): P.Effect.Effect<never, MorrisEngineError, number> {
+): P.Effect.Effect<number, MorrisEngineError> {
   return P.pipe(
     moveListValidMovesForColor(game, facts, color),
     P.Effect.map((moves) => moves.length)
   );
 }
 
-export function moveMakesMill(game: MorrisGame, move: MorrisMove): P.Effect.Effect<never, MorrisEngineError, boolean> {
+export function moveMakesMill(game: MorrisGame, move: MorrisMove): P.Effect.Effect<boolean, MorrisEngineError> {
   // A REMOVE move can never create a mill
   if (move.type === MorrisMoveType.REMOVE) {
     return P.Effect.succeed(false);

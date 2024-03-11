@@ -4,7 +4,7 @@ import type { MorrisEngineError } from '../../lib/error';
 import type { MorrisGameTick } from '../tick';
 
 export type RenderImpl = {
-  readonly renderString: (gameTick: MorrisGameTick) => P.Effect.Effect<never, MorrisEngineError, string>;
+  readonly renderString: (gameTick: MorrisGameTick) => P.Effect.Effect<string, MorrisEngineError>;
 };
 
-export const RenderImpl = P.Context.Tag<RenderImpl>('RenderImpl');
+export const RenderImpl = P.Context.GenericTag<RenderImpl>('RenderImpl');

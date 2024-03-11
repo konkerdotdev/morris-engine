@@ -55,7 +55,7 @@ export function gameSetStartColorRandom(game: MorrisGame): MorrisGame {
   return gameSetStartColor(game, Math.random() <= 0.5 ? MorrisColor.WHITE : MorrisColor.BLACK);
 }
 
-export function gameStart(game: MorrisGame): P.Effect.Effect<never, MorrisEngineError, MorrisGameTick> {
+export function gameStart(game: MorrisGame): P.Effect.Effect<MorrisGameTick, MorrisEngineError> {
   return tickCreate(game, BOOTSTRAP_INITIAL_MORRIS_FACTS_GAME(game), 0, gameDeriveStartMessage(game));
 }
 
@@ -86,7 +86,7 @@ export function gameReset(game: MorrisGame): MorrisGame {
 export function gameGetNextPlaceMorris(
   game: MorrisGame,
   color: MorrisColor
-): P.Effect.Effect<never, MorrisEngineError, Morris> {
+): P.Effect.Effect<Morris, MorrisEngineError> {
   const nextMorris = color === MorrisColor.WHITE ? game.gameState.morrisWhite[0] : game.gameState.morrisBlack[0];
   return nextMorris
     ? P.Effect.succeed(nextMorris)
@@ -100,7 +100,7 @@ export function gameHasUnplacedMorris(game: MorrisGame, color: MorrisColor): boo
 export function gameGetPossibleNextPlaceMorris(
   game: MorrisGame,
   color: MorrisColor
-): P.Effect.Effect<never, MorrisEngineError, P.Option.Option<Morris>> {
+): P.Effect.Effect<P.Option.Option<Morris>, MorrisEngineError> {
   return P.pipe(
     gameGetNextPlaceMorris(game, color),
     P.Effect.map((morris) => P.Option.some(morris)),
@@ -111,7 +111,7 @@ export function gameGetPossibleNextPlaceMorris(
 /**
  * Helper function to remove a morris, of a given color, from the unused morris pool
  */
-export function gameUseMorris(game: MorrisGame, morris: Morris): P.Effect.Effect<never, MorrisEngineError, MorrisGame> {
+export function gameUseMorris(game: MorrisGame, morris: Morris): P.Effect.Effect<MorrisGame, MorrisEngineError> {
   const morrisWhiteWithout =
     morris.color === MorrisColor.WHITE
       ? game.gameState.morrisWhite.filter((i: MorrisWhite) => i.n !== morris.n)
@@ -134,10 +134,7 @@ export function gameUseMorris(game: MorrisGame, morris: Morris): P.Effect.Effect
 /**
  * Helper function to replace a given morris into the unused morris pool
  */
-export function gameUnUseMorris(
-  game: MorrisGame,
-  morris: Morris
-): P.Effect.Effect<never, MorrisEngineError, MorrisGame> {
+export function gameUnUseMorris(game: MorrisGame, morris: Morris): P.Effect.Effect<MorrisGame, MorrisEngineError> {
   const morrisWhiteWith =
     morris.color === MorrisColor.WHITE ? [morris, ...game.gameState.morrisWhite] : game.gameState.morrisWhite;
   const morrisBlackWith =
@@ -156,10 +153,7 @@ export function gameUnUseMorris(
 /**
  * Helper function to add a given morris to the removed morris pool
  */
-export function gameDiscardMorris(
-  game: MorrisGame,
-  morris: Morris
-): P.Effect.Effect<never, MorrisEngineError, MorrisGame> {
+export function gameDiscardMorris(game: MorrisGame, morris: Morris): P.Effect.Effect<MorrisGame, MorrisEngineError> {
   const morrisWhiteRemovedWith =
     morris.color === MorrisColor.WHITE
       ? [morris, ...game.gameState.morrisWhiteRemoved]
@@ -185,7 +179,7 @@ export function gameDiscardMorris(
 export function gameUnDiscardMorris(
   game: MorrisGame,
   color: MorrisColor
-): P.Effect.Effect<never, MorrisEngineError, [MorrisGame, Morris]> {
+): P.Effect.Effect<[MorrisGame, Morris], MorrisEngineError> {
   const morris =
     color === MorrisColor.WHITE ? game.gameState.morrisWhiteRemoved[0] : game.gameState.morrisBlackRemoved[0];
   if (!morris) {
@@ -218,7 +212,7 @@ export function gameUnDiscardMorris(
 export function gameApplyMoveToGameBoard(
   game: MorrisGame,
   move: MorrisMove
-): P.Effect.Effect<never, MorrisEngineError, MorrisGame> {
+): P.Effect.Effect<MorrisGame, MorrisEngineError> {
   switch (move.type) {
     case MorrisMoveType.PLACE:
       return P.pipe(
@@ -262,7 +256,7 @@ export function gameUnApplyMoveToGameBoard(
   game: MorrisGame,
   move: MorrisMove,
   oldMoveFacts: MorrisFactsMove
-): P.Effect.Effect<never, MorrisEngineError, MorrisGame> {
+): P.Effect.Effect<MorrisGame, MorrisEngineError> {
   switch (move.type) {
     case MorrisMoveType.PLACE:
       return P.pipe(
