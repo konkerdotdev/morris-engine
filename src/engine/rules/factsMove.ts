@@ -29,9 +29,9 @@ export const MorrisFactKeysMove = [
 ] as const;
 
 export const MorrisFactsMove = P.Schema.parseJson(
-  P.Schema.record(P.Schema.literal(...MorrisFactKeysMove), P.Schema.boolean)
+  P.Schema.Record({ key: P.Schema.Literal(...MorrisFactKeysMove), value: P.Schema.Boolean })
 );
-export type MorrisFactsMove = P.Schema.Schema.To<typeof MorrisFactsMove>;
+export type MorrisFactsMove = P.Schema.Schema.Type<typeof MorrisFactsMove>;
 
 export const INITIAL_MORRIS_FACTS_MOVE: MorrisFactsMove = {
   // move is

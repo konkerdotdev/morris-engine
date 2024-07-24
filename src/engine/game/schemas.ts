@@ -7,72 +7,72 @@ import { MorrisMove } from '../moves/schemas';
 import { MorrisFactsMove } from '../rules/factsMove';
 
 export function MorrisGameConfigParams(p: NumPoints, d: BoardDim, n: NumMorris) {
-  return P.Schema.struct({
-    P: P.Schema.literal(p),
-    D: P.Schema.literal(d),
-    N: P.Schema.literal(n),
+  return P.Schema.Struct({
+    P: P.Schema.Literal(p),
+    D: P.Schema.Literal(d),
+    N: P.Schema.Literal(n),
   });
 }
-export type MorrisGameConfigParams = P.Schema.Schema.To<ReturnType<typeof MorrisGameConfigParams>>;
+export type MorrisGameConfigParams = P.Schema.Schema.Type<ReturnType<typeof MorrisGameConfigParams>>;
 
 export function MorrisGameConfig(d: BoardDim, n: NumMorris) {
-  return P.Schema.struct({
-    name: P.Schema.string,
-    numMorrisPerPlayer: P.Schema.literal(n),
-    forbiddenPointsFirstMove: P.Schema.array(MorrisBoardCoord(d)),
-    forbiddenPointsSecondMove: P.Schema.array(MorrisBoardCoord(d)),
-    forbiddenPointsPlacingPhase: P.Schema.array(MorrisBoardCoord(d)),
-    numMillsToWinThreshold: P.Schema.number, // 1 for 3MM
-    numMorrisForFlyingThreshold: P.Schema.number,
-    numMorrisToLoseThreshold: P.Schema.number, // 2 for 9MM
-    numMovesWithoutMillForDraw: P.Schema.number,
-    numPositionRepeatsForDraw: P.Schema.number,
-    phases: P.Schema.array(P.Schema.enums(MorrisPhase)), // 3MM: [PLACING, MOVING], L: [LASKER, MOVING]
+  return P.Schema.Struct({
+    name: P.Schema.String,
+    numMorrisPerPlayer: P.Schema.Literal(n),
+    forbiddenPointsFirstMove: P.Schema.Array(MorrisBoardCoord(d)),
+    forbiddenPointsSecondMove: P.Schema.Array(MorrisBoardCoord(d)),
+    forbiddenPointsPlacingPhase: P.Schema.Array(MorrisBoardCoord(d)),
+    numMillsToWinThreshold: P.Schema.Number, // 1 for 3MM
+    numMorrisForFlyingThreshold: P.Schema.Number,
+    numMorrisToLoseThreshold: P.Schema.Number, // 2 for 9MM
+    numMovesWithoutMillForDraw: P.Schema.Number,
+    numPositionRepeatsForDraw: P.Schema.Number,
+    phases: P.Schema.Array(P.Schema.Enums(MorrisPhase)), // 3MM: [PLACING, MOVING], L: [LASKER, MOVING]
   });
 }
-export type MorrisGameConfig = P.Schema.Schema.To<ReturnType<typeof MorrisGameConfig>>;
+export type MorrisGameConfig = P.Schema.Schema.Type<ReturnType<typeof MorrisGameConfig>>;
 
 // --------------------------------------------------------------------------
 export function MorrisGameHistory(d: BoardDim) {
-  return P.Schema.struct({
-    moves: P.Schema.array(MorrisMove(d)),
-    moveFacts: P.Schema.array(MorrisFactsMove),
-    historyPtr: P.Schema.number,
+  return P.Schema.Struct({
+    moves: P.Schema.Array(MorrisMove(d)),
+    moveFacts: P.Schema.Array(MorrisFactsMove),
+    historyPtr: P.Schema.Number,
   });
 }
-export type MorrisGameHistory = P.Schema.Schema.To<ReturnType<typeof MorrisGameHistory>>;
+export type MorrisGameHistory = P.Schema.Schema.Type<ReturnType<typeof MorrisGameHistory>>;
 
 export function MorrisGameHistoryEntry(d: BoardDim) {
-  return P.Schema.struct({
+  return P.Schema.Struct({
     // eslint-disable-next-line fp/no-nil
-    lastMove: P.Schema.union(MorrisMove(d), P.Schema.undefined),
+    lastMove: P.Schema.Union(MorrisMove(d), P.Schema.Undefined),
     // eslint-disable-next-line fp/no-nil
-    lastMoveFacts: P.Schema.union(MorrisFactsMove, P.Schema.undefined),
+    lastMoveFacts: P.Schema.Union(MorrisFactsMove, P.Schema.Undefined),
   });
 }
-export type MorrisGameHistoryEntry = P.Schema.Schema.To<ReturnType<typeof MorrisGameHistoryEntry>>;
+export type MorrisGameHistoryEntry = P.Schema.Schema.Type<ReturnType<typeof MorrisGameHistoryEntry>>;
 
 // --------------------------------------------------------------------------
 export function MorrisGameStateStructFields(t: string, p: NumPoints, d: BoardDim, n: NumMorris) {
   return {
-    _tag: P.Schema.literal(t),
+    _tag: P.Schema.Literal(t),
     config: MorrisGameConfig(d, n),
     board: MorrisBoard(p, d, n),
 
-    startColor: P.Schema.enums(MorrisColor),
-    result: P.Schema.enums(MorrisGameResult),
-    lastMillCounter: P.Schema.number,
-    morrisWhiteRemoved: P.Schema.array(MorrisWhite(n)).pipe(P.Schema.maxItems(n)),
-    morrisBlackRemoved: P.Schema.array(MorrisBlack(n)).pipe(P.Schema.maxItems(n)),
+    startColor: P.Schema.Enums(MorrisColor),
+    result: P.Schema.Enums(MorrisGameResult),
+    lastMillCounter: P.Schema.Number,
+    morrisWhiteRemoved: P.Schema.Array(MorrisWhite(n)).pipe(P.Schema.maxItems(n)),
+    morrisBlackRemoved: P.Schema.Array(MorrisBlack(n)).pipe(P.Schema.maxItems(n)),
     history: MorrisGameHistory(d),
 
-    morrisWhite: P.Schema.array(MorrisWhite(n)).pipe(P.Schema.maxItems(n)),
-    morrisBlack: P.Schema.array(MorrisBlack(n)).pipe(P.Schema.maxItems(n)),
-    positions: P.Schema.array(MorrisBoardPositionString(p)),
+    morrisWhite: P.Schema.Array(MorrisWhite(n)).pipe(P.Schema.maxItems(n)),
+    morrisBlack: P.Schema.Array(MorrisBlack(n)).pipe(P.Schema.maxItems(n)),
+    positions: P.Schema.Array(MorrisBoardPositionString(p)),
   };
 }
 
 export function MorrisGameState(t: string, p: NumPoints, d: BoardDim, n: NumMorris) {
-  return P.Schema.parseJson(P.Schema.struct(MorrisGameStateStructFields(t, p, d, n)));
+  return P.Schema.parseJson(P.Schema.Struct(MorrisGameStateStructFields(t, p, d, n)));
 }
-export type MorrisGameState = P.Schema.Schema.To<ReturnType<typeof MorrisGameState>>;
+export type MorrisGameState = P.Schema.Schema.Type<ReturnType<typeof MorrisGameState>>;

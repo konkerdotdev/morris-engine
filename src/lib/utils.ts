@@ -8,7 +8,7 @@ export const someE =
   (as: ReadonlyArray<A>): P.Effect.Effect<boolean, E, R> =>
     P.pipe(
       as,
-      P.ReadonlyArray.map(predicateE),
+      P.Array.map(predicateE),
       P.Effect.all,
       P.Effect.map((bs) => bs.some(P.identity))
     );
@@ -21,7 +21,7 @@ export const filterE =
   (as: ReadonlyArray<A>): P.Effect.Effect<ReadonlyArray<A>, E, R> =>
     P.pipe(
       as,
-      P.ReadonlyArray.map(predicateE),
+      P.Array.map(predicateE),
       P.Effect.all,
       P.Effect.map((bs) => as.filter((_, i) => bs[i]))
     );

@@ -34,9 +34,9 @@ export const MorrisFactKeysGame = [
 ] as const;
 
 export const MorrisFactsGame = P.Schema.parseJson(
-  P.Schema.record(P.Schema.literal(...MorrisFactKeysGame), P.Schema.boolean)
+  P.Schema.Record({ key: P.Schema.Literal(...MorrisFactKeysGame), value: P.Schema.Boolean })
 );
-export type MorrisFactsGame = P.Schema.Schema.To<typeof MorrisFactsGame>;
+export type MorrisFactsGame = P.Schema.Schema.Type<typeof MorrisFactsGame>;
 
 export const INITIAL_MORRIS_FACTS_GAME: MorrisFactsGame = {
   isFirstMove: false,

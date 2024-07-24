@@ -4,44 +4,43 @@ import { COORD_CHARS, EMPTY, isCoordChar, MORRIS, MorrisColor, MorrisLinkType, T
 import type { BoardDim, NumMorris, NumPoints } from '../index';
 import { MorrisId } from '../index';
 
-export const MorrisColorS = P.Schema.transformOrFail(
-  P.Schema.string,
-  P.Schema.enums(MorrisColor),
-  (s, _, ast) => {
+export const MorrisColorS = P.Schema.transformOrFail(P.Schema.String, P.Schema.Enums(MorrisColor), {
+  strict: true,
+  decode: (s, _, ast) => {
     switch (s.toUpperCase()) {
       case MorrisColor.WHITE:
         return P.ParseResult.succeed(MorrisColor.WHITE);
       case MorrisColor.BLACK:
         return P.ParseResult.succeed(MorrisColor.BLACK);
     }
-    return P.ParseResult.fail(P.ParseResult.type(ast, `Invalid color: ${s}`));
+    return P.ParseResult.fail(new P.ParseResult.Type(ast, `Invalid color: ${s}`));
   },
-  (c: MorrisColor) => P.ParseResult.succeed(c)
-);
-export type MorrisColorS = P.Schema.Schema.To<typeof MorrisColorS>;
+  encode: (c: MorrisColor) => P.ParseResult.succeed(c),
+});
+export type MorrisColorS = P.Schema.Schema.Type<typeof MorrisColorS>;
 
 export function MorrisBlack(n: NumMorris) {
-  return P.Schema.struct({
-    _tag: P.Schema.literal(MORRIS),
-    color: P.Schema.literal(MorrisColor.BLACK),
+  return P.Schema.Struct({
+    _tag: P.Schema.Literal(MORRIS),
+    color: P.Schema.Literal(MorrisColor.BLACK),
     n: MorrisId(n),
   });
 }
-export type MorrisBlack = P.Schema.Schema.To<ReturnType<typeof MorrisBlack>>;
+export type MorrisBlack = P.Schema.Schema.Type<ReturnType<typeof MorrisBlack>>;
 
 export function MorrisWhite(n: NumMorris) {
-  return P.Schema.struct({
-    _tag: P.Schema.literal(MORRIS),
-    color: P.Schema.literal(MorrisColor.WHITE),
+  return P.Schema.Struct({
+    _tag: P.Schema.Literal(MORRIS),
+    color: P.Schema.Literal(MorrisColor.WHITE),
     n: MorrisId(n),
   });
 }
-export type MorrisWhite = P.Schema.Schema.To<ReturnType<typeof MorrisWhite>>;
+export type MorrisWhite = P.Schema.Schema.Type<ReturnType<typeof MorrisWhite>>;
 
 export function Morris(n: NumMorris) {
-  return P.Schema.union(MorrisBlack(n), MorrisWhite(n));
+  return P.Schema.Union(MorrisBlack(n), MorrisWhite(n));
 }
-export type Morris = P.Schema.Schema.To<ReturnType<typeof Morris>>;
+export type Morris = P.Schema.Schema.Type<ReturnType<typeof Morris>>;
 
 // --------------------------------------------------------------------------
 export const isBoardCoord =
@@ -56,7 +55,7 @@ export const isBoardCoord =
 
 export function MorrisBoardCoord(d: BoardDim) {
   return P.pipe(
-    P.Schema.string,
+    P.Schema.String,
     P.Schema.compose(P.Schema.Lowercase),
     P.Schema.filter(isBoardCoord(d), {
       title: 'MorrisBoardCoord',
@@ -64,11 +63,11 @@ export function MorrisBoardCoord(d: BoardDim) {
     })
   );
 }
-export type MorrisBoardCoord = P.Schema.Schema.To<ReturnType<typeof MorrisBoardCoord>>;
+export type MorrisBoardCoord = P.Schema.Schema.Type<ReturnType<typeof MorrisBoardCoord>>;
 
 // --------------------------------------------------------------------------
-export const EmptyOccupantS = P.Schema.struct({ _tag: P.Schema.literal(EMPTY) });
-export type EmptyOccupant = P.Schema.Schema.To<typeof EmptyOccupantS>;
+export const EmptyOccupantS = P.Schema.Struct({ _tag: P.Schema.Literal(EMPTY) });
+export type EmptyOccupant = P.Schema.Schema.Type<typeof EmptyOccupantS>;
 export const EmptyOccupant: EmptyOccupant = { _tag: EMPTY };
 
 export function isEmptyOccupant(x: unknown): x is EmptyOccupant {
@@ -77,58 +76,58 @@ export function isEmptyOccupant(x: unknown): x is EmptyOccupant {
 
 // --------------------------------------------------------------------------
 export function MorrisBoardPointOccupant(n: NumMorris) {
-  return P.Schema.union(EmptyOccupantS, Morris(n));
+  return P.Schema.Union(EmptyOccupantS, Morris(n));
 }
-export type MorrisBoardPointOccupant = P.Schema.Schema.To<ReturnType<typeof MorrisBoardPointOccupant>>;
+export type MorrisBoardPointOccupant = P.Schema.Schema.Type<ReturnType<typeof MorrisBoardPointOccupant>>;
 
 export function MorrisBoardLink(d: BoardDim) {
-  return P.Schema.struct({
+  return P.Schema.Struct({
     to: MorrisBoardCoord(d),
-    linkType: P.Schema.enums(MorrisLinkType),
+    linkType: P.Schema.Enums(MorrisLinkType),
   });
 }
-export type MorrisBoardLink = P.Schema.Schema.To<ReturnType<typeof MorrisBoardLink>>;
+export type MorrisBoardLink = P.Schema.Schema.Type<ReturnType<typeof MorrisBoardLink>>;
 
 export function MorrisBoardPoint(d: BoardDim, n: NumMorris) {
-  return P.Schema.struct({
+  return P.Schema.Struct({
     coord: MorrisBoardCoord(d),
-    links: P.Schema.array(MorrisBoardLink(d)),
+    links: P.Schema.Array(MorrisBoardLink(d)),
     occupant: MorrisBoardPointOccupant(n),
   });
 }
-export type MorrisBoardPoint = P.Schema.Schema.To<ReturnType<typeof MorrisBoardPoint>>;
+export type MorrisBoardPoint = P.Schema.Schema.Type<ReturnType<typeof MorrisBoardPoint>>;
 
 export function OccupiedBoardPoint(d: BoardDim, n: NumMorris) {
-  return P.Schema.struct({
+  return P.Schema.Struct({
     coord: MorrisBoardCoord(d),
-    links: P.Schema.array(MorrisBoardLink(d)),
+    links: P.Schema.Array(MorrisBoardLink(d)),
     occupant: Morris(n),
   });
 }
-export type OccupiedBoardPoint = P.Schema.Schema.To<ReturnType<typeof OccupiedBoardPoint>>;
+export type OccupiedBoardPoint = P.Schema.Schema.Type<ReturnType<typeof OccupiedBoardPoint>>;
 
 export function isOccupiedBoardPoint(x: MorrisBoardPoint): x is OccupiedBoardPoint {
   return x.occupant._tag === MORRIS;
 }
 
 export function MillCandidate(d: BoardDim) {
-  return P.Schema.array(MorrisBoardCoord(d)).pipe(P.Schema.itemsCount(THREE));
+  return P.Schema.Array(MorrisBoardCoord(d)).pipe(P.Schema.itemsCount(THREE));
 }
-export type MillCandidate = P.Schema.Schema.To<ReturnType<typeof MillCandidate>>;
+export type MillCandidate = P.Schema.Schema.Type<ReturnType<typeof MillCandidate>>;
 
 export function MorrisBoard(p: NumPoints, d: BoardDim, n: NumMorris) {
   return P.Schema.parseJson(
-    P.Schema.struct({
-      numPoints: P.Schema.literal(p),
-      dimension: P.Schema.literal(d),
-      points: P.Schema.array(MorrisBoardPoint(d, n)),
-      millCandidates: P.Schema.array(MillCandidate(d)),
+    P.Schema.Struct({
+      numPoints: P.Schema.Literal(p),
+      dimension: P.Schema.Literal(d),
+      points: P.Schema.Array(MorrisBoardPoint(d, n)),
+      millCandidates: P.Schema.Array(MillCandidate(d)),
     })
   );
 }
-export type MorrisBoard = P.Schema.Schema.To<ReturnType<typeof MorrisBoard>>;
+export type MorrisBoard = P.Schema.Schema.Type<ReturnType<typeof MorrisBoard>>;
 
 export function MorrisBoardPositionString(p: NumPoints) {
-  return P.Schema.string.pipe(P.Schema.length(p));
+  return P.Schema.String.pipe(P.Schema.length(p));
 }
-export type MorrisBoardPositionString = P.Schema.Schema.To<ReturnType<typeof MorrisBoardPositionString>>;
+export type MorrisBoardPositionString = P.Schema.Schema.Type<ReturnType<typeof MorrisBoardPositionString>>;

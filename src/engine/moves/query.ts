@@ -151,7 +151,7 @@ export function moveMakesMill(game: MorrisGame, move: MorrisMove): P.Effect.Effe
         someE<never, MorrisEngineError, ReadonlyArray<MorrisBoardCoord>>((candidate) =>
           P.pipe(
             candidate,
-            P.ReadonlyArray.map((coord) => boardGetPointByCoord(newGame.gameState.board, coord)),
+            P.Array.map((coord) => boardGetPointByCoord(newGame.gameState.board, coord)),
             P.Effect.all,
             P.Effect.map((points) => points.every((p) => isOccupiedBoardPoint(p) && p.occupant.color === moveColor))
           )
