@@ -4,7 +4,7 @@ import * as console from 'console';
 import { MorrisColor } from '../engine/consts';
 import { gameSetStartColor } from '../engine/game';
 import { renderString } from '../engine/render/text';
-import { shellSerializeGameState, shellStartMorrisGame, shellTick, shellWrapRenderString } from '../engine/shell';
+import { shellStartMorrisGame, shellTick, shellWrapRenderString } from '../engine/shell';
 import { gamesInstantiate } from '../games';
 import { initialGameState, TAG } from '../games/3mm';
 
@@ -39,5 +39,5 @@ MOVES.forEach((moveStr) => {
   console.log('\n' + shellRenderString(gt));
   console.log(`[${moveStr}] ${gt.message}\n`);
 
-  console.log(shellSerializeGameState(gt));
+  // console.log(shellSerializeGameState(gt));
 });

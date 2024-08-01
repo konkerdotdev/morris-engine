@@ -8,7 +8,17 @@ import { initialGameState, TAG } from '../games/picaria';
 
 const shellRenderString = shellWrapRenderString(renderString);
 
-const MOVES = ['P W b4', 'P B d2', 'P W e5', 'P B e3', 'P W c1', 'P B e1', 'M b4 c3', 'M e3 d4', 'M e5 c5'];
+const MOVES = [
+  '{ "type": "PLACE", "color": "W", "to": "b4" }',
+  '{ "type": "PLACE", "color": "B", "to": "d2" }',
+  '{ "type": "PLACE", "color": "W", "to": "e5" }',
+  '{ "type": "PLACE", "color": "B", "to": "e3" }',
+  '{ "type": "PLACE", "color": "W", "to": "c1" }',
+  '{ "type": "PLACE", "color": "B", "to": "e1" }',
+  '{ "type": "MOVE", "from": "b4", "to": "c3" }',
+  '{ "type": "MOVE", "from": "e3", "to": "d4" }',
+  '{ "type": "MOVE", "from": "e5", "to": "c5" }',
+];
 
 // --------------------------------------------------------------------------
 const game = gamesInstantiate(TAG, initialGameState);

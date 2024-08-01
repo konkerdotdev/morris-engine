@@ -20,6 +20,7 @@ export function shellTick(gameTick: MorrisGameTick, moveStr: string): MorrisGame
     P.pipe(
       moveStr,
       P.Schema.decode(MorrisMove(gameTick.game.gameState.board.dimension)),
+      P.Effect.tap(P.Console.log),
       P.Effect.mapError((_e) => 'Invalid input'),
       P.Effect.flatMap((move) => P.pipe(gameTick, tick(move))),
       P.Effect.mapError(toMorrisEngineError),

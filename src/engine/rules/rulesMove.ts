@@ -125,7 +125,7 @@ export const RulesMove = () =>
                 c.gameTick.facts.isRemoveMode && c.move.type === MorrisMoveType.REMOVE && !isPointEmptyFrom
             )
           ),
-        'The move is a flying move which is possible'
+        'The move is a remove move which is possible'
       ),
       R.addRuleFunc(
         'moveIsPossibleForLasker',
@@ -200,7 +200,7 @@ export const RulesMove = () =>
       R.addRuleFunc(
         'moveMakesRemoveMode',
         (c: MorrisRulesContextMove, f: MorrisFactsMove) =>
-          f.moveMakesMill && c.gameTick.game.gameState.config.numMillsToWinThreshold > 1,
+          f.moveMakesMill && c.gameTick.game.gameState.config.numMillsToWinThreshold === 0,
         'Next turn is remove: the move makes a mill'
       ),
       R.addRuleFunc(

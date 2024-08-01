@@ -141,7 +141,7 @@ export const RulesGame = () =>
       R.addRuleFunc(
         'isWinWhiteOpponentCount',
         (c: MorrisRulesContextGame, f: MorrisFactsGame) =>
-          f.isTurnWhite &&
+          f.isTurnBlack &&
           c.game.gameState.morrisBlack.length === 0 &&
           boardCountMorrisByColor(c.game.gameState.board, MorrisColor.BLACK) <
             c.game.gameState.config.numMorrisToLoseThreshold + 1,
@@ -167,7 +167,7 @@ export const RulesGame = () =>
       R.addRuleFunc(
         'isWinBlackOpponentCount',
         (c: MorrisRulesContextGame, f: MorrisFactsGame) =>
-          f.isTurnBlack &&
+          f.isTurnWhite &&
           c.game.gameState.morrisBlack.length === 0 &&
           boardCountMorrisByColor(c.game.gameState.board, MorrisColor.WHITE) <
             c.game.gameState.config.numMorrisToLoseThreshold + 1,
